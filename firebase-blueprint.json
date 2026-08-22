@@ -1,0 +1,274 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and authentication data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string" },
+        "status": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "required": ["uid", "email", "role", "status"]
+    },
+    "Shipment": {
+      "title": "Shipment",
+      "description": "Parcel shipment details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shipmentId": { "type": "string" },
+        "parcelId": { "type": "string" },
+        "trackingNumber": { "type": "string" },
+        "senderId": { "type": "string" },
+        "status": { "type": "string" },
+        "originCenterId": { "type": "string" },
+        "destinationCenterId": { "type": "string" }
+      },
+      "required": ["id", "shipmentId", "parcelId", "trackingNumber", "senderId", "status"]
+    },
+    "HubPoint": {
+      "title": "Hub Point",
+      "description": "WeSabiHub drop-off/pick-up point",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "ownerId", "status"]
+    },
+    "VerificationRequest": {
+      "title": "Verification Request",
+      "description": "User or Business verification request",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["userId", "type", "status"]
+    },
+    "Wallet": {
+      "title": "Wallet",
+      "description": "Financial wallet",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "balance": { "type": "number" }
+      },
+      "required": ["uid", "balance"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "description": "Logistics driver profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "logisticsCompanyId": { "type": "string" }
+      },
+      "required": ["uid", "logisticsCompanyId"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Chat conversations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "participants", "updatedAt"]
+    },
+    "SupportTicket": {
+      "title": "Support Ticket",
+      "description": "Support tickets",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "status": { "type": "string" },
+        "subject": { "type": "string" }
+      },
+      "required": ["id", "userId", "status", "subject"]
+    },
+    "CommissionRule": {
+      "title": "Commission Rule",
+      "description": "Rules for revenue distribution",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "platformPercentage": { "type": "number" },
+        "centrePercentage": { "type": "number" },
+        "futureLogisticsPercentage": { "type": "number" },
+        "effectiveFrom": { "type": "string", "format": "date-time" },
+        "effectiveTo": { "type": "string", "format": "date-time" },
+        "country": { "type": "string" },
+        "serviceType": { "type": "string" },
+        "merchantOverrides": { "type": "object" },
+        "hubOverrides": { "type": "object" },
+        "version": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["platformPercentage", "centrePercentage", "isActive"]
+    },
+    "CommissionRecord": {
+      "title": "Commission Record",
+      "description": "Record of commission distribution for a shipment",
+      "type": "object",
+      "properties": {
+        "shipmentId": { "type": "string" },
+        "totalFee": { "type": "number" },
+        "platformAmount": { "type": "number" },
+        "centreAmount": { "type": "number" },
+        "futureLogisticsAmount": { "type": "number" },
+        "pricingRuleVersion": { "type": "number" },
+        "commissionRuleVersion": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "centreId": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "status": { "type": "string" },
+        "country": { "type": "string" },
+        "serviceType": { "type": "string" }
+      },
+      "required": ["totalFee", "platformAmount", "centreAmount", "timestamp"]
+    },
+    "AdminRole": {
+      "title": "Admin Role",
+      "description": "Custom administrative role and permissions configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "permissions": { "type": "array", "items": { "type": "string" } },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "permissions", "isActive"]
+    },
+    "PaymentProtection": {
+      "title": "Payment Protection",
+      "description": "Payment protection and secure holding records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shipmentId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "shipmentId", "customerId", "merchantId", "amount", "status"]
+    },
+    "PaymentProtectionSettings": {
+      "title": "Payment Protection Settings",
+      "description": "Global rules for holding and releasing protected payments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "defaultInspectionPeriodHours": { "type": "number" },
+        "allowInspectionExtension": { "type": "boolean" }
+      },
+      "required": ["id", "defaultInspectionPeriodHours", "allowInspectionExtension"]
+    },
+    "ReturnRequest": {
+      "title": "Return Request",
+      "description": "Requests made by buyers to return parcels and secure refunds",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shipmentId": { "type": "string" },
+        "customerUserId": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "shipmentId", "customerUserId", "merchantId", "status"]
+    },
+    "IdVerification": {
+      "title": "ID Verification",
+      "description": "Captured ID details processed by Gemini AI and reviewed by Admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userDisplayName": { "type": "string" },
+        "documentType": { "type": "string" },
+        "capturedImageUrl": { "type": "string" },
+        "extractedDetails": { "type": "object" },
+        "aiAnalysis": { "type": "object" },
+        "status": { "type": "string" },
+        "adminNotes": { "type": "string" }
+      },
+      "required": ["id", "userId", "userEmail", "status"]
+    },
+    "DocumentRequirement": {
+      "title": "Document Requirement",
+      "description": "Configurable registration document requirement managed by Super Admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "isRequired": { "type": "boolean" },
+        "applicableRoles": { "type": "array", "items": { "type": "string" } },
+        "applicableCountries": { "type": "array", "items": { "type": "string" } },
+        "acceptedFileTypes": { "type": "array", "items": { "type": "string" } },
+        "maxFileSizeMb": { "type": "number" },
+        "requiresExpiryDate": { "type": "boolean" },
+        "renewalReminderDays": { "type": "number" },
+        "adminVerificationRequired": { "type": "boolean" },
+        "autoApprovalAllowed": { "type": "boolean" },
+        "displayOrder": { "type": "number" },
+        "helpText": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "name", "applicableRoles", "applicableCountries", "isActive"]
+    }
+  },
+
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "Primary user profiles" },
+    "/idVerifications/{verificationId}": { "schema": "IdVerification", "description": "Identity verification scans and review logs" },
+    "/documentRequirements/{requirementId}": { "schema": "DocumentRequirement", "description": "Super admin configured dynamic registration document requirements" },
+    "/adminRoles/{roleId}": { "schema": "AdminRole", "description": "Custom administrator roles and permissions" },
+    "/shipments/{shipmentId}": { "schema": "Shipment", "description": "Parcel shipments" },
+    "/trackingEvents/{eventId}": { "schema": "object", "description": "Status update events" },
+    "/parcelTransfers/{transferId}": { "schema": "object", "description": "Internal and external transfers" },
+    "/parcelHistory/{historyId}": { "schema": "object", "description": "Custody and movement logs" },
+    "/scanLogs/{logId}": { "schema": "object", "description": "Scan history logs" },
+    "/wesabiHubPoints/{pointId}": { "schema": "HubPoint", "description": "Service points" },
+    "/pointEmployees/{empId}": { "schema": "object", "description": "Staff at points" },
+    "/merchantBusinesses/{busId}": { "schema": "object", "description": "Merchant business profiles" },
+    "/logisticsCompanies/{compId}": { "schema": "object", "description": "Logistics providers" },
+    "/drivers/{driverId}": { "schema": "Driver", "description": "Driver profiles" },
+    "/wallets/{userId}": { "schema": "Wallet", "description": "User wallets" },
+    "/transactions/{txId}": { "schema": "object", "description": "Financial records" },
+    "/verificationRequests/{reqId}": { "schema": "VerificationRequest", "description": "Verification queue" },
+    "/notifications/{noteId}": { "schema": "object", "description": "System alerts" },
+    "/auditLogs/{logId}": { "schema": "object", "description": "System audit trail" },
+    "/systemSettings/{setId}": { "schema": "object", "description": "Global config" },
+    "/brandAssets/{brandId}": { "schema": "object", "description": "Brand configuration" },
+    "/conversations/{convId}": { "schema": "Conversation", "description": "Chat sessions" },
+    "/conversations/{convId}/messages/{msgId}": { "schema": "object", "description": "Chat messages" },
+    "/supportTickets/{ticketId}": { "schema": "SupportTicket", "description": "Support tickets" },
+    "/knowledgeArticles/{articleId}": { "schema": "object", "description": "Help center articles" },
+    "/faqCategories/{catId}": { "schema": "object", "description": "FAQ organization" },
+    "/countries/{countryId}": { "schema": "object", "description": "Supported countries" },
+    "/pricingRules/{ruleId}": { "schema": "object", "description": "Pricing configuration" },
+    "/commissionRules/{ruleId}": { "schema": "CommissionRule", "description": "Commission configuration" },
+    "/commissionRecords/{recordId}": { "schema": "CommissionRecord", "description": "Revenue distribution records" },
+    "/commissionAuditLogs/{logId}": { "schema": "object", "description": "Audit trail for commissions" },
+    "/serviceZones/{zoneId}": { "schema": "object", "description": "Operational zones" },
+    "/promotionRules/{promoId}": { "schema": "object", "description": "Discounts and promos" },
+    "/paymentProtections/{protectionId}": { "schema": "PaymentProtection", "description": "Payment protection records" },
+    "/paymentProtectionSettings/{settingsId}": { "schema": "PaymentProtectionSettings", "description": "Payment protection settings" },
+    "/returnRequests/{requestId}": { "schema": "ReturnRequest", "description": "Return request records" }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "WeSabiHub",
+  "description": "Nigeria's trusted Pick-Up & Drop-Off (PUDO) network connecting Customers, Merchants, and Logistics Partners.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
