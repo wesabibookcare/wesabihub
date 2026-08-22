@@ -1,0 +1,22 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Every request to /api/* is routed to the Express app running as a single
+# Netlify Function, instead of 404ing (which is what was happening before --
+# Netlify was only ever serving the static frontend, with no backend at all).
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+# Client-side routing (React Router) -- any other path that isn't a real
+# file falls back to index.html so refreshing on a deep link doesn't 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

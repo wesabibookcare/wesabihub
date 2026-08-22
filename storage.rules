@@ -1,0 +1,75 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && role in getUserData().roles;
+    }
+
+    function hasAnyRole(roles) {
+      return isSignedIn() && getUserData().roles.hasAny(roles);
+    }
+
+    // Profile photos are public for reading, owner only for write
+    match /avatars/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if isOwner(userId);
+    }
+    match /profile_photos/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if isOwner(userId);
+    }
+
+    // Business and Verification documents are private
+    match /documents/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || hasAnyRole(['SUPER_ADMIN', 'VERIFICATION_OFFICER', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER']);
+      allow write: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || hasAnyRole(['SUPER_ADMIN', 'VERIFICATION_OFFICER', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER']);
+      allow write: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    match /applications/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || hasAnyRole(['SUPER_ADMIN', 'VERIFICATION_OFFICER', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER']);
+      allow write: if isOwner(userId) && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    match /merchants/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && request.resource.size < 5 * 1024 * 1024;
+      allow delete: if isSignedIn();
+    }
+
+    // Parcel photos
+    match /parcels/{parcelId}/{allPaths=**} {
+      allow read: if isSignedIn(); // Broad read for simplicity, can be narrowed
+      allow write: if isSignedIn() && (hasAnyRole(['CENTER_STAFF', 'CENTER_OWNER', 'DRIVER', 'SUPER_ADMIN']));
+    }
+
+    // Marketing and brand assets are public read, admin write
+    match /brand/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasAnyRole(['SUPER_ADMIN', 'OPERATIONS_MANAGER']);
+    }
+    match /marketing/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasAnyRole(['SUPER_ADMIN', 'OPERATIONS_MANAGER']);
+    }
+  }
+}

@@ -1,0 +1,586 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  Package,
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  ArrowLeft,
+  ShoppingBag,
+  MapPin,
+  Truck,
+  ShieldAlert,
+  Users,
+  Code
+} from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
+import { Alert } from '../../components/ui/Alert';
+import { userEngine, complianceEngine, invitationEngine } from '../../engines';
+import { UserRole } from '../../types';
+import { cn } from '../../lib/utils';
+import { useAuth } from '../../context/AuthContext';
+import { ROLE_REDIRECTS } from '../../services/authService';
+import { motion, AnimatePresence } from 'motion/react';
+
+// Best-fit background per role from the 6 journey-scene photos we have today.
+// Swap any of these for a dedicated role-portrait image later -- nothing
+// else about this page needs to change.
+const ROLE_BACKGROUNDS: Partial<Record<UserRole, string>> = {
+  CUSTOMER: '/assets/hero/hero-4-doorstep-delivery.png',
+  MERCHANT: '/assets/hero/hero-0-merchant-packaging.png',
+  CENTER_OWNER: '/assets/hero/hero-1-hub-lagos.png',
+  CENTER_STAFF: '/assets/hero/hero-3-pickup-counter.png',
+  DISPATCH_RIDER: '/assets/hero/hero-2-dispatch-rider.png',
+  LOGISTICS_COMPANY: '/assets/hero/hero-2-dispatch-rider.png',
+  DEVELOPER: '/assets/hero/hero-1-hub-lagos.png',
+};
+
+// Roles blocked from public self-signup according to P0-2 policy.
+const HIDDEN_FROM_REGISTER: string[] = [
+  'LOGISTICS_COMPANY',
+  'FLEET_MANAGER',
+  'DRIVER',
+  'DEVELOPER',
+  'API_MERCHANT_PARTNER',
+  'SUPER_ADMIN',
+  'SECURITY_ADMIN',
+  'OPERATIONS_ADMIN',
+  'FINANCE_ADMIN',
+  'SUPPORT_ADMIN'
+];
+
+const roles = [
+  { id: 'CUSTOMER' as UserRole, label: 'Customer', desc: 'Send & receive parcels', icon: User },
+  { id: 'MERCHANT' as UserRole, label: 'Merchant', desc: 'Send business shipments', icon: ShoppingBag },
+  { id: 'CENTER_OWNER' as UserRole, label: 'Hub Owner', desc: 'Host a local parcel point', icon: MapPin },
+  { id: 'CENTER_STAFF' as UserRole, label: 'Hub Staff', desc: 'Work at a local point', icon: Users },
+  { id: 'LOGISTICS_COMPANY' as UserRole, label: 'Logistics Company', desc: 'Manage fleet & business', icon: Truck },
+  { id: 'DISPATCH_RIDER' as UserRole, label: 'Dispatch Rider', desc: 'Deliver as neighborhood hero', icon: Package },
+  { id: 'DEVELOPER' as UserRole, label: 'Developer', desc: 'Build with our APIs', icon: Code },
+].filter(r => !HIDDEN_FROM_REGISTER.includes(r.id));
+
+const LOGISTICS_SUB_ROLES = [
+  { id: 'LOGISTICS_COMPANY' as UserRole, label: 'Company Owner', desc: 'Own a logistics business' },
+  { id: 'FLEET_MANAGER' as UserRole, label: 'Fleet Manager', desc: 'Manage vehicles for an owner' },
+  { id: 'DRIVER' as UserRole, label: 'Driver', desc: 'Employee driver for a company' },
+];
+
+export const RegisterPage: React.FC = () => {
+  const { bootstrapNeeded } = useAuth();
+  const [selectedRole, setSelectedRole] = useState<UserRole>('CUSTOMER');
+  const [logisticsSubRole, setLogisticsSubRole] = useState<UserRole>('LOGISTICS_COMPANY');
+  const [inviteCode, setInviteCode] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [guarantors, setGuarantors] = useState([
+    { fullName: '', phoneNumber: '', relationship: '' },
+    { fullName: '', phoneNumber: '', relationship: '' },
+  ]);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (!termsAccepted) {
+      setError('Please read and agree to the Terms of Service and policies before continuing.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const roleToRegister = selectedRole === 'LOGISTICS_COMPANY' ? logisticsSubRole : selectedRole;
+      const extraData: any = {};
+
+      // Validate Invite Code if applicable
+      if (['FLEET_MANAGER', 'DRIVER'].includes(roleToRegister)) {
+        if (!inviteCode) {
+          setError('Invitation code is required for this role');
+          setLoading(false);
+          return;
+        }
+
+        const inv = await invitationEngine.validateCode(inviteCode, roleToRegister);
+
+        if (!inv) {
+          setError('Invalid or expired invitation code. Please check with your company owner.');
+          setLoading(false);
+          return;
+        }
+
+        extraData.companyId = inv.senderId;
+        extraData.invitationId = inv.id;
+      }
+
+      if (roleToRegister === 'LOGISTICS_COMPANY') {
+        extraData.companyName = companyName;
+      }
+
+      if (roleToRegister === 'DISPATCH_RIDER') {
+        extraData.guarantors = guarantors;
+      }
+
+      // 1. Call User Engine for registration
+      // Note: We use registerUser directly or a workflow if it's complex
+      const newUser = await userEngine.register(email, password, name, roleToRegister, extraData);
+
+      if (extraData.invitationId) {
+        await invitationEngine.acceptInvitation(extraData.invitationId, newUser.uid);
+      }
+
+      // 3. Record Consent via Compliance Engine for mandatory policies
+      const mandatoryPolicies = await complianceEngine.getRequiredPoliciesForRole(newUser.role, newUser.country || 'NG');
+      for (const policyKey of mandatoryPolicies) {
+        const latest = await complianceEngine.getLatestPolicy(policyKey);
+        await complianceEngine.recordConsent(newUser.uid, policyKey, latest?.version || '1.0.0', {
+          country: newUser.country,
+          accountType: newUser.role,
+          registrationMethod: 'EMAIL'
+        });
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        const redirectPath = ROLE_REDIRECTS[newUser.role] || '/dashboard';
+        navigate(redirectPath);
+      }, 3000);
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!termsAccepted) {
+      setError('Please read and agree to the Terms of Service and policies before continuing.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const user = await userEngine.signInWithGoogle();
+      if (user) {
+        setSuccess(true);
+        setTimeout(() => {
+          const redirectPath = ROLE_REDIRECTS[user.role] || '/dashboard';
+          navigate(redirectPath);
+        }, 2000);
+      } else {
+        navigate('/role-selection');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <Card className="text-center py-8">
+            <CardContent className="space-y-4">
+              <div className="flex justify-center">
+                <CheckCircle2 className="h-16 w-16 text-green-500" />
+              </div>
+              <CardTitle className="text-2xl font-bold">Account Created!</CardTitle>
+              <CardDescription className="text-lg">
+                {email ? (
+                  <>
+                    We've sent a verification email to <strong>{email}</strong>.
+                    Please check your inbox to verify your account.
+                  </>
+                ) : (
+                  "Welcome to WeSabiHub! Setting up your workspace..."
+                )}
+              </CardDescription>
+              <p className="text-sm text-slate-900 pt-4">
+                Redirecting you to your dashboard...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Role-aware background */}
+      <div className="absolute inset-0 -z-10 bg-slate-950">
+        <AnimatePresence mode="sync">
+          <motion.div
+            key={selectedRole}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+            className="absolute inset-0"
+          >
+            <img
+              src={ROLE_BACKGROUNDS[selectedRole] || ROLE_BACKGROUNDS.CUSTOMER}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-slate-950/70" />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 rounded-xl text-white border-white/30 hover:bg-white/10"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+      </div>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md pt-8">
+        <div className="flex justify-center">
+          <div className="bg-slate-900 p-3 rounded-xl">
+            <Package className="h-8 w-8 text-white" />
+          </div>
+        </div>
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white font-sans drop-shadow">
+          Join WeSabiHub
+        </h2>
+        <p className="mt-2 text-center text-sm text-slate-200 drop-shadow">
+          The most reliable way to send parcels through local hubs
+        </p>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <Card>
+          <CardContent className="pt-6">
+            {bootstrapNeeded && (
+              <Alert className="border-red-100 bg-red-50/50 text-red-900 rounded-xl mb-6">
+                <div className="flex items-start gap-3">
+                  <ShieldAlert className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-sm text-red-950">Initialization Required</h4>
+                    <p className="text-xs text-red-700 mt-0.5">
+                      No Super Administrator has been registered yet. The platform must be initialized before use.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/bootstrap')}
+                      className="mt-2 text-xs font-bold text-red-600 hover:text-red-800 underline focus:outline-none block"
+                    >
+                      Create Initial Super Administrator &rarr;
+                    </button>
+                  </div>
+                </div>
+              </Alert>
+            )}
+
+            <form className="space-y-4" onSubmit={handleRegister}>
+              {error && (
+                <Alert variant="error">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>{error}</span>
+                  </div>
+                </Alert>
+              )}
+
+              {/* Role Selection Step */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-900 block">Select Your Role</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {roles.map((r) => {
+                    const Icon = r.icon;
+                    const isSelected = selectedRole === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => setSelectedRole(r.id)}
+                        className={cn(
+                          "p-3 rounded-xl border text-left flex flex-col justify-between h-24 transition-all duration-200 w-full",
+                          isSelected
+                            ? "border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50 text-slate-800"
+                        )}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <Icon className={cn("w-5 h-5", isSelected ? "text-white" : "text-slate-900")} />
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
+                        </div>
+                        <div>
+                          <div className={cn("text-xs font-semibold", isSelected ? "text-white" : "text-slate-900")}>{r.label}</div>
+                          <div className={cn("text-[10px] truncate leading-tight mt-0.5", isSelected ? "text-slate-300" : "text-slate-900")}>{r.desc}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Logistics Sub-roles */}
+              {selectedRole === 'LOGISTICS_COMPANY' && (
+                <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <label className="text-sm font-medium text-slate-900 block text-center border-b pb-2 mb-2">Refine Your Logistics Role</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {LOGISTICS_SUB_ROLES.map((sr) => (
+                      <button
+                        key={sr.id}
+                        type="button"
+                        onClick={() => setLogisticsSubRole(sr.id)}
+                        className={cn(
+                          "p-2 px-3 rounded-lg border text-left transition-all",
+                          logisticsSubRole === sr.id
+                            ? "border-blue-600 bg-blue-50 text-blue-700 ring-1 ring-blue-600"
+                            : "border-slate-200 bg-white text-slate-800"
+                        )}
+                      >
+                        <div className="text-xs font-bold">{sr.label}</div>
+                        <div className="text-[10px] opacity-70">{sr.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {logisticsSubRole === 'LOGISTICS_COMPANY' && (
+                    <div className="pt-2 animate-in fade-in slide-in-from-top-1">
+                      <label className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">Company Legal Name</label>
+                      <Input
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="e.g. Swift Logistics Ltd"
+                        className="mt-1"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  {['FLEET_MANAGER', 'DRIVER'].includes(logisticsSubRole) && (
+                    <div className="pt-2 animate-in fade-in slide-in-from-top-1">
+                      <label className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">Invitation Code</label>
+                      <Input
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value)}
+                        placeholder="6-digit company code"
+                        className="mt-1"
+                        maxLength={6}
+                        required
+                      />
+                      <p className="text-[10px] text-slate-800 mt-1 italic">Contact your company owner for this code</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Dispatch Rider Guarantors */}
+              {selectedRole === 'DISPATCH_RIDER' && (
+                <div className="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <label className="text-sm font-medium text-slate-900 block text-center border-b pb-2 mb-2">Guarantor Information</label>
+                  {guarantors.map((g, idx) => (
+                    <div key={idx} className="space-y-2 pb-2 border-b border-slate-200 last:border-0 last:pb-0">
+                      <div className="text-[10px] font-bold text-slate-800 uppercase">Guarantor {idx + 1}</div>
+                      <Input
+                        placeholder="Full Name"
+                        value={g.fullName}
+                        onChange={(e) => {
+                          const newG = [...guarantors];
+                          newG[idx].fullName = e.target.value;
+                          setGuarantors(newG);
+                        }}
+                        required
+                        className="h-8 text-xs"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Phone Number"
+                          value={g.phoneNumber}
+                          onChange={(e) => {
+                            const newG = [...guarantors];
+                            newG[idx].phoneNumber = e.target.value;
+                            setGuarantors(newG);
+                          }}
+                          required
+                          className="h-8 text-xs"
+                        />
+                        <Input
+                          placeholder="Relationship"
+                          value={g.relationship}
+                          onChange={(e) => {
+                            const newG = [...guarantors];
+                            newG[idx].relationship = e.target.value;
+                            setGuarantors(newG);
+                          }}
+                          required
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-slate-900 uppercase tracking-tight">Full Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-slate-900" />
+                  </div>
+                  <Input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10 border-slate-300 focus:border-primary-500 text-slate-950"
+                    placeholder="John Doe"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-slate-900 uppercase tracking-tight">Email Address</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-slate-900" />
+                  </div>
+                  <Input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 border-slate-300 focus:border-primary-500 text-slate-950"
+                    placeholder="you@example.com"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-slate-900 uppercase tracking-tight">Password</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-slate-900" />
+                  </div>
+                  <Input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 border-slate-300 focus:border-primary-500 text-slate-950"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-slate-900 uppercase tracking-tight">Confirm Password</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-slate-900" />
+                  </div>
+                  <Input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10 border-slate-300 focus:border-primary-500 text-slate-950"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="policyConsent"
+                  required
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="policyConsent" className="text-xs text-slate-900">
+                  I have read and agree to the <Link to="/terms" title="Terms" className="text-blue-600 hover:underline">Terms of Service</Link>, <Link to="/privacy" title="Privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>, <Link to="/payment-protection" title="Payment Protection" className="text-blue-600 hover:underline">Payment Protection Policy</Link>, <Link to="/returns" title="Returns" className="text-blue-600 hover:underline">Return Policy</Link> and <Link to="/storage" title="Storage" className="text-blue-600 hover:underline">Storage Policy</Link>. I understand these policies may be updated from time to time and that continued use of WeSabiHub means I accept the latest published version.
+                </label>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Create Account
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-slate-900 font-black uppercase tracking-widest text-[10px]">Or continue with</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center rounded-xl py-3 border-slate-300 hover:bg-slate-50 text-slate-950 font-bold transition-all shadow-sm"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+            >
+              <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
+                />
+              </svg>
+              Continue with Google
+            </Button>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-slate-900 font-medium">
+                Already have an account?{' '}
+                <Link to="/login" title="Login" className="font-bold text-primary-600 hover:text-primary-700 transition-colors">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
