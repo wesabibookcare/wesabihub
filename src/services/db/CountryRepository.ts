@@ -39,8 +39,10 @@ class CountryRepository extends BaseRepository<Country> {
               cities: c.code === 'NG' ? Object.values(NIGERIA_STATES).flat() : [],
               supportedLanguages: [], timeZone: '', weightUnits: 'kg',
               measurementUnits: 'metric', dateFormat: 'YYYY-MM-DD',
+              consumerProtectionRules: '', defaultPaymentProvider: '',
+              defaultMapRegion: { lat: 0, lng: 0, zoom: 1 }, active: true,
               createdAt: new Date(0).toISOString(), updatedAt: new Date(0).toISOString()
-            } as Country);
+            } as unknown as Country);
           }
         }
         return Array.from(byCode.values()).sort((a,b) => a.name.localeCompare(b.name));
@@ -66,9 +68,13 @@ class CountryRepository extends BaseRepository<Country> {
       weightUnits: 'kg',
       measurementUnits: 'metric',
       dateFormat: 'YYYY-MM-DD',
+      consumerProtectionRules: '',
+      defaultPaymentProvider: '',
+      defaultMapRegion: { lat: 0, lng: 0, zoom: 1 },
+      active: true,
       createdAt: new Date(0).toISOString(),
       updatedAt: new Date(0).toISOString()
-    } as Country));
+    } as unknown as Country));
   }
 
   async getActiveCountries(): Promise<Country[]> {

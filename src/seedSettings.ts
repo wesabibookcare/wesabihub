@@ -153,7 +153,8 @@ export const seedInitialSettings = async () => {
       enableHubCenterApplications: true,
       enablePublicMarketplace: true,
       enableAIAssistant: false,
-      enableGlobalSearch: true
+      enableGlobalSearch: true,
+      enableSafePay: true
     }
   };
 

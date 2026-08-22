@@ -12,6 +12,7 @@ declare global {
 // ==========================================================
 interface AuthenticatedUser {
   uid: string;
+  email?: string;
   role: string | null;
   roles: string[];
   status: string | null;

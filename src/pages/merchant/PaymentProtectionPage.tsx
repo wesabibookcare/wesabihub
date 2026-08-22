@@ -140,20 +140,28 @@ export const PaymentProtectionPage = () => {
               <div className="flex items-center justify-between">
                  <h2 className="text-xl font-bold dark:text-white font-display">Active Protected Payments</h2>
                  <div className="flex gap-2">
-                    <Badge
-                      variant={statusFilter === 'PENDING' ? 'default' : 'outline'}
-                      className="rounded-lg h-7 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                    <button
+                      type="button"
                       onClick={() => setStatusFilter(prev => prev === 'PENDING' ? 'ALL' : 'PENDING')}
                     >
-                      Pending
-                    </Badge>
-                    <Badge
-                      variant={statusFilter === 'READY' ? 'default' : 'outline'}
-                      className="rounded-lg h-7 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                      <Badge
+                        variant={statusFilter === 'PENDING' ? 'default' : 'outline'}
+                        className="rounded-lg h-7 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        Pending
+                      </Badge>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setStatusFilter(prev => prev === 'READY' ? 'ALL' : 'READY')}
                     >
-                      Ready
-                    </Badge>
+                      <Badge
+                        variant={statusFilter === 'READY' ? 'default' : 'outline'}
+                        className="rounded-lg h-7 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        Ready
+                      </Badge>
+                    </button>
                  </div>
               </div>
 

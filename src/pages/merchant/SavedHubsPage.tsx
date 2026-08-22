@@ -112,14 +112,18 @@ export const SavedHubsPage = () => {
                 { id: 'top', label: 'Top Rated' },
                 { id: 'open', label: 'Open Now' },
               ] as const).map(f => (
-                <Badge
+                <button
                   key={f.id}
-                  variant={quickFilter === f.id ? 'info' : 'outline'}
-                  className={cn("h-8 px-4 rounded-full cursor-pointer", quickFilter !== f.id && "hover:bg-slate-100")}
+                  type="button"
                   onClick={() => setQuickFilter(f.id)}
                 >
-                  {f.label}
-                </Badge>
+                  <Badge
+                    variant={quickFilter === f.id ? 'info' : 'outline'}
+                    className={cn("h-8 px-4 rounded-full cursor-pointer", quickFilter !== f.id && "hover:bg-slate-100")}
+                  >
+                    {f.label}
+                  </Badge>
+                </button>
               ))}
            </div>
         </div>
