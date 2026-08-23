@@ -36,6 +36,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Card } from '../../components/ui/Card';
 import { userRepository } from '@/src/services/db/UserRepository';
 import { courseRepository } from '@/src/services/db/CourseRepository';
+import { storageEngine } from '@/src/engines/StorageEngine';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Alert } from '../../components/ui/Alert';
@@ -64,14 +65,12 @@ export const DispatchDashboard = () => {
   // UI active tabs: 'overview' | 'academy' | 'id' | 'agreement' | 'wallet' | 'jobs'
   const [activeTab, setActiveTab] = useState<'overview' | 'academy' | 'id' | 'agreement' | 'wallet' | 'jobs'>('overview');
 
-  // State for simulations and modals
+  // State for documents and modals
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, string>>({});
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentSignature, setConsentSignature] = useState('');
-  const [showFlutterwaveModal, setShowFlutterwaveModal] = useState(false);
-  const [flutterwaveAmount, setFlutterwaveAmount] = useState('5000');
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any>(null);
 
   // Local lists for dynamic notifications, courses and audit logs inside dashboard
@@ -198,13 +197,37 @@ export const DispatchDashboard = () => {
     }
   };
 
-  // TODO: Implement StorageEngine upload logic
   const handleUploadClick = (docType: string) => {
-    toast.info('File upload is currently undergoing maintenance.');
+    setUploadingDoc(docType);
   };
 
-  const handleSimulateUpload = async (docType: string) => {
-    toast.info('File upload is currently undergoing maintenance.');
+  const handleFileUpload = async (docType: string, file: File) => {
+    if (!user?.id) return;
+    setIsUploading(true);
+    try {
+      const downloadUrl = await storageEngine.uploadUserDocument(user.id, docType, file);
+      setUploadedFiles(prev => ({ ...prev, [docType]: downloadUrl }));
+
+      await userRepository.update(user.id, {
+        [`document_${docType}`]: downloadUrl
+      } as any);
+
+      await auditEngine.logEvent({
+        userId: user.id,
+        userRole: 'DISPATCH_RIDER',
+        action: 'DOCUMENT_UPLOAD_SUCCESS',
+        details: { docType, downloadUrl },
+        result: 'SUCCESS'
+      });
+
+      toast.success(`${docType.toUpperCase()} uploaded successfully!`);
+      setUploadingDoc(null);
+    } catch (err: any) {
+      console.error('File upload failed:', err);
+      toast.error('Failed to upload document. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Dynamic Trust Score and Tier Updates (+ / - events)
@@ -255,36 +278,6 @@ export const DispatchDashboard = () => {
     }
   };
 
-  // Mock Flutterwave settlement payment flow
-  const handleProcessFlutterwave = async () => {
-    if (!user?.id || !riderProfile) return;
-    setIsProcessingPayment(true);
-    try {
-      // Simulate API timeout/gateway latency
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const amountNum = parseFloat(flutterwaveAmount);
-      const currentAvailable = riderProfile.availableBalance || 0;
-      await userRepository.update(user.id, {
-        availableBalance: currentAvailable + amountNum
-      } as any);
-
-      await auditEngine.logEvent({
-        userId: user.id,
-        userRole: 'DISPATCH_RIDER',
-        action: 'FLUTTERWAVE_DEPOSIT_SUCCESS',
-        details: { amount: amountNum, gateway: 'FLUTTERWAVE_MOCK' },
-        result: 'SUCCESS'
-      });
-
-      setShowFlutterwaveModal(false);
-      toast.success(`Flutterwave checkout completed successfully! ₦${amountNum.toLocaleString()} added to your Available Balance.`);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
 
   // Handle Withdrawals
   const handleWithdraw = async (amount: number) => {
@@ -551,15 +544,25 @@ export const DispatchDashboard = () => {
                   })}
                 </div>
 
-                {/* Simulated file upload modal */}
+                {/* File upload picker */}
                 {uploadingDoc && (
                   <div className="p-4 bg-slate-100 rounded-2xl border border-slate-200 space-y-3">
-                    <p className="text-xs font-bold text-slate-900">Simulate file selection for {uploadingDoc.toUpperCase()}:</p>
-                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-white cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => handleSimulateUpload(uploadingDoc)}>
+                    <p className="text-xs font-bold text-slate-900">Upload document for {uploadingDoc.toUpperCase()}:</p>
+                    <label className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-white cursor-pointer hover:bg-slate-50 transition-colors block">
                       <Upload className="mx-auto text-slate-800 mb-2" size={24} />
-                      <span className="text-[11px] font-bold text-slate-900">Drag & drop files to upload</span>
-                    </div>
-                    <Button variant="ghost" size="sm" className="text-slate-900 w-full" onClick={() => setUploadingDoc(null)}>Cancel</Button>
+                      <span className="text-[11px] font-bold text-slate-900">{isUploading ? 'Uploading...' : 'Click to select file from device'}</span>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        disabled={isUploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(uploadingDoc, file);
+                        }}
+                      />
+                    </label>
+                    <Button variant="ghost" size="sm" className="text-slate-900 w-full" onClick={() => setUploadingDoc(null)} disabled={isUploading}>Cancel</Button>
                   </div>
                 )}
               </Card>
@@ -865,20 +868,20 @@ export const DispatchDashboard = () => {
                 </div>
               </Card>
 
-              {/* Settlement simulation / Flutterwave */}
+              {/* Settlement Information */}
               <Card className="p-6 space-y-6">
                 <div>
-                  <h3 className="font-black text-xl text-slate-900 dark:text-white">Flutterwave Gateway</h3>
-                  <p className="text-xs text-slate-900 font-medium">Replenish payment protection collateral or make settlement deposit simulations.</p>
+                  <h3 className="font-black text-xl text-slate-900 dark:text-white">Settlement Account</h3>
+                  <p className="text-xs text-slate-900 font-medium">Your rider delivery earnings are held in your verified settlement account.</p>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-2xl border space-y-3">
                   <p className="text-xs font-medium text-slate-900 leading-relaxed">
-                    Test deposit flows or trigger simulated credit card / USSD checkout sequences dynamically with Flutterwave sandbox integrations.
+                    Withdrawal requests are processed into your registered bank account upon delivery completion and verification.
                   </p>
-                  <Button className="w-full" onClick={() => { setShowConsentModal(false); setShowFlutterwaveModal(true); }}>
-                    <CreditCard size={16} className="mr-2" /> Open Flutterwave deposit
-                  </Button>
+                  <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-1.5">
+                    <Shield size={14} className="text-emerald-600" /> Direct Bank Settlement
+                  </div>
                 </div>
               </Card>
             </motion.div>
@@ -933,34 +936,6 @@ export const DispatchDashboard = () => {
         </AnimatePresence>
       </main>
 
-      {/* Flutterwave Deposit modal */}
-      <Modal isOpen={showFlutterwaveModal} onClose={() => setShowFlutterwaveModal(false)} title="Flutterwave Sandbox Payment Gateway">
-        <div className="p-6 space-y-4">
-          <p className="text-xs text-slate-900 leading-relaxed font-medium">
-            Enter payment details to trigger card token authorization, OTP verify, and direct account deposit simulations:
-          </p>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-800">Deposit Amount (₦)</label>
-            <Input
-              type="number"
-              value={flutterwaveAmount}
-              onChange={e => setFlutterwaveAmount(e.target.value)}
-            />
-          </div>
-
-          <div className="bg-slate-50 p-4 rounded-2xl border space-y-2 text-xs text-slate-800">
-            <p className="font-bold">Sandbox Credentials (Auto-set):</p>
-            <p>💳 Card: 4000 1234 5678 9010 • Expiry: 12/28 • CVV: 111</p>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold" onClick={handleProcessFlutterwave} disabled={isProcessingPayment}>
-              {isProcessingPayment ? 'Connecting Gateway...' : `Authorize ₦${parseFloat(flutterwaveAmount).toLocaleString()}`}
-            </Button>
-            <Button variant="outline" className="flex-1" onClick={() => setShowFlutterwaveModal(false)}>Cancel</Button>
-          </div>
-        </div>
-      </Modal>
 
     </div>
   );
