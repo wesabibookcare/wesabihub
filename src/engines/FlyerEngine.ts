@@ -1,12 +1,20 @@
 import { merchantEngine, parcelEngine, configurationEngine, auditEngine } from './index';
 
 export interface FlyerCustomOptions {
+  tagline?: string;
   thankYouNote?: string;
   contactPhone?: string;
   contactEmail?: string;
   socialHandle?: string;
+  address?: string;
+  showAddress?: boolean;
+  showPhone?: boolean;
+  showEmail?: boolean;
+  showSocial?: boolean;
   showQrCode?: boolean;
   showWeSabiBranding?: boolean;
+  designTemplate?: 'modern' | 'classic' | 'vibrant' | 'minimal';
+  layoutFormat?: 'single_a6' | 'grid_6_per_a4';
 }
 
 /**
@@ -41,7 +49,6 @@ class FlyerEngine {
 
     // Security check: Merchant can only generate flyer for their own shipment
     if (parcel.senderId !== merchantId) {
-      // Check if user is admin
       throw new Error('Unauthorized: You can only generate flyers for your own shipments.');
     }
 
@@ -58,9 +65,8 @@ class FlyerEngine {
         id: merchantId,
         businessName,
         logoUrl,
-        address: business?.address || '',
-        city: business?.city || '',
-        state: business?.state || '',
+        tagline: customOptions?.tagline || (business as any)?.tagline || 'Delivering Excellence with Care',
+        address: customOptions?.address || (business?.address ? `${business.address}, ${business.city || ''}` : ''),
         phone: customOptions?.contactPhone || business?.phone || '',
         email: customOptions?.contactEmail || business?.email || '',
         socialHandle: customOptions?.socialHandle || ''
@@ -78,8 +84,14 @@ class FlyerEngine {
         primaryColor: settings?.branding?.primaryColor || '#0284c7'
       },
       customNote: customOptions?.thankYouNote || 'Thank you for your order! Your parcel is handled with care via WeSabiHub.',
+      showAddress: customOptions?.showAddress ?? true,
+      showPhone: customOptions?.showPhone ?? true,
+      showEmail: customOptions?.showEmail ?? true,
+      showSocial: customOptions?.showSocial ?? true,
       showQrCode: customOptions?.showQrCode ?? true,
       showWeSabiBranding: customOptions?.showWeSabiBranding ?? true,
+      designTemplate: customOptions?.designTemplate || 'modern',
+      layoutFormat: customOptions?.layoutFormat || 'single_a6',
       qrUrl: publicTrackUrl
     };
 
@@ -88,7 +100,7 @@ class FlyerEngine {
       userId: merchantId,
       userRole: 'MERCHANT',
       action: 'GENERATE_PARCEL_FLYER',
-      details: { merchantId, parcelId, trackingNumber: parcel.trackingNumber },
+      details: { merchantId, parcelId, trackingNumber: parcel.trackingNumber, layoutFormat: flyerData.layoutFormat },
       result: 'SUCCESS'
     });
 

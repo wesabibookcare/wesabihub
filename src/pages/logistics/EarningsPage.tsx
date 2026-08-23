@@ -99,8 +99,8 @@ export const EarningsPage = () => {
                      <p className="text-3xl font-black text-primary-500">₦{wallet?.balance.toLocaleString() || '0'}</p>
                   </div>
                   <div>
-                     <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-2">Protection</p>
-                     <p className="text-3xl font-black text-emerald-500">₦{wallet?.SafePayBalance.toLocaleString() || '0'}</p>
+                     <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-2">Available Payout</p>
+                     <p className="text-3xl font-black text-emerald-500">₦{(wallet?.balance || 0).toLocaleString()}</p>
                   </div>
                </div>
             </div>

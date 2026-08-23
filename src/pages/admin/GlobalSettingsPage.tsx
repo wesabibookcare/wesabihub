@@ -46,7 +46,8 @@ import {
   Calendar,
   Building,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  Sparkles
 } from 'lucide-react';
 import { LegalManagementTab } from '../../components/admin/LegalManagementTab';
 import { AdminLayout } from '../../layouts/AdminLayout';
@@ -59,6 +60,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Alert } from '../../components/ui/Alert';
+import { SuccessAnimation, ALL_SUCCESS_ANIMATION_STYLES, SuccessAnimationStyle } from '../../components/ui/SuccessAnimation';
 import { useSettings } from '../../context/SettingsContext';
 import { auth } from '../../lib/firebase';
 
@@ -66,7 +68,7 @@ import { toast } from 'sonner';
 
 const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
 
-type TabType = 'general' | 'branding' | 'landing' | 'social' | 'company' | 'faq' | 'knowledge' | 'countries' | 'features' | 'legal' | 'contact' | 'communications' | 'maps' | 'payments' | 'logs';
+type TabType = 'general' | 'branding' | 'landing' | 'animations' | 'social' | 'company' | 'faq' | 'knowledge' | 'countries' | 'features' | 'legal' | 'contact' | 'communications' | 'maps' | 'payments' | 'logs';
 
 export const GlobalSettingsPage = () => {
   const { settings: globalSettings, loading } = useSettings();
@@ -83,6 +85,9 @@ export const GlobalSettingsPage = () => {
   const [commsLogs, setCommsLogs] = useState<any[]>([]);
   const [providerHealths, setProviderHealths] = useState<any[]>([]);
   const [commsSubTab, setCommsSubTab] = useState<'providers' | 'templates' | 'logs' | 'health'>('providers');
+
+  // Success Animation Preview State
+  const [previewAnimation, setPreviewAnimation] = useState<SuccessAnimationStyle | null>(null);
 
   useEffect(() => {
     if (globalSettings) {
@@ -440,7 +445,7 @@ export const GlobalSettingsPage = () => {
 
         <div className="flex items-center gap-3">
           <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-[800px]">
-            {(['general', 'branding', 'landing', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => (
+            {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -648,6 +653,100 @@ export const GlobalSettingsPage = () => {
                 </div>
               </Card>
             </div>
+          </div>
+        )}
+
+        {/* SUCCESS ANIMATIONS TAB */}
+        {activeTab === 'animations' && (
+          <div className="space-y-8">
+            <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 font-display">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="text-primary-600" size={20} />
+                  <div>
+                    <h3 className="font-bold dark:text-white text-base">30 Selectable Success Animation Engine</h3>
+                    <p className="text-xs text-slate-500">Configure global success animation preferences, auto-dismiss duration, and test all 30 styles.</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="font-mono text-[10px]">30 DISTINCT STYLES</Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold dark:text-white">Enable Success Animations Globally</h4>
+                    <p className="text-[10px] text-slate-500 mt-1">Show animated celebratory overlays upon key user events.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.featureFlags?.notifications !== false}
+                      onChange={(e) => updateFeatureFlag('notifications', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-10 h-5 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                </div>
+
+                <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest block">
+                    Default System Success Animation Style
+                  </label>
+                  <select
+                    value={settings.successAnimationStyle || 'confetti'}
+                    onChange={(e) => setSettings({ ...settings, successAnimationStyle: e.target.value as any })}
+                    className="w-full h-10 px-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-bold font-sans"
+                  >
+                    {ALL_SUCCESS_ANIMATION_STYLES.map((st) => (
+                      <option key={st.id} value={st.id}>
+                        {st.label} — ({st.description})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <Alert variant="warning" className="rounded-2xl text-xs">
+                <strong>Important Policy:</strong> Success animations are purely visual feedback to enhance user experience. A success animation must <strong>NEVER</strong> be interpreted as proof of financial settlement or payment authorization. Authoritative state remains governed by the backend.
+              </Alert>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 mb-4">
+                  Interactive Preview Studio (All 30 Animation Styles)
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {ALL_SUCCESS_ANIMATION_STYLES.map((st, idx) => (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => setPreviewAnimation(st.id)}
+                      className={cn(
+                        "p-3 rounded-xl border text-left transition-all hover:scale-105 active:scale-95 group",
+                        settings.successAnimationStyle === st.id
+                          ? "bg-primary-50 dark:bg-primary-950/30 border-primary-500 shadow-sm"
+                          : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-400"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-mono text-slate-400">#{idx + 1}</span>
+                        <Eye size={12} className="text-slate-400 group-hover:text-primary-600" />
+                      </div>
+                      <p className="text-xs font-bold dark:text-white truncate">{st.label}</p>
+                      <p className="text-[9px] text-slate-500 line-clamp-1 mt-0.5">{st.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            <SuccessAnimation
+              isOpen={!!previewAnimation}
+              style={previewAnimation || 'confetti'}
+              title="Animation Preview"
+              subtitle={`Testing "${previewAnimation}" success animation style (Non-financial preview)`}
+              onComplete={() => setPreviewAnimation(null)}
+              autoDismissMs={2600}
+            />
           </div>
         )}
 
