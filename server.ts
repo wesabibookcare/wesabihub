@@ -1246,7 +1246,8 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         if (parcelHubId) {
           try {
             const hubSnap = await transaction.get(db.collection('wesabiHubPoints').doc(parcelHubId));
-            const hubOwnerId = hubSnap.exists ? hubSnap.data()?.ownerId : null;
+            const hubData = hubSnap.exists ? hubSnap.data() : null;
+            const hubOwnerId = hubData?.ownerId;
             if (hubOwnerId) {
               const country = shipment?.recipientInfo?.country || shipment?.originCountry || 'Nigeria';
               const rulesSnap = await transaction.get(
@@ -1257,10 +1258,45 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
                 // Sensible platform default if no country-specific rule has been configured yet
                 rule = { platformPercentage: 40, centrePercentage: 60, logisticsPercentage: 0, version: 0 };
               }
-              // Commission splits apply to the pre-tax parcel fee only --
-              // tax isn't revenue to split, and the hub's cut is never
-              // computed on top of it. shipment.pricing.taxes is the exact
-              // amount to subtract back out of the stored total.
+
+              // Apply Admin-configured monthly volume tier splits if defined
+              const globalSettingsSnap = await transaction.get(db.collection('systemSettings').doc('global'));
+              const globalSettings = globalSettingsSnap.exists ? globalSettingsSnap.data() : null;
+              const hubMonthlyTiers = globalSettings?.hubMonthlyTiers;
+
+              if (Array.isArray(hubMonthlyTiers) && hubMonthlyTiers.length > 0) {
+                const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+                const lastCountMonth = hubData?.currentMonth || '';
+                const baseCount = (lastCountMonth === currentMonth) ? (hubData?.monthlyParcelsCount || 0) : 0;
+                const newCount = baseCount + 1;
+
+                const sortedTiers = [...hubMonthlyTiers].filter((t: any) => t.isActive !== false).sort((a: any, b: any) => a.minParcels - b.minParcels);
+                let matchedTier = sortedTiers[0];
+                for (const tier of sortedTiers) {
+                  if (newCount >= tier.minParcels && (tier.maxParcels === null || tier.maxParcels === undefined || newCount <= tier.maxParcels)) {
+                    matchedTier = tier;
+                  }
+                }
+
+                if (matchedTier && (Number(matchedTier.hubPercentage) + Number(matchedTier.wesabiPercentage) === 100)) {
+                  rule = {
+                    ...rule,
+                    centrePercentage: Number(matchedTier.hubPercentage),
+                    platformPercentage: Number(matchedTier.wesabiPercentage),
+                    tierId: matchedTier.id
+                  };
+                }
+
+                // Update hub monthly counter in transaction
+                transaction.set(db.collection('wesabiHubPoints').doc(parcelHubId), {
+                  currentMonth,
+                  monthlyParcelsCount: newCount,
+                  totalParcelsProcessed: FieldValue.increment(1),
+                  updatedAt: new Date().toISOString()
+                }, { merge: true });
+              }
+
+              // Commission splits apply to the pre-tax parcel fee only
               const commissionableAmount = totalAmount - (shipment?.pricing?.taxes || 0);
               const centreAmount = Math.round(commissionableAmount * (rule.centrePercentage / 100));
               const platformAmount = Math.round(commissionableAmount * (rule.platformPercentage / 100));
@@ -1277,6 +1313,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
                     futureLogisticsAmount: logisticsAmount,
                     pricingRuleVersion: shipment?.pricing?.ruleVersion || 0,
                     commissionRuleVersion: rule.version || 0,
+                    appliedTierId: rule.tierId || null,
                     timestamp: FieldValue.serverTimestamp(),
                     centreId: parcelHubId,
                     merchantId: shipment?.senderId || '',

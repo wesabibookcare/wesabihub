@@ -264,8 +264,9 @@ class CommunicationProviderService {
             success = await this.sendWhatsApp(data.recipient, data.body);
           }
         } else {
-          providerName = 'MOCK_PROVIDER';
-          success = true;
+          providerName = 'UNSUPPORTED_CHANNEL';
+          errorMsg = `Communication channel ${data.channel} is not supported.`;
+          success = false;
         }
       } catch (err: any) {
         errorMsg = err?.message || String(err);

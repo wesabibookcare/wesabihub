@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText, Download, Calendar, Filter, Eye, RefreshCw,
   CheckCircle2, AlertTriangle, FileSpreadsheet, Printer,
-  Info, Sparkles, BookOpen, Clock, Package, DollarSign
+  Info, Sparkles, BookOpen, Clock, Package, DollarSign, Loader2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import * as XLSX from 'xlsx';
@@ -12,6 +12,11 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { cn } from '@/src/lib/utils';
+import { paymentProtectionRepository } from '@/src/services/db/PaymentProtectionRepository';
+import { shipmentRepository } from '@/src/services/db/ShipmentRepository';
+import { userRepository } from '@/src/services/db/UserRepository';
+import { disputeRepository } from '@/src/services/db/DisputeRepository';
+import { hubPointRepository } from '@/src/services/db/HubPointRepository';
 
 // Predefined Report Types
 interface ReportTemplate {
@@ -29,55 +34,100 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
   { id: 'dispute_resolution', title: 'Dispute Resolutions & Support SLA Log', description: 'Active customer claims, dispute categorizations, refund ratios, and average resolution times.', category: 'DISPUTES', frequency: 'Real-time' },
 ];
 
-// Mock preview data generator based on selected report
-const MOCK_SAFEPAY_PREVIEW = [
-  { ref: 'TX-4921-ESC', date: '2026-07-09', merchant: 'Alpha Electronics', hub: 'VGC Lekki Hub', amount: 450.00, comm: 67.50, status: 'HELD' },
-  { ref: 'TX-4810-ESC', date: '2026-07-08', merchant: 'Bose Boutique', hub: 'Ikeja Mall Hub', amount: 120.00, comm: 18.00, status: 'RELEASED' },
-  { ref: 'TX-4731-ESC', date: '2026-07-08', merchant: 'Cosmo Gadgets', hub: 'Maryland Hub', amount: 980.00, comm: 147.00, status: 'RELEASED' },
-  { ref: 'TX-4612-ESC', date: '2026-07-07', merchant: 'Diva Trends', hub: 'VGC Lekki Hub', amount: 350.50, comm: 52.50, status: 'REFUNDED' },
-  { ref: 'TX-4521-ESC', date: '2026-07-06', merchant: 'Epicurean NG', hub: 'Surulere Plaza', amount: 1500.00, comm: 225.00, status: 'DISPUTED' },
-];
-
-const MOCK_LOGISTICS_PREVIEW = [
-  { tracking: 'TRK-9812-NGA', sender: 'Samuel L.', pickup: '2026-07-08', delivery: '2026-07-09', hub: 'Maryland Hub', carrier: 'Swift Express', status: 'DELIVERED' },
-  { tracking: 'TRK-9281-NGA', sender: 'Rita K.', pickup: '2026-07-08', delivery: 'Pending', hub: 'VGC Lekki Hub', carrier: 'Red Star Logistics', status: 'IN_TRANSIT' },
-  { tracking: 'TRK-8812-NGA', sender: 'Tunde O.', pickup: '2026-07-07', delivery: '2026-07-09', hub: 'Ikeja Mall Hub', carrier: 'Swift Express', status: 'DELIVERED' },
-  { tracking: 'TRK-8419-NGA', sender: 'Amaka P.', pickup: '2026-07-07', delivery: 'Pending', hub: 'Surulere Plaza', carrier: 'DHL Express Partner', status: 'AWAITING_DISPATCH' },
-];
-
-const MOCK_USERS_PREVIEW = [
-  { id: 'USR-891', name: 'Alpha Electronics', role: 'MERCHANT', country: 'Nigeria', rank: 'Premium', sales: 128, rating: 4.8 },
-  { id: 'USR-342', name: 'VGC Lekki Hub', role: 'CENTER_OWNER', country: 'Nigeria', rank: 'A+', sales: 492, rating: 4.9 },
-  { id: 'USR-119', name: 'Glow Ghana Boutique', role: 'MERCHANT', country: 'Ghana', rank: 'Standard', sales: 45, rating: 4.4 },
-  { id: 'USR-702', name: 'Maryland Hub Point', role: 'CENTER_OWNER', country: 'Nigeria', rank: 'B', sales: 184, rating: 4.2 },
-];
-
 export const ReportsPage = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('SafePay_ledger');
-  const [dateFrom, setDateFrom] = useState<string>('2026-07-01');
-  const [dateTo, setDateTo] = useState<string>('2026-07-10');
+  const [dateFrom, setDateFrom] = useState<string>('2026-01-01');
+  const [dateTo, setDateTo] = useState<string>('2026-12-31');
   const [region, setRegion] = useState<string>('NG');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
+  const [reportData, setReportData] = useState<any[]>([]);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
-  const handleGeneratePreview = () => {
+  const loadLiveReportData = async () => {
     setIsPreviewing(true);
-    // Simulate query loading
-    setTimeout(() => {
+    try {
+      if (selectedTemplate === 'SafePay_ledger') {
+        const records = await paymentProtectionRepository.getAll();
+        const mapped = records.map(r => ({
+          ref: r.paymentProtectionId || r.id || 'N/A',
+          date: r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : 'N/A',
+          merchant: r.merchantId || 'Merchant',
+          hub: r.shipmentId || 'Hub Center',
+          amount: Number(r.amount) || 0,
+          comm: Math.round((Number(r.amount) || 0) * 0.025 * 100) / 100,
+          status: r.status || 'PENDING'
+        }));
+        setReportData(mapped);
+      } else if (selectedTemplate === 'logistics_throughput') {
+        const shipments = await shipmentRepository.getAll();
+        const mapped = shipments.map(s => ({
+          tracking: s.trackingNumber || s.id || 'N/A',
+          sender: s.senderId || 'Shipper',
+          pickup: s.createdAt ? new Date(s.createdAt).toISOString().split('T')[0] : 'N/A',
+          delivery: s.status === 'COLLECTED' || s.status === 'DELIVERED' ? (s.updatedAt ? new Date(s.updatedAt).toISOString().split('T')[0] : 'Completed') : 'Pending',
+          hub: s.destinationCenterId || s.originCenterId || 'Hub Center',
+          carrier: (s as any).serviceType || 'WeSabi Logistics',
+          status: s.status || 'AWAITING_DISPATCH'
+        }));
+        setReportData(mapped);
+      } else if (selectedTemplate === 'user_registry') {
+        const users = await userRepository.getAll();
+        const hubs = await hubPointRepository.getAll();
+        const userRows = users.map(u => ({
+          id: u.id,
+          name: u.displayName || u.email || 'User',
+          role: u.role || 'CUSTOMER',
+          country: u.country || 'Nigeria',
+          rank: u.trustLevel || 'Tier 1',
+          sales: u.tripsCount || 0,
+          rating: u.trustScore ? (u.trustScore / 20).toFixed(1) : '5.0'
+        }));
+        const hubRows = hubs.map(h => ({
+          id: h.id,
+          name: h.name || 'Hub Center',
+          role: 'CENTER_OWNER',
+          country: h.country || 'Nigeria',
+          rank: h.rating ? `${h.rating} Stars` : 'Active',
+          sales: (h as any).totalParcelsProcessed || 0,
+          rating: h.starRating ? h.starRating.toFixed(1) : '5.0'
+        }));
+        setReportData([...userRows, ...hubRows]);
+      } else if (selectedTemplate === 'dispute_resolution') {
+        const disputes = await disputeRepository.getAll();
+        const mapped = disputes.map(d => ({
+          ref: d.id,
+          date: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : 'N/A',
+          merchant: (d as any).sellerId || 'Seller',
+          hub: (d as any).buyerId || 'Buyer',
+          amount: Number((d as any).amount) || 0,
+          comm: 0,
+          status: d.status || 'OPEN'
+        }));
+        setReportData(mapped);
+      } else {
+        setReportData([]);
+      }
+    } catch (err) {
+      console.error('Failed to load report data:', err);
+      setReportData([]);
+    } finally {
       setIsPreviewing(false);
-    }, 600);
+    }
+  };
+
+  useEffect(() => {
+    loadLiveReportData();
+  }, [selectedTemplate]);
+
+  const handleGeneratePreview = () => {
+    loadLiveReportData();
   };
 
   const getActiveData = () => {
-    switch (selectedTemplate) {
-      case 'SafePay_ledger': return MOCK_SAFEPAY_PREVIEW;
-      case 'logistics_throughput': return MOCK_LOGISTICS_PREVIEW;
-      case 'user_registry': return MOCK_USERS_PREVIEW;
-      default: return [];
-    }
+    return reportData;
   };
 
   const downloadFile = (blob: Blob, filename: string) => {
@@ -355,7 +405,7 @@ export const ReportsPage = () => {
                 <table className="w-full text-left border-collapse font-mono text-[10px]">
 
                   {/* Ledger report columns */}
-                  {selectedTemplate === 'SafePay_ledger' && (
+                  {(selectedTemplate === 'SafePay_ledger' || selectedTemplate === 'dispute_resolution') && (
                     <>
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-900 text-slate-800 border-b border-slate-100 dark:border-slate-800 uppercase font-black tracking-widest">
@@ -369,27 +419,35 @@ export const ReportsPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-900 dark:text-slate-300">
-                        {MOCK_SAFEPAY_PREVIEW.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
-                            <td className="p-3 font-bold text-slate-900 dark:text-white">{row.ref}</td>
-                            <td className="p-3">{row.date}</td>
-                            <td className="p-3 font-sans font-semibold">{row.merchant}</td>
-                            <td className="p-3 font-sans font-semibold">{row.hub}</td>
-                            <td className="p-3 text-right font-bold text-slate-900 dark:text-white">${row.amount.toFixed(2)}</td>
-                            <td className="p-3 text-right text-indigo-600 font-bold">${row.comm.toFixed(2)}</td>
-                            <td className="p-3 text-center">
-                              <span className={cn(
-                                "px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase",
-                                row.status === 'RELEASED' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
-                                row.status === 'HELD' ? "bg-amber-50 text-amber-600 border border-amber-100" :
-                                row.status === 'DISPUTED' ? "bg-red-50 text-red-600 border border-red-100" :
-                                "bg-slate-50 text-slate-800 border border-slate-200"
-                              )}>
-                                {row.status}
-                              </span>
+                        {reportData.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="p-6 text-center text-slate-500 font-sans font-bold">
+                              No records found for this query window.
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          reportData.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
+                              <td className="p-3 font-bold text-slate-900 dark:text-white">{row.ref}</td>
+                              <td className="p-3">{row.date}</td>
+                              <td className="p-3 font-sans font-semibold">{row.merchant}</td>
+                              <td className="p-3 font-sans font-semibold">{row.hub}</td>
+                              <td className="p-3 text-right font-bold text-slate-900 dark:text-white">₦{row.amount.toLocaleString()}</td>
+                              <td className="p-3 text-right text-indigo-600 font-bold">₦{row.comm.toLocaleString()}</td>
+                              <td className="p-3 text-center">
+                                <span className={cn(
+                                  "px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase",
+                                  row.status === 'RELEASED' || row.status === 'FUNDS_SECURED' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
+                                  row.status === 'HELD' || row.status === 'PENDING' ? "bg-amber-50 text-amber-600 border border-amber-100" :
+                                  row.status === 'DISPUTED' || row.status === 'OPEN' ? "bg-red-50 text-red-600 border border-red-100" :
+                                  "bg-slate-50 text-slate-800 border border-slate-200"
+                                )}>
+                                  {row.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </>
                   )}
@@ -409,26 +467,34 @@ export const ReportsPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-900 dark:text-slate-300">
-                        {MOCK_LOGISTICS_PREVIEW.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
-                            <td className="p-3 font-bold text-slate-900 dark:text-white">{row.tracking}</td>
-                            <td className="p-3 font-sans font-semibold">{row.sender}</td>
-                            <td className="p-3">{row.pickup}</td>
-                            <td className="p-3">{row.delivery}</td>
-                            <td className="p-3 font-sans font-semibold">{row.hub}</td>
-                            <td className="p-3 font-sans font-semibold text-slate-900">{row.carrier}</td>
-                            <td className="p-3 text-center">
-                              <span className={cn(
-                                "px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase",
-                                row.status === 'DELIVERED' ? "bg-emerald-50 text-emerald-600" :
-                                row.status === 'IN_TRANSIT' ? "bg-indigo-50 text-indigo-600" :
-                                "bg-amber-50 text-amber-600"
-                              )}>
-                                {row.status}
-                              </span>
+                        {reportData.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="p-6 text-center text-slate-500 font-sans font-bold">
+                              No logistics throughput records found for this query window.
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          reportData.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
+                              <td className="p-3 font-bold text-slate-900 dark:text-white">{row.tracking}</td>
+                              <td className="p-3 font-sans font-semibold">{row.sender}</td>
+                              <td className="p-3">{row.pickup}</td>
+                              <td className="p-3">{row.delivery}</td>
+                              <td className="p-3 font-sans font-semibold">{row.hub}</td>
+                              <td className="p-3 font-sans font-semibold text-slate-900">{row.carrier}</td>
+                              <td className="p-3 text-center">
+                                <span className={cn(
+                                  "px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase",
+                                  row.status === 'DELIVERED' || row.status === 'COLLECTED' ? "bg-emerald-50 text-emerald-600" :
+                                  row.status === 'IN_TRANSIT' ? "bg-indigo-50 text-indigo-600" :
+                                  "bg-amber-50 text-amber-600"
+                                )}>
+                                  {row.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </>
                   )}
@@ -448,17 +514,25 @@ export const ReportsPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-900 dark:text-slate-300">
-                        {MOCK_USERS_PREVIEW.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
-                            <td className="p-3 font-bold text-slate-900 dark:text-white">{row.id}</td>
-                            <td className="p-3 font-sans font-semibold">{row.name}</td>
-                            <td className="p-3 font-bold text-indigo-600">{row.role}</td>
-                            <td className="p-3 font-sans font-semibold">{row.country}</td>
-                            <td className="p-3 text-indigo-600 font-bold">{row.rank}</td>
-                            <td className="p-3 text-right font-bold text-slate-900 dark:text-white">{row.sales} files</td>
-                            <td className="p-3 text-right text-emerald-600 font-bold">{row.rating} / 5.0</td>
+                        {reportData.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="p-6 text-center text-slate-500 font-sans font-bold">
+                              No user registry or hub point records found.
+                            </td>
                           </tr>
-                        ))}
+                        ) : (
+                          reportData.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
+                              <td className="p-3 font-bold text-slate-900 dark:text-white">{row.id}</td>
+                              <td className="p-3 font-sans font-semibold">{row.name}</td>
+                              <td className="p-3 font-bold text-indigo-600">{row.role}</td>
+                              <td className="p-3 font-sans font-semibold">{row.country}</td>
+                              <td className="p-3 text-indigo-600 font-bold">{row.rank}</td>
+                              <td className="p-3 text-right font-bold text-slate-900 dark:text-white">{row.sales} files</td>
+                              <td className="p-3 text-right text-emerald-600 font-bold">{row.rating} / 5.0</td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </>
                   )}
