@@ -37,8 +37,9 @@ export const HelpCenterWidget = () => {
   const brandColor = settings?.branding?.primaryColor || '#2563eb';
   // "Omorfi" (the AI-powered views) are themed with the parent company's
   // (Omorfi) brand identity, distinct from WeSabiHub's own color elsewhere.
-  const OMORFI_COLOR = '#c93f25';
-  const OMORFI_LOGO_URL = '/assets/brand/omorfi-logo.png';
+  const OMORFI_COLOR = settings?.aiBranding?.primaryColor || '#c93f25';
+  const OMORFI_LOGO_URL = settings?.aiBranding?.logo || settings?.omorfiLogo || '/assets/brand/omorfi-logo.png';
+  const AI_NAME = settings?.aiBranding?.name || 'Omorfi';
   const location = useLocation();
   const navigate = useNavigate();
 
