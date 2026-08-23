@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, Trophy, ShieldCheck, Sparkles, Award } from 'lucide-react';
+import { CheckCircle2, Trophy, ShieldCheck, Sparkles, Award, Package, Check, Star } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 export type SuccessAnimationStyle =
@@ -37,7 +37,7 @@ export type SuccessAnimationStyle =
 
 export const ALL_SUCCESS_ANIMATION_STYLES: { id: SuccessAnimationStyle; label: string; description: string }[] = [
   { id: 'confetti', label: 'Confetti Rain', description: 'Classic multi-color falling confetti shower' },
-  { id: 'checkmark', label: 'Clean Checkmark', description: 'Minimalist smooth animated checkmark' },
+  { id: 'checkmark', label: 'Clean Checkmark', description: 'Minimalist smooth animated checkmark draw' },
   { id: 'fireworks', label: 'Fireworks Burst', description: 'Festive radial fireworks particle explosion' },
   { id: 'coins', label: 'Currency Rain', description: 'Golden Naira coins falling from above' },
   { id: 'ripple', label: 'Concentric Ripple', description: 'Expanding emerald wave ripples' },
@@ -79,7 +79,7 @@ interface SuccessAnimationProps {
 
 const CONFETTI_COLORS = ['#0284C7', '#7C3AED', '#059669', '#DB2777', '#F59E0B', '#EF4444', '#10B981', '#6366F1'];
 
-/* Renderers for individual animation styles */
+/* Renderers for all 30 distinct animation styles */
 const Confetti: React.FC = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {Array.from({ length: 60 }).map((_, i) => (
@@ -97,6 +97,26 @@ const Confetti: React.FC = () => (
         }}
       />
     ))}
+  </div>
+);
+
+const CheckmarkDraw: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="w-48 h-48 rounded-full border-4 border-emerald-400 bg-emerald-500/10 flex items-center justify-center shadow-[0_0_40px_#10b981]"
+    >
+      <motion.svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+        <motion.path
+          d="M20 6L9 17l-5-5"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        />
+      </motion.svg>
+    </motion.div>
   </div>
 );
 
@@ -213,6 +233,30 @@ const Pulse: React.FC = () => (
   </div>
 );
 
+const BadgeReveal: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <motion.div
+      initial={{ rotate: -180, scale: 0, opacity: 0 }}
+      animate={{ rotate: 0, scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 180, damping: 14 }}
+      className="w-40 h-40 rounded-full border-4 border-amber-400 bg-amber-500/20 flex items-center justify-center shadow-[0_0_50px_#f59e0b]"
+    >
+      <Award size={72} className="text-amber-400" />
+    </motion.div>
+  </div>
+);
+
+const CircularGlow: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: [0.5, 1.5, 1.2], opacity: [0, 0.8, 0.4] }}
+      transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+      className="w-80 h-80 rounded-full bg-gradient-to-r from-emerald-400/40 via-teal-500/30 to-sky-400/40 blur-2xl"
+    />
+  </div>
+);
+
 const Particles: React.FC = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {Array.from({ length: 40 }).map((_, i) => (
@@ -234,6 +278,21 @@ const Celebration: React.FC = () => (
   </div>
 );
 
+const TrophyReveal: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <motion.div
+      initial={{ y: 80, opacity: 0, scale: 0.5 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 200, damping: 15 }}
+      className="flex flex-col items-center"
+    >
+      <div className="w-40 h-40 rounded-full bg-amber-400/20 border-4 border-amber-400 flex items-center justify-center shadow-[0_0_60px_#f59e0b]">
+        <Trophy size={80} className="text-amber-400" />
+      </div>
+    </motion.div>
+  </div>
+);
+
 const Balloons: React.FC = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {Array.from({ length: 15 }).map((_, i) => (
@@ -247,6 +306,20 @@ const Balloons: React.FC = () => (
       >
         🎈
       </motion.div>
+    ))}
+  </div>
+);
+
+const SwirlingRibbons: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+    {[0, 45, 90, 135].map((deg, i) => (
+      <motion.div
+        key={i}
+        initial={{ rotate: deg, scale: 0.2, opacity: 0 }}
+        animate={{ rotate: deg + 360, scale: [0.2, 1.4, 1], opacity: [0, 0.8, 0] }}
+        transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.2 }}
+        className="absolute w-72 h-8 border-t-4 border-b-4 border-pink-400/60 rounded-full"
+      />
     ))}
   </div>
 );
@@ -425,6 +498,19 @@ const Supernova: React.FC = () => (
   </div>
 );
 
+const ShieldLock: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+      transition={{ type: "spring", stiffness: 180, damping: 14 }}
+      className="w-40 h-40 rounded-full bg-indigo-600/30 border-4 border-indigo-500 flex items-center justify-center shadow-[0_0_50px_#6366f1]"
+    >
+      <ShieldCheck size={72} className="text-white" />
+    </motion.div>
+  </div>
+);
+
 export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
   isOpen,
   style = 'confetti',
@@ -447,9 +533,15 @@ export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onComplete}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') onComplete(); }}
           className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center cursor-pointer"
         >
           {style === 'confetti' && <Confetti />}
+          {style === 'checkmark' && <CheckmarkDraw />}
           {style === 'fireworks' && <Fireworks />}
           {style === 'coins' && <Coins />}
           {style === 'ripple' && <Ripple />}
@@ -457,9 +549,13 @@ export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
           {style === 'burst' && <Burst />}
           {style === 'sparkle' && <Sparkle />}
           {style === 'pulse' && <Pulse />}
+          {style === 'badge' && <BadgeReveal />}
+          {style === 'glow' && <CircularGlow />}
           {style === 'particles' && <Particles />}
           {style === 'celebration' && <Celebration />}
+          {style === 'trophy' && <TrophyReveal />}
           {style === 'balloons' && <Balloons />}
+          {style === 'ribbon' && <SwirlingRibbons />}
           {style === 'laser' && <Laser />}
           {style === 'snowfall' && <Snowfall />}
           {style === 'cosmic' && <Cosmic />}
@@ -473,6 +569,7 @@ export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
           {style === 'shimmer' && <Shimmer />}
           {style === 'comet' && <Comet />}
           {style === 'supernova' && <Supernova />}
+          {style === 'shield' && <ShieldLock />}
 
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}

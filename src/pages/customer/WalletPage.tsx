@@ -190,13 +190,13 @@ export const WalletPage = () => {
                           <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-amber-500">
                              <Lock size={24} />
                           </div>
-                          <Badge variant="info">In SafePay</Badge>
+                          <Badge variant="info">Escrow Protection</Badge>
                        </div>
                        <div className="space-y-1">
-                          <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">SafePayed Funds</p>
-                          <h2 className="text-4xl font-black font-display dark:text-white">
-                            {loading ? <Loader2 className="animate-spin text-amber-500" /> : `₦${(wallet?.SafePayBalance || 0).toLocaleString()}`}
-                          </h2>
+                          <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">SafePay Protected Transactions</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                             Protected buyer–seller transaction funds are held externally by Flutterwave Escrow until delivery inspection completion.
+                          </p>
                        </div>
                     </div>
                  </Card>
