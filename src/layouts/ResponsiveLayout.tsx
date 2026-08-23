@@ -14,6 +14,8 @@ import { cn } from '@/src/lib/utils';
 import { Button } from '@/src/components/ui/Button';
 import { useAccountPending } from '../components/auth/AccountPendingWrapper';
 import { BrandLogo } from '@/src/components/brand/BrandLogo';
+import { useSettings } from '../context/SettingsContext';
+import { BRAND_ASSETS } from '../lib/brand';
 
 export interface MenuItem {
   icon: React.ElementType;
@@ -81,6 +83,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   const { isPending, requestedRole } = useAccountPending();
   const location = useLocation();
   const navigate = useNavigate();
+  const { settings } = useSettings();
 
   // Full menu items are available so user can immediately use Customer features
   const filteredMenuItems = menuItems;
@@ -328,8 +331,13 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             )}
             {children}
             <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              <img src="/assets/brand/omorfi-logo.png" onError={(e) => { e.currentTarget.style.display = 'none'; }} alt="Omorfi Logo" className="h-4 w-4 object-contain inline-block" />
-              <span>WeSabiHub is a product of Omorfi Limited</span>
+              <img
+                src={settings?.omorfiLogo || BRAND_ASSETS.omorfiLogo}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                alt="Omorfi Logo"
+                className="h-4 w-4 object-contain inline-block"
+              />
+              <span>{settings?.attributionText || BRAND_ASSETS.attributionText}</span>
             </div>
           </div>
         </div>
