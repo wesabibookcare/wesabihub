@@ -42,6 +42,7 @@ import { shiftEngine } from '@/src/engines/ShiftEngine';
 import { recoveryEngine, RecoveryRequest } from '@/src/engines/RecoveryEngine';
 import { configurationEngine } from '@/src/engines/ConfigurationEngine';
 import { HubPoint, Parcel, Shift } from '@/src/types';
+import { getLongStayEscalationInfo } from '@/src/utils/longStayEscalation';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -710,9 +711,10 @@ export const OperationalCctvPage: React.FC = () => {
                     longStayParcels.map((parcel) => {
                       const createdAt = new Date(parcel.createdAt || Date.now()).getTime();
                       const daysInHub = Math.floor((Date.now() - createdAt) / (1000 * 60 * 60 * 24));
+                      const escalation = getLongStayEscalationInfo(daysInHub);
 
                       return (
-                        <tr key={parcel.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <tr key={parcel.id} className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", escalation.isRedAlert && "bg-rose-500/10")}>
                           <td className="p-4 font-mono font-bold dark:text-white">
                             <p className="text-sm font-bold text-orange-600">{parcel.trackingNumber}</p>
                             <p className="text-[10px] text-slate-400">{parcel.id}</p>
@@ -720,15 +722,20 @@ export const OperationalCctvPage: React.FC = () => {
                           <td className="p-4 font-medium dark:text-white">
                             {parcel.destinationCenterId || parcel.originCenterId || 'Hub Center'}
                           </td>
-                          <td className="p-4 font-bold text-rose-600">
-                            {daysInHub} Days
+                          <td className="p-4 font-bold">
+                            <span className={cn(escalation.isRedAlert ? "text-rose-600 font-extrabold" : "text-amber-600")}>
+                              {daysInHub} Days
+                            </span>
+                            <p className="text-[10px] font-semibold text-slate-500">{escalation.label}</p>
                           </td>
                           <td className="p-4 text-slate-600 dark:text-slate-400">
                             <p className="font-bold dark:text-white">{parcel.recipientInfo?.name}</p>
                             <p className="text-[10px]">{parcel.recipientInfo?.phone}</p>
                           </td>
                           <td className="p-4">
-                            <Badge variant="warning" className="text-[10px] uppercase">{parcel.status}</Badge>
+                            <Badge variant={escalation.badgeVariant} className="text-[10px] uppercase">
+                              {escalation.tier}
+                            </Badge>
                           </td>
                           <td className="p-4 text-right">
                             <Button

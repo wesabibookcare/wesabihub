@@ -22,7 +22,6 @@ import { cn } from '@/src/lib/utils';
 export const GlobalConfigPage = () => {
   const configs = [
     { label: 'Default Platform Currency', icon: Coins, value: 'USD ($)', options: ['USD ($)', 'NGN (₦)', 'GHS (₵)', 'KES (KSh)'] },
-    { label: 'Primary Language', icon: Languages, value: 'English (US)', options: ['English (US)', 'French', 'Swahili', 'Yoruba'] },
     { label: 'Weight Units', icon: Ruler, value: 'Kilograms (kg)', options: ['Kilograms (kg)', 'Pounds (lb)'] },
     { label: 'Dimension Units', icon: Ruler, value: 'Centimeters (cm)', options: ['Centimeters (cm)', 'Inches (in)'] },
     { label: 'Timezone (Server)', icon: Clock, value: 'UTC (GMT+0)', options: ['UTC (GMT+0)', 'WAT (GMT+1)', 'EAT (GMT+3)'] },

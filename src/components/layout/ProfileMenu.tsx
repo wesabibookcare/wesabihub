@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Settings, LogOut, Shield, Bell, HelpCircle, Palette, Languages } from 'lucide-react';
+import { User, Settings, LogOut, Shield, Bell, HelpCircle, Palette } from 'lucide-react';
 import { useAuth } from '@/src/context/AuthContext';
 import { UserRole } from '@/src/types';
 import { useNavigate } from 'react-router-dom';
