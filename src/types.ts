@@ -793,7 +793,7 @@ export interface SystemSettings extends BaseEntity {
     mandatoryParcelPhotos: boolean;
     gpsRequired: boolean;
     chainOfCustodyEnabled: boolean;
-    successAnimationStyle?: 'confetti' | 'checkmark' | 'fireworks' | 'coins' | 'ripple' | 'stars';
+    successAnimationStyle?: 'confetti' | 'checkmark' | 'fireworks' | 'coins' | 'ripple' | 'stars' | 'burst' | 'sparkle' | 'pulse' | 'badge' | 'glow' | 'particles' | 'celebration' | 'trophy' | 'balloons' | 'ribbon' | 'laser' | 'snowfall' | 'cosmic' | 'heartbeat' | 'diamonds' | 'sunburst' | 'neon' | 'quantum' | 'swirl' | 'fireflies' | 'shimmer' | 'comet' | 'supernova' | 'shield';
   };
   notificationTemplates?: {
     received?: { title: string; body: string; enabled: boolean };
