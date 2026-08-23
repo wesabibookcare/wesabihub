@@ -177,6 +177,8 @@ export interface DeveloperProfile extends BaseEntity {
   webhookUrl: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
   apiKey?: string;
+  apiKeyCreatedAt?: string;
+  isApiKeyRevoked?: boolean;
   secretKey?: string;
   businessName?: string;
   email?: string;
@@ -483,6 +485,8 @@ export interface MerchantBusiness extends BaseEntity {
   isVerified: boolean;
   status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
   apiKey?: string;
+  apiKeyCreatedAt?: string;
+  isApiKeyRevoked?: boolean;
   webhookUrl?: string;
   logoUrl?: string; // Step 7.8
   brandColor?: string;
@@ -506,12 +510,19 @@ export interface MerchantCustomer extends BaseEntity {
 export interface LogisticsCompany extends BaseEntity {
   ownerId: string;
   name: string;
+  companyName?: string; // Compatibility
   fleetSize: number;
   serviceAreas: string[]; // cities/zones
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED';
+  adminApprovalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   rating: number;
   apiKey?: string;
+  apiKeyCreatedAt?: string;
+  isApiKeyRevoked?: boolean;
   webhookUrl?: string;
+  connectorActive?: boolean;
+  rateLimit?: number;
+  liabilityTerms?: string;
 }
 
 export interface PointEmployee extends BaseEntity {

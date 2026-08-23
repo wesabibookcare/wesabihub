@@ -2,6 +2,7 @@ declare global {
   namespace Express {
     interface Request {
       developer: any;
+      logisticsProvider: any;
       authUser?: AuthenticatedUser;
     }
   }
@@ -899,6 +900,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         subtotal *= (rule.expressMultiplier || 1.5);
       }
 
+      // Calculate server-authoritative logistics charge & WeSabiHub logistics margin
+      const providerCost = isHubPickup ? 0 : Math.round(subtotal * 0.8);
+      const wesabiLogisticsMargin = isHubPickup ? 0 : Math.round(subtotal * 0.2);
+      const totalDeliveryCharge = providerCost + wesabiLogisticsMargin;
+
       // Calculate taxes
       const taxesPercentage = rule.taxesPercentage || 7.5;
       const tax = subtotal * (taxesPercentage / 100);
@@ -953,6 +959,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         total,
         currency: rule.currency || '₦',
         transferAdjustment: 0,
+        logisticsBreakdown: {
+          providerCost,
+          wesabiLogisticsMargin,
+          totalDeliveryCharge
+        },
         commissions: {
           platform: platformAmount,
           hubPoint: centreAmount,
@@ -3652,6 +3663,87 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   }
 
+  // Dedicated Logistics Connector API Authentication Middleware
+  async function authenticateLogisticsApiKey(req: any, res: any, next: any) {
+    const apiKey = req.headers['x-api-key'] || req.headers['x-logistics-key'] || (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', ''));
+
+    if (!apiKey) {
+      await auditEngine.logEvent({
+        userId: 'ANONYMOUS',
+        action: 'LOGISTICS_API_AUTH_FAILURE',
+        details: { error: 'Missing Logistics API Key', path: req.path },
+        result: 'FAILURE',
+        ipAddress: req.ip,
+        deviceInfo: req.get('user-agent')
+      });
+      return res.status(401).json({ error: 'Unauthorized: Missing Logistics API Key or Credentials' });
+    }
+
+    const db = getDb();
+    if (!db) {
+      return res.status(500).json({ error: 'Firebase Admin not configured' });
+    }
+
+    try {
+      const cacheKey = `logisticsProfile_${apiKey}`;
+      let company = getCachedData(cacheKey);
+      if (!company) {
+        const companySnapshot = await db.collection('logisticsCompanies')
+          .where('apiKey', '==', apiKey)
+          .limit(1)
+          .get();
+
+        if (companySnapshot.empty) {
+          await auditEngine.logEvent({
+            userId: 'ANONYMOUS',
+            action: 'LOGISTICS_API_AUTH_FAILURE',
+            details: { error: 'Invalid Logistics API Key', path: req.path },
+            result: 'FAILURE',
+            ipAddress: req.ip,
+            deviceInfo: req.get('user-agent')
+          });
+          return res.status(401).json({ error: 'Unauthorized: Invalid Logistics API Key' });
+        }
+
+        const companyDoc = companySnapshot.docs[0];
+        company = { id: companyDoc.id, ...companyDoc.data() };
+        setCachedData(cacheKey, company, 60000); // 1 minute cache
+      }
+
+      if (company.isApiKeyRevoked) {
+        return res.status(403).json({ error: 'Forbidden: Logistics API Credentials have been revoked' });
+      }
+
+      if (company.connectorActive === false || company.status === 'SUSPENDED') {
+        return res.status(403).json({ error: 'Forbidden: Logistics Integration Connector is inactive or suspended' });
+      }
+
+      if (company.adminApprovalStatus && company.adminApprovalStatus !== 'APPROVED' && company.status !== 'APPROVED') {
+        return res.status(403).json({ error: 'Forbidden: Logistics Integration Connector pending Admin Approval' });
+      }
+
+      const rateLimit = company.rateLimit || 120;
+      if (isRateLimited(apiKey, rateLimit)) {
+        return res.status(429).json({ error: 'Too Many Requests: Logistics API Rate Limit Exceeded' });
+      }
+
+      req.logisticsProvider = {
+        id: company.id,
+        ownerId: company.ownerId || company.userId,
+        companyName: company.companyName || company.name || 'Logistics Provider',
+        apiKey: apiKey,
+        webhookUrl: company.webhookUrl || '',
+        rateLimit,
+        liabilityTerms: company.liabilityTerms || "Subject to the applicable logistics provider's terms, the selected logistics provider is responsible for loss, damage, or other delivery incidents occurring while the parcel is in its custody or control, except where responsibility is excluded or limited by applicable law or the agreed terms."
+      };
+
+      next();
+    } catch (err: any) {
+      console.error('Logistics API auth error:', err);
+      res.status(500).json({ error: 'Internal Server Error during Logistics API authentication' });
+    }
+  }
+
   // Unified endpoint to trigger webhooks from any part of the platform
   // Internal platform operation -- not a developer-facing endpoint (developers
   // receive webhooks automatically; they don't dispatch arbitrary events to
@@ -3735,19 +3827,36 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
-  // Endpoints: Create Shipment
+  // Endpoints: Create Shipment (with Idempotency & External Ref Protection)
   app.post("/api/v1/shipments", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
     const db = getDb();
     if (!db) return res.status(500).json({ error: "Firebase not configured" });
 
     try {
-      const { recipientInfo, weightKg, category, originCenterId, destinationCenterId } = req.body;
+      const { recipientInfo, weightKg, category, originCenterId, destinationCenterId, externalOrderId, externalParcelId } = req.body;
 
       if (!recipientInfo || !recipientInfo.name || !recipientInfo.phone) {
         return res.status(400).json({ error: "Missing recipientInfo.name or recipientInfo.phone" });
       }
       if (!weightKg || !originCenterId || !destinationCenterId) {
         return res.status(400).json({ error: "Missing required fields: weightKg, originCenterId, destinationCenterId" });
+      }
+
+      // Idempotency check via externalOrderId / externalParcelId if supplied
+      if (externalOrderId || externalParcelId) {
+        let existingQuery = db.collection('shipments').where('senderId', '==', req.developer.userId);
+        if (externalOrderId) {
+          const snap = await existingQuery.where('externalOrderId', '==', externalOrderId).limit(1).get();
+          if (!snap.empty) {
+            const existingParcel = snap.docs[0].data();
+            return res.status(200).json({
+              success: true,
+              idempotent: true,
+              message: "Shipment already exists for this externalOrderId",
+              shipment: existingParcel
+            });
+          }
+        }
       }
 
       const weight = Number(weightKg);
@@ -3802,6 +3911,8 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         pickupPinVerified: false,
         isApiCreated: true,
         developerBusinessName: req.developer.businessName,
+        externalOrderId: externalOrderId || '',
+        externalParcelId: externalParcelId || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isDeleted: false
@@ -4014,6 +4125,423 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     } catch (err: any) {
       console.error("API pin regeneration error:", err);
       res.status(500).json({ error: "Failed to regenerate pickup PIN" });
+    }
+  });
+
+  // Endpoints: Bulk Webhook Order Ingestion
+  app.post("/api/v1/shipments/bulk-webhook", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { orders } = req.body;
+      if (!Array.isArray(orders) || orders.length === 0) {
+        return res.status(400).json({ error: "Missing or empty 'orders' array" });
+      }
+
+      const createdParcels: any[] = [];
+      const skippedParcels: any[] = [];
+
+      for (const order of orders) {
+        const { externalOrderId, externalParcelId, recipientInfo, weightKg, originCenterId, destinationCenterId } = order;
+
+        if (externalOrderId) {
+          const existing = await db.collection('shipments')
+            .where('senderId', '==', req.developer.userId)
+            .where('externalOrderId', '==', externalOrderId)
+            .limit(1)
+            .get();
+
+          if (!existing.empty) {
+            skippedParcels.push({ externalOrderId, reason: "Duplicate externalOrderId" });
+            continue;
+          }
+        }
+
+        const shipmentId = 'WSH-API-' + Math.floor(1000000 + Math.random() * 9000000);
+        const trackingNumber = 'WSH-' + Math.floor(100000 + Math.random() * 900000);
+        const pickupPin = Math.floor(1000 + Math.random() * 9000).toString();
+
+        const parcel: any = {
+          id: shipmentId,
+          shipmentId,
+          parcelId: shipmentId,
+          trackingNumber,
+          senderId: req.developer.userId,
+          externalOrderId: externalOrderId || '',
+          externalParcelId: externalParcelId || '',
+          recipientInfo: {
+            name: recipientInfo?.name || 'Customer',
+            phone: recipientInfo?.phone || '',
+            email: recipientInfo?.email || ''
+          },
+          originCenterId: originCenterId || 'DEFAULT_ORIGIN',
+          destinationCenterId: destinationCenterId || 'DEFAULT_DEST',
+          status: 'AWAITING_DROP_OFF',
+          weightKg: Number(weightKg) || 1,
+          pricing: {
+            baseFee: 1500,
+            taxes: 112,
+            commission: 300,
+            total: 1612,
+            currency: '₦'
+          },
+          pickupPin,
+          isApiCreated: true,
+          developerBusinessName: req.developer.businessName,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isDeleted: false
+        };
+
+        await db.collection('shipments').doc(shipmentId).set(parcel);
+        createdParcels.push({ shipmentId, trackingNumber, externalOrderId });
+      }
+
+      res.status(201).json({
+        success: true,
+        receivedCount: orders.length,
+        createdCount: createdParcels.length,
+        skippedCount: skippedParcels.length,
+        createdParcels,
+        skippedParcels
+      });
+    } catch (err: any) {
+      console.error("Bulk webhook order ingestion error:", err);
+      res.status(500).json({ error: "Failed to process bulk webhook ingestion" });
+    }
+  });
+
+  // ==========================================
+  // NEW LOGISTICS CONNECTOR API ENDPOINTS
+  // ==========================================
+
+  // 1. CREATE DELIVERY
+  app.post("/api/v1/logistics/deliveries", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { externalDeliveryId, pickupLocation, deliveryLocation, recipientInfo, weightKg, serviceType, deliveryCharge, providerNotes } = req.body;
+
+      if (!pickupLocation || !deliveryLocation || !recipientInfo?.name || !recipientInfo?.phone) {
+        return res.status(400).json({ error: "Missing required fields: pickupLocation, deliveryLocation, recipientInfo" });
+      }
+
+      const deliveryId = 'LOG-DEL-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+      const trackingNumber = 'LOG-TRK-' + Math.floor(100000 + Math.random() * 900000);
+
+      const deliveryRecord = {
+        id: deliveryId,
+        deliveryId,
+        externalDeliveryId: externalDeliveryId || '',
+        providerId: req.logisticsProvider.id,
+        providerName: req.logisticsProvider.companyName,
+        liabilityTerms: req.logisticsProvider.liabilityTerms,
+        pickupLocation,
+        deliveryLocation,
+        recipientInfo,
+        weightKg: Number(weightKg) || 1,
+        serviceType: serviceType || 'STANDARD',
+        deliveryCharge: Number(deliveryCharge) || 0,
+        providerNotes: providerNotes || '',
+        status: 'DISPATCHED',
+        pickupStatus: 'PENDING',
+        dropOffStatus: 'PENDING',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      await db.collection('logisticsDeliveries').doc(deliveryId).set(deliveryRecord);
+
+      await auditEngine.logEvent({
+        userId: req.logisticsProvider.id,
+        action: 'LOGISTICS_CREATE_DELIVERY',
+        details: { deliveryId, externalDeliveryId, providerName: req.logisticsProvider.companyName },
+        result: 'SUCCESS'
+      });
+
+      res.status(201).json({
+        success: true,
+        delivery: deliveryRecord
+      });
+    } catch (err: any) {
+      console.error("Logistics delivery creation error:", err);
+      res.status(500).json({ error: "Failed to create logistics delivery" });
+    }
+  });
+
+  // 2. GET DELIVERY
+  app.get("/api/v1/logistics/deliveries/:id", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const deliveryDoc = await db.collection('logisticsDeliveries').doc(id).get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      // Tenant Isolation
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access to another provider's delivery is denied" });
+      }
+
+      res.json({ success: true, delivery });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to fetch delivery details" });
+    }
+  });
+
+  // 3. GET DELIVERY STATUS
+  app.get("/api/v1/logistics/deliveries/:id/status", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const deliveryDoc = await db.collection('logisticsDeliveries').doc(id).get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      res.json({
+        success: true,
+        id,
+        status: delivery.status,
+        pickupStatus: delivery.pickupStatus,
+        dropOffStatus: delivery.dropOffStatus,
+        updatedAt: delivery.updatedAt
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to fetch delivery status" });
+    }
+  });
+
+  // 4. UPDATE DELIVERY STATUS
+  app.patch("/api/v1/logistics/deliveries/:id/status", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { status, pickupStatus, dropOffStatus, remarks, currentGps } = req.body;
+
+      const deliveryRef = db.collection('logisticsDeliveries').doc(id);
+      const deliveryDoc = await deliveryRef.get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      const updates: any = {
+        updatedAt: new Date().toISOString()
+      };
+      if (status) updates.status = status;
+      if (pickupStatus) updates.pickupStatus = pickupStatus;
+      if (dropOffStatus) updates.dropOffStatus = dropOffStatus;
+      if (currentGps) updates.currentGps = currentGps;
+
+      await deliveryRef.update(updates);
+
+      // Audit and tracking log
+      await auditEngine.logEvent({
+        userId: req.logisticsProvider.id,
+        action: 'LOGISTICS_UPDATE_STATUS',
+        details: { deliveryId: id, status, remarks },
+        result: 'SUCCESS'
+      });
+
+      res.json({ success: true, message: "Delivery status updated successfully", status: status || delivery.status });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to update delivery status" });
+    }
+  });
+
+  // 5. CANCEL DELIVERY
+  app.post("/api/v1/logistics/deliveries/:id/cancel", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+
+      const deliveryRef = db.collection('logisticsDeliveries').doc(id);
+      const deliveryDoc = await deliveryRef.get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      await deliveryRef.update({
+        status: 'CANCELLED',
+        cancellationReason: reason || 'Cancelled by logistics provider API',
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: "Delivery cancelled successfully" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to cancel delivery" });
+    }
+  });
+
+  // 6. PICKUP REQUEST
+  app.post("/api/v1/logistics/deliveries/:id/pickup-request", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { scheduledTime, notes } = req.body;
+
+      const deliveryRef = db.collection('logisticsDeliveries').doc(id);
+      const deliveryDoc = await deliveryRef.get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      await deliveryRef.update({
+        pickupStatus: 'SCHEDULED',
+        scheduledPickupTime: scheduledTime || new Date().toISOString(),
+        pickupNotes: notes || '',
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: "Pickup request scheduled successfully" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to schedule pickup request" });
+    }
+  });
+
+  // 7. DELIVERY CONFIRMATION
+  app.post("/api/v1/logistics/deliveries/:id/confirm", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { recipientName, signatureUrl, otpCode } = req.body;
+
+      const deliveryRef = db.collection('logisticsDeliveries').doc(id);
+      const deliveryDoc = await deliveryRef.get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      await deliveryRef.update({
+        status: 'DELIVERED',
+        dropOffStatus: 'COMPLETED',
+        confirmedBy: recipientName || delivery.recipientInfo?.name,
+        signatureUrl: signatureUrl || '',
+        deliveredAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: "Delivery confirmed as completed" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to confirm delivery" });
+    }
+  });
+
+  // 8. DELIVERY FAILURE
+  app.post("/api/v1/logistics/deliveries/:id/failure", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { failureReason, canRetry } = req.body;
+
+      const deliveryRef = db.collection('logisticsDeliveries').doc(id);
+      const deliveryDoc = await deliveryRef.get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      await deliveryRef.update({
+        status: 'FAILED',
+        failureReason: failureReason || 'Delivery attempt failed',
+        canRetry: canRetry !== false,
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: "Delivery failure recorded" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to record delivery failure" });
+    }
+  });
+
+  // 9. DELIVERY EVIDENCE
+  app.post("/api/v1/logistics/deliveries/:id/evidence", authenticateLogisticsApiKey, async (req: express.Request & { logisticsProvider: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { evidencePhotos, notes } = req.body;
+
+      const deliveryRef = db.collection('logisticsDeliveries').doc(id);
+      const deliveryDoc = await deliveryRef.get();
+
+      if (!deliveryDoc.exists) {
+        return res.status(404).json({ error: "Delivery record not found" });
+      }
+
+      const delivery = deliveryDoc.data();
+      if (delivery?.providerId !== req.logisticsProvider.id) {
+        return res.status(403).json({ error: "Forbidden: Access denied" });
+      }
+
+      const existingEvidence = delivery.evidencePhotos || [];
+      const updatedPhotos = [...existingEvidence, ...(Array.isArray(evidencePhotos) ? evidencePhotos : [evidencePhotos])];
+
+      await deliveryRef.update({
+        evidencePhotos: updatedPhotos,
+        evidenceNotes: notes || delivery.evidenceNotes || '',
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: "Delivery evidence saved", evidencePhotos: updatedPhotos });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to save delivery evidence" });
     }
   });
 

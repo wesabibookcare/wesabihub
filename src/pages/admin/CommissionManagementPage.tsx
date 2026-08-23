@@ -26,7 +26,9 @@ import { Badge } from '../../components/ui/Badge';
 import { cn } from '@/src/lib/utils';
 import { commissionRuleRepository } from '@/src/services/db/CommissionRuleRepository';
 import { auditEngine } from '@/src/engines/AuditEngine';
+import { configurationEngine } from '@/src/engines/ConfigurationEngine';
 import { useAuth } from '@/src/context/AuthContext';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 
 
@@ -52,7 +54,13 @@ export const CommissionManagementPage = () => {
   const [rules, setRules] = useState<CommissionRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'RULES' | 'REPORTS' | 'AUDIT'>('RULES');
+  const [activeTab, setActiveTab] = useState<'RULES' | 'TIERS' | 'REPORTS' | 'AUDIT'>('RULES');
+  const [monthlyTiers, setMonthlyTiers] = useState<Array<{ id: string; minParcels: number; maxParcels: number | null; hubPercentage: number; wesabiPercentage: number; isActive: boolean }>>([
+    { id: 'tier-1', minParcels: 1, maxParcels: 500, hubPercentage: 50, wesabiPercentage: 50, isActive: true },
+    { id: 'tier-2', minParcels: 501, maxParcels: 1000, hubPercentage: 55, wesabiPercentage: 45, isActive: true },
+    { id: 'tier-3', minParcels: 1001, maxParcels: null, hubPercentage: 60, wesabiPercentage: 40, isActive: true },
+  ]);
+  const [tierError, setTierError] = useState<string>('');
   const [newRule, setNewRule] = useState<Partial<CommissionRule>>({
     platformPercentage: 40,
     centrePercentage: 60,
@@ -134,6 +142,7 @@ fetchedRules.sort((a, b) => b.version - a.version);
         <div className="flex p-1 bg-slate-100 rounded-2xl w-fit">
           {[
             { id: 'RULES', label: 'Distribution Rules', icon: Settings },
+            { id: 'TIERS', label: 'Monthly Volume Split Tiers', icon: Layers },
             { id: 'REPORTS', label: 'Revenue Reports', icon: TrendingUp },
             { id: 'AUDIT', label: 'Audit Logs', icon: History },
           ].map(tab => (
@@ -254,6 +263,128 @@ fetchedRules.sort((a, b) => b.version - a.version);
                     </tbody>
                   </table>
                </div>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'TIERS' && (
+          <div className="space-y-8">
+            <Card className="p-8 border-none shadow-xl shadow-slate-200/50">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                  <h2 className="text-xl font-black tracking-tight text-slate-900">Hub Monthly Volume Tier Splits</h2>
+                  <p className="text-slate-500 text-sm font-medium mt-1">Configure progressive revenue share splits based on qualifying collected & paid parcels per calendar month.</p>
+                </div>
+                <Button
+                  className="rounded-xl font-bold"
+                  onClick={() => {
+                    const lastTier = monthlyTiers[monthlyTiers.length - 1];
+                    const nextMin = lastTier ? (lastTier.maxParcels ? lastTier.maxParcels + 1 : lastTier.minParcels + 500) : 1;
+                    setMonthlyTiers([
+                      ...monthlyTiers,
+                      { id: `tier-${Date.now()}`, minParcels: nextMin, maxParcels: nextMin + 499, hubPercentage: 50, wesabiPercentage: 50, isActive: true }
+                    ]);
+                  }}
+                >
+                  <Plus size={16} className="mr-2" /> Add Tier
+                </Button>
+              </div>
+
+              {tierError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm font-bold flex items-center gap-2">
+                  <AlertCircle size={18} />
+                  {tierError}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                {monthlyTiers.map((tier, idx) => (
+                  <div key={tier.id} className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center">T{idx + 1}</span>
+                      <div>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Qualifying Parcel Range</p>
+                        <p className="text-sm font-black text-slate-900">
+                          {tier.minParcels} – {tier.maxParcels ? tier.maxParcels : '∞'} parcels / month
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Hub Share %</label>
+                        <input
+                          type="number"
+                          value={tier.hubPercentage}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            const updated = [...monthlyTiers];
+                            updated[idx].hubPercentage = val;
+                            updated[idx].wesabiPercentage = 100 - val;
+                            setMonthlyTiers(updated);
+                          }}
+                          className="w-24 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-black text-emerald-600"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">WeSabiHub Share %</label>
+                        <input
+                          type="number"
+                          disabled
+                          value={tier.wesabiPercentage}
+                          className="w-24 bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-sm font-black text-indigo-600 cursor-not-allowed"
+                        />
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:bg-red-50 rounded-xl font-bold"
+                        onClick={() => {
+                          setMonthlyTiers(monthlyTiers.filter(t => t.id !== tier.id));
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+                <Button
+                  className="rounded-xl font-bold shadow-lg shadow-primary-600/20"
+                  onClick={async () => {
+                    // Validation
+                    setTierError('');
+                    for (const t of monthlyTiers) {
+                      if (t.hubPercentage + t.wesabiPercentage !== 100 || t.hubPercentage < 0 || t.hubPercentage > 100) {
+                        setTierError(`Invalid tier percentages for range ${t.minParcels}-${t.maxParcels || '∞'}. Must total 100%.`);
+                        return;
+                      }
+                    }
+                    try {
+                      await configurationEngine.updateSystemSettings('global', {
+                        hubMonthlyTiers: monthlyTiers
+                      } as any);
+
+                      await auditEngine.logEvent({
+                        userId: user?.uid || 'system',
+                        action: 'UPDATE_HUB_MONTHLY_TIERS',
+                        details: { monthlyTiers },
+                        result: 'SUCCESS'
+                      });
+                      toast.success('Hub Monthly Volume Tiers persisted successfully.');
+                    } catch (err: any) {
+                      setTierError('Failed to persist tier configuration: ' + err.message);
+                      toast.error('Failed to save tier configuration.');
+                    }
+                  }}
+                >
+                  <Save size={18} className="mr-2" /> Save Tier Configuration
+                </Button>
+              </div>
             </Card>
           </div>
         )}
