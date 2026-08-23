@@ -327,6 +327,10 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
               </div>
             )}
             {children}
+            <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <img src="/assets/brand/omorfi-logo.png" onError={(e) => { e.currentTarget.style.display = 'none'; }} alt="Omorfi Logo" className="h-4 w-4 object-contain inline-block" />
+              <span>WeSabiHub is a product of Omorfi Limited</span>
+            </div>
           </div>
         </div>
       </main>

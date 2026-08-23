@@ -41,7 +41,7 @@ class IntegrationEngine {
   }
 
   /**
-   * API Key Management
+   * API Key Management & Credential Rotation
    */
   async generateApiKey(entityId: string, type: 'MERCHANT' | 'LOGISTICS' | 'DEVELOPER'): Promise<string> {
     const apiKey = `WOS_${type.substring(0, 1)}_${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
@@ -49,17 +49,17 @@ class IntegrationEngine {
     if (type === 'MERCHANT') {
       const businesses = await merchantBusinessRepository.getByMerchantId(entityId);
       if (businesses.length > 0) {
-        await merchantBusinessRepository.update(businesses[0].id, { apiKey });
+        await merchantBusinessRepository.update(businesses[0].id, { apiKey, apiKeyCreatedAt: new Date().toISOString() });
       }
     } else if (type === 'LOGISTICS') {
       const company = await logisticsRepository.getByOwner(entityId);
       if (company) {
-        await logisticsRepository.update(company.id, { apiKey });
+        await logisticsRepository.update(company.id, { apiKey, apiKeyCreatedAt: new Date().toISOString() });
       }
     } else {
       // DEVELOPER: entityId is the developer's own uid, and the profile
       // document ID is that same uid (see DeveloperPage.tsx registration).
-      await developerProfileRepository.update(entityId, { apiKey });
+      await developerProfileRepository.update(entityId, { apiKey, apiKeyCreatedAt: new Date().toISOString() });
     }
 
     await auditEngine.logEvent({
@@ -70,6 +70,29 @@ class IntegrationEngine {
     });
 
     return apiKey;
+  }
+
+  async revokeApiKey(entityId: string, type: 'MERCHANT' | 'LOGISTICS' | 'DEVELOPER'): Promise<void> {
+    if (type === 'MERCHANT') {
+      const businesses = await merchantBusinessRepository.getByMerchantId(entityId);
+      if (businesses.length > 0) {
+        await merchantBusinessRepository.update(businesses[0].id, { apiKey: '', isApiKeyRevoked: true });
+      }
+    } else if (type === 'LOGISTICS') {
+      const company = await logisticsRepository.getByOwner(entityId);
+      if (company) {
+        await logisticsRepository.update(company.id, { apiKey: '', isApiKeyRevoked: true, connectorActive: false });
+      }
+    } else {
+      await developerProfileRepository.update(entityId, { apiKey: '', status: 'SUSPENDED' });
+    }
+
+    await auditEngine.logEvent({
+      userId: entityId,
+      action: 'REVOKE_API_KEY',
+      details: { type },
+      result: 'SUCCESS'
+    });
   }
 
   /**

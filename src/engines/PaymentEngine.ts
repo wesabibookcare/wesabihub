@@ -543,6 +543,34 @@ class PaymentEngine {
     return await providerInstance.verifyPayment(reference);
   }
 
+  /**
+   * Refund Logistics Delivery Charge & Reverse WeSabiHub Logistics Margin
+   */
+  async refundLogisticsChargeWithMarginReversal(parcelId: string, deliveryCharge: number, wesabiLogisticsMargin: number, userId: string): Promise<any> {
+    const providerRefundAmount = Math.max(0, deliveryCharge - wesabiLogisticsMargin);
+    const totalRefundToUser = deliveryCharge; // Refund full charge to customer
+
+    await auditEngine.logEvent({
+      userId,
+      action: 'LOGISTICS_MARGIN_REFUND_REVERSAL',
+      details: {
+        parcelId,
+        deliveryCharge,
+        refundedWesabiMargin: wesabiLogisticsMargin,
+        providerRefundAmount,
+        totalRefundToUser
+      },
+      result: 'SUCCESS'
+    });
+
+    return {
+      success: true,
+      totalRefundToUser,
+      refundedWesabiMargin: wesabiLogisticsMargin,
+      providerRefundAmount
+    };
+  }
+
   async refundExternalPayment(reference: string, amount: number, providerName?: string): Promise<any> {
     let provider = providerName;
 

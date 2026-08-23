@@ -235,9 +235,15 @@ export const PublicLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
 
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-sm text-slate-500">
-              {settings?.footer?.copyrightNotice || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`}
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500">
+                {settings?.footer?.copyrightNotice || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`}
+              </p>
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <img src="/assets/brand/omorfi-logo.png" onError={(e) => { e.currentTarget.style.display = 'none'; }} alt="Omorfi Logo" className="h-4 w-4 object-contain inline-block" />
+                <span>WeSabiHub is a product of Omorfi Limited</span>
+              </div>
+            </div>
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <Globe className="w-4 h-4" />
               <span>Available in {countryName}</span>
