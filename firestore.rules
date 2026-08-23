@@ -277,7 +277,7 @@ service cloud.firestore {
 
     match /systemSettings/{setId} {
       allow read: if true;
-      allow create: if true;
+      allow create: if isAdmin() || isBootstrapActive();
       allow update, delete: if isAdmin();
     }
 

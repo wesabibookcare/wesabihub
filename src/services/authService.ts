@@ -73,6 +73,9 @@ class AuthService {
   }
 
   async register(email: string, pass: string, displayName: string, role: UserRole = 'CUSTOMER', extraData: any = {}): Promise<User> {
+    const VALID_PUBLIC_ROLES: UserRole[] = ['CUSTOMER', 'MERCHANT', 'CENTER_OWNER', 'CENTER_STAFF', 'DISPATCH_RIDER'];
+    const safeRole: UserRole = VALID_PUBLIC_ROLES.includes(role) ? role : 'CUSTOMER';
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const fbUser = userCredential.user;
 
@@ -84,7 +87,7 @@ class AuthService {
 
     // If CENTER_STAFF, check if they were invited
     let matchedInvitationId = '';
-    if (role === 'CENTER_STAFF') {
+    if (safeRole === 'CENTER_STAFF') {
       try {
         const { invitationRepository } = await import('./db/InvitationRepository');
         const invs = await invitationRepository.getByEmail(email);
@@ -109,8 +112,8 @@ class AuthService {
       uid: fbUser.uid,
       displayName,
       email,
-      roles: [role],
-      role,
+      roles: [safeRole],
+      role: safeRole,
       status,
       hubId: hubId || undefined,
       companyId: companyId || undefined,
@@ -142,12 +145,12 @@ class AuthService {
     }
 
     // Create Role Application for roles that require approval (Standard Registration)
-    if (['MERCHANT', 'CENTER_OWNER', 'LOGISTICS_COMPANY', 'DEVELOPER', 'DISPATCH_RIDER', 'DISPATCH_COMPANY'].includes(role)) {
+    if (['MERCHANT', 'CENTER_OWNER', 'DISPATCH_RIDER'].includes(safeRole)) {
       const applicationId = `APP-${Date.now()}`;
       await setDoc(doc(db, 'roleApplications', applicationId), {
         id: applicationId,
         userId: fbUser.uid,
-        role,
+        role: safeRole,
         status: 'SUBMITTED',
         data: {
           email,

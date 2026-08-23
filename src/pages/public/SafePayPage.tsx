@@ -62,7 +62,9 @@ export const SafePayPage = () => {
             Buy and sell <span className="text-primary-500">without the worry.</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            SafePay is WeSabiHub's protected payment workflow for buyers and sellers. Your money stays secure with our licensed payment partner until you confirm the item is exactly what you agreed to.
+            SafePay is a separate protected transaction service for buyer–seller purchases.
+            It helps protect the agreed transaction through payment, evidence, inspection and resolution.
+            SafePay is independent of WeSabiHub logistics and is not WeSabiHub's ordinary payment system.
           </p>
           {!isSafePayEnabled && (
             <p className="text-amber-400 font-bold mt-6 max-w-xl mx-auto">

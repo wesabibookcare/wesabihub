@@ -54,11 +54,14 @@ class UserEngine {
         return existingUser;
       }
 
-    // 1. Determine status and roles:
+    // 1. Validate public registration role authority:
+    const VALID_PUBLIC_ROLES: UserRole[] = ['CUSTOMER', 'MERCHANT', 'CENTER_OWNER', 'CENTER_STAFF', 'DISPATCH_RIDER'];
+    const safeRole: UserRole = VALID_PUBLIC_ROLES.includes(role) ? role : 'CUSTOMER';
+
     // Customer and Hub Staff roles get direct instant active access.
-    // Every other role (Merchant, Hub Owner, Dispatch Rider, etc.) gets instant active access as CUSTOMER,
+    // Every other role (Merchant, Hub Owner, Dispatch Rider) gets instant active access as CUSTOMER,
     // while their requested role application sits in "pending" box waiting for Admin review.
-    const isDirectAccess = role === 'CUSTOMER' || role === 'CENTER_STAFF';
+    const isDirectAccess = safeRole === 'CUSTOMER' || safeRole === 'CENTER_STAFF';
 
     // Status is always ACTIVE so they are not blocked from using Customer features immediately
     const userStatus: UserStatus = 'ACTIVE';
@@ -80,8 +83,8 @@ class UserEngine {
     const finalProfileData = { ...profileData, ...uploadedDocs, updatedAt: new Date().toISOString() };
 
     // Assigned active primary role is CUSTOMER for approval-required roles, or requested role if direct access
-    const assignedRole: UserRole = isDirectAccess ? role : 'CUSTOMER';
-    const assignedRoles: UserRole[] = isDirectAccess ? [role] : ['CUSTOMER'];
+    const assignedRole: UserRole = isDirectAccess ? safeRole : 'CUSTOMER';
+    const assignedRoles: UserRole[] = isDirectAccess ? [safeRole] : ['CUSTOMER'];
 
     // 3. Persist User
     const userDoc: User = {
@@ -92,7 +95,7 @@ class UserEngine {
       updatedAt: new Date().toISOString(),
       verificationStatus: { email: !!options.sendVerification, phone: false, kyc: false },
       wesabiUsername: (finalProfileData as any).wesabiUsername || `WSH_${uid.substring(0, 8)}`,
-      requestedRole: isDirectAccess ? undefined : role,
+      requestedRole: isDirectAccess ? undefined : safeRole,
       pendingRoleApplication: !isDirectAccess,
       ...finalProfileData,
       id: uid,
@@ -109,7 +112,7 @@ class UserEngine {
       const roleApplication: RoleApplication = {
         id: applicationId,
         userId: uid,
-        role,
+        role: safeRole,
         status: appStatus,
         data: finalProfileData,
         documents: Object.values(uploadedDocs),
@@ -123,7 +126,7 @@ class UserEngine {
       await notificationEngine.send(
         uid,
         'Application Received & Customer Account Active',
-        `You're approved as a Customer for now, your ${role.replace(/_/g, ' ')} application is under review.`,
+        `You're approved as a Customer for now, your ${safeRole.replace(/_/g, ' ')} application is under review.`,
         'INFO',
         '/customer/dashboard',
         'SYSTEM'
@@ -132,7 +135,7 @@ class UserEngine {
       await notificationEngine.send(
         uid,
         'Welcome to WeSabiHub! 🚀',
-        `Your account as a ${role.replace(/_/g, ' ')} is now active. Explore the dashboard to get started.`,
+        `Your account as a ${safeRole.replace(/_/g, ' ')} is now active. Explore the dashboard to get started.`,
         'SUCCESS',
         '/dashboard',
         'SYSTEM'

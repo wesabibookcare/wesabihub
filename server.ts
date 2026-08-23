@@ -2130,8 +2130,8 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       // a client-supplied customerId as proof of whose escrow this is.
       const customerId = req.authUser!.uid;
 
-      if (!shipmentId || !amount || !customerEmail) {
-        return res.status(400).json({ error: "Missing required fields: shipmentId, amount, customerEmail" });
+      if (!shipmentId || !customerEmail) {
+        return res.status(400).json({ error: "Missing required fields: shipmentId, customerEmail" });
       }
 
       const db = getDb();
@@ -2145,15 +2145,30 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         return res.status(400).json({ error: "SafePay isn't active yet. Please coordinate payment directly with the seller." });
       }
 
+      // Server-authoritative amount validation
+      const shipmentSnap = await db.collection('shipments').doc(shipmentId).get();
+      let authoritativeAmount = Number(amount);
+      if (shipmentSnap.exists) {
+        const shipmentData = shipmentSnap.data();
+        const storedValue = shipmentData?.estimatedValue || shipmentData?.pricing?.itemValue || shipmentData?.pricing?.total;
+        if (storedValue && Number(storedValue) > 0) {
+          authoritativeAmount = Number(storedValue);
+        }
+      }
+
+      if (!authoritativeAmount || authoritativeAmount <= 0) {
+        return res.status(400).json({ error: "Invalid transaction amount. Must be a positive value." });
+      }
+
       const txRef = `WSH-TX-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
       // Call the authoritative paymentEngine
       const initResponse = await paymentEngine.initiateExternalPayment({
-        amount: Number(amount),
+        amount: authoritativeAmount,
         currency: "NGN",
         email: customerEmail,
         reference: txRef,
-        paymentType: "ESCROW",
+        paymentType: "SAFEPAY",
         userId: customerId,
         metadata: {
           shipmentId,
@@ -2180,7 +2195,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         trackingNumber: trackingNumber || "",
         customerId,
         merchantId: merchantId || "",
-        amount: Number(amount),
+        amount: authoritativeAmount,
         currency: "NGN",
         status: "PENDING_PAYMENT",
         flutterwaveRef: txRef,

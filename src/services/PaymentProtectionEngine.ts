@@ -52,20 +52,6 @@ export class PaymentProtectionEngine {
             updatedAt: new Date().toISOString()
         });
 
-        const txId = `TX-${Date.now()}`;
-        await transactionRepository.create(txId, {
-            id: txId,
-            walletId: doc.merchantId,
-            userId: doc.merchantId,
-            amount: doc.amount,
-            type: 'CREDIT',
-            category: 'SHIPMENT_PAYMENT',
-            status: 'PENDING',
-            referenceId: doc.shipmentId,
-            description: `Webhook: Secure funds held for tracking #${doc.trackingNumber}`,
-            timestamp: new Date().toISOString()
-        } as Transaction);
-
         await auditRepository.logAction('SYSTEM_WEBHOOK', 'PAYMENT_PROTECTION_WEBHOOK_RECEIVED', { txRef, status: 'FUNDS_SECURED', amount: doc.amount, shipmentId: doc.shipmentId }, doc.id);
 
         await notificationEngine.sendWebhookNotification(doc.merchantId, 'payment.secured', {
@@ -109,37 +95,9 @@ export class PaymentProtectionEngine {
     const pp = await paymentProtectionRepository.getById(ppId);
     if (!pp) throw new Error('Payment Protection record not found');
 
-    // Perform atomic state shift
-    await walletRepository.transaction(async () => {
-      await paymentProtectionRepository.update(pp.id, {
-        status: 'FUNDS_SECURED'
-      });
-
-      // Secure funds in Merchant's SafePay Balance
-      const merchantWallet = await this.getOrCreateWallet(pp.merchantId);
-      const currentSafePay = merchantWallet.SafePayBalance || 0;
-      await walletRepository.update(merchantWallet.id, {
-        SafePayBalance: currentSafePay + pp.amount,
-        lastUpdated: new Date().toISOString()
-      });
-
-      // Create transaction for audit trail
-      const transactionId = `TX-SFP-${Date.now()}`;
-      const transaction: Transaction = {
-        id: transactionId,
-        walletId: merchantWallet.id,
-        userId: pp.merchantId,
-        amount: pp.amount,
-        type: 'CREDIT',
-        category: 'SHIPMENT_PAYMENT',
-        status: 'PENDING', // Pending until release
-        referenceId: ppId,
-        description: `Funds secured in SafePay for shipment ${pp.shipmentId}`,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await transactionRepository.create(transactionId, transaction);
+    await paymentProtectionRepository.update(pp.id, {
+      status: 'FUNDS_SECURED',
+      updatedAt: new Date().toISOString()
     });
 
     await auditRepository.logAction(actorId, 'SECURE_PROTECTED_PAYMENT', { ppId, amount: pp.amount }, ppId);
@@ -188,46 +146,16 @@ export class PaymentProtectionEngine {
       throw new Error('Cannot release funds while a dispute is active.');
     }
 
-    await walletRepository.transaction(async () => {
-      await paymentProtectionRepository.update(pp.id, {
-        status: 'PAYMENT_RELEASED',
-        paymentReleasedAt: new Date().toISOString(),
-        releasedBy: actorId
-      });
-
-      // Transfer from SafePay Balance to Pending Balance (waiting for 24h settlement delay)
-      const merchantWallet = await this.getOrCreateWallet(pp.merchantId);
-      const currentSafePay = merchantWallet.SafePayBalance || 0;
-      const currentPending = merchantWallet.pendingBalance || 0;
-
-      await walletRepository.update(merchantWallet.id, {
-        SafePayBalance: Math.max(0, currentSafePay - pp.amount),
-        pendingBalance: currentPending + pp.amount,
-        lastUpdated: new Date().toISOString()
-      });
-
-      // Create PROTECTION_RELEASE credit transaction in PENDING state (settled by SettlementService)
-      const transactionId = `TX-REL-${Date.now()}`;
-      const transaction: Transaction = {
-        id: transactionId,
-        walletId: merchantWallet.id,
-        userId: pp.merchantId,
-        amount: pp.amount,
-        type: 'CREDIT',
-        category: 'PROTECTION_RELEASE',
-        status: 'PENDING',
-        referenceId: ppId,
-        description: `Funds released from SafePay for shipment ${pp.shipmentId}`,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await transactionRepository.create(transactionId, transaction);
+    await paymentProtectionRepository.update(pp.id, {
+      status: 'PAYMENT_RELEASED',
+      paymentReleasedAt: new Date().toISOString(),
+      releasedBy: actorId,
+      updatedAt: new Date().toISOString()
     });
 
     await auditRepository.logAction(actorId, 'PAYMENT_PROTECTION_RELEASED', { ppId }, ppId);
 
-    await notificationService.send(pp.merchantId, 'Protected Payment Released', `Funds of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} have been released to your wallet.`, 'SUCCESS', undefined, 'PAYMENT');
+    await notificationService.send(pp.merchantId, 'Protected Payment Released', `Payment of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} has been released via SafePay provider.`, 'SUCCESS', undefined, 'PAYMENT');
 
     await notificationService.send(pp.customerId, 'Payment Protection Released', `Your secure payment for shipment ${pp.shipmentId} has been released to the merchant.`, 'SUCCESS', undefined, 'PAYMENT');
   }
@@ -236,45 +164,16 @@ export class PaymentProtectionEngine {
     const pp = await paymentProtectionRepository.getById(ppId);
     if (!pp) throw new Error('Payment Protection record not found');
 
-    await walletRepository.transaction(async () => {
-      await paymentProtectionRepository.update(pp.id, {
-        status: 'PAYMENT_RELEASED',
-        paymentReleasedAt: new Date().toISOString(),
-        releasedBy: actorId
-      });
-
-      // Transfer from SafePay to Pending balance
-      const merchantWallet = await this.getOrCreateWallet(pp.merchantId);
-      const currentSafePay = merchantWallet.SafePayBalance || 0;
-      const currentPending = merchantWallet.pendingBalance || 0;
-
-      await walletRepository.update(merchantWallet.id, {
-        SafePayBalance: Math.max(0, currentSafePay - pp.amount),
-        pendingBalance: currentPending + pp.amount,
-        lastUpdated: new Date().toISOString()
-      });
-
-      const transactionId = `TX-REL-ADM-${Date.now()}`;
-      const transaction: Transaction = {
-        id: transactionId,
-        walletId: merchantWallet.id,
-        userId: pp.merchantId,
-        amount: pp.amount,
-        type: 'CREDIT',
-        category: 'PROTECTION_RELEASE',
-        status: 'PENDING',
-        referenceId: ppId,
-        description: `Dispute resolved: Funds released from SafePay by Admin for shipment ${pp.shipmentId}`,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await transactionRepository.create(transactionId, transaction);
+    await paymentProtectionRepository.update(pp.id, {
+      status: 'PAYMENT_RELEASED',
+      paymentReleasedAt: new Date().toISOString(),
+      releasedBy: actorId,
+      updatedAt: new Date().toISOString()
     });
 
     await auditRepository.logAction(actorId, 'PAYMENT_PROTECTION_RELEASED_BY_ADMIN', { ppId, amount: pp.amount }, ppId);
 
-    await notificationService.send(pp.merchantId, 'Secure Payment Dispute Resolved - Released', `Following dispute resolution, funds of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} have been released to your wallet by the Dispute Administrator.`, 'SUCCESS', undefined, 'PAYMENT');
+    await notificationService.send(pp.merchantId, 'Secure Payment Dispute Resolved - Released', `Following dispute resolution, payment of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} has been released by the Dispute Administrator.`, 'SUCCESS', undefined, 'PAYMENT');
 
     await notificationService.send(pp.customerId, 'Dispute Resolved', `Your disputed payment of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} has been released to the merchant.`, 'INFO', undefined, 'PAYMENT');
   }
@@ -283,52 +182,17 @@ export class PaymentProtectionEngine {
     const pp = await paymentProtectionRepository.getById(ppId);
     if (!pp) throw new Error('Payment Protection record not found');
 
-    await walletRepository.transaction(async () => {
-      await paymentProtectionRepository.update(pp.id, {
-        status: 'REFUND_APPROVED',
-        paymentReleasedAt: new Date().toISOString(),
-        releasedBy: actorId,
-        refundAmount: pp.amount
-      });
-
-      // Deduct from merchant's SafePay Balance
-      const merchantWallet = await this.getOrCreateWallet(pp.merchantId);
-      const currentSafePay = merchantWallet.SafePayBalance || 0;
-      await walletRepository.update(merchantWallet.id, {
-        SafePayBalance: Math.max(0, currentSafePay - pp.amount),
-        lastUpdated: new Date().toISOString()
-      });
-
-      // Credit Customer's Available Balance immediately
-      const customerWallet = await this.getOrCreateWallet(pp.customerId);
-      const currentBalance = customerWallet.balance || 0;
-      await walletRepository.update(customerWallet.id, {
-        balance: currentBalance + pp.amount,
-        lastUpdated: new Date().toISOString()
-      });
-
-      // Create REFUND credit transaction for the customer (COMPLETED)
-      const transactionId = `TX-REF-${Date.now()}`;
-      const transaction: Transaction = {
-        id: transactionId,
-        walletId: customerWallet.id,
-        userId: pp.customerId,
-        amount: pp.amount,
-        type: 'CREDIT',
-        category: 'REFUND',
-        status: 'COMPLETED',
-        referenceId: ppId,
-        description: `Refund for disputed shipment ${pp.shipmentId} approved by Admin`,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await transactionRepository.create(transactionId, transaction);
+    await paymentProtectionRepository.update(pp.id, {
+      status: 'REFUND_APPROVED',
+      paymentReleasedAt: new Date().toISOString(),
+      releasedBy: actorId,
+      refundAmount: pp.amount,
+      updatedAt: new Date().toISOString()
     });
 
     await auditRepository.logAction(actorId, 'PAYMENT_PROTECTION_REFUNDED_BY_ADMIN', { ppId, amount: pp.amount }, ppId);
 
-    await notificationService.send(pp.customerId, 'Secure Payment Refund Approved', `Your disputed payment of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} has been refunded to your wallet.`, 'SUCCESS', undefined, 'PAYMENT');
+    await notificationService.send(pp.customerId, 'Secure Payment Refund Approved', `Your disputed payment of ${pp.currency} ${pp.amount} for shipment ${pp.shipmentId} has been approved for refund via SafePay provider.`, 'SUCCESS', undefined, 'PAYMENT');
 
     await notificationService.send(pp.merchantId, 'Dispute Resolved - Refunded', `The dispute on shipment ${pp.shipmentId} has been resolved. The protected payment has been refunded to the customer.`, 'WARNING', undefined, 'PAYMENT');
   }
@@ -337,79 +201,23 @@ export class PaymentProtectionEngine {
     const pp = await paymentProtectionRepository.getById(ppId);
     if (!pp) throw new Error('Payment Protection record not found');
 
-    await walletRepository.transaction(async () => {
-      await paymentProtectionRepository.update(pp.id, {
-        status: 'PARTIAL_REFUND_APPROVED',
-        paymentReleasedAt: new Date().toISOString(),
-        releasedBy: actorId,
-        refundAmount: buyerAmount,
-        metadata: {
-          ...pp.metadata,
-          partialSplit: { buyerAmount, merchantAmount }
-        }
-      });
-
-      // Deduct total amount from merchant's SafePay
-      const merchantWallet = await this.getOrCreateWallet(pp.merchantId);
-      const currentSafePay = merchantWallet.SafePayBalance || 0;
-      const currentPending = merchantWallet.pendingBalance || 0;
-
-      await walletRepository.update(merchantWallet.id, {
-        SafePayBalance: Math.max(0, currentSafePay - pp.amount),
-        pendingBalance: currentPending + merchantAmount, // merchant's portion goes to pending
-        lastUpdated: new Date().toISOString()
-      });
-
-      // Credit buyer's available balance immediately
-      const customerWallet = await this.getOrCreateWallet(pp.customerId);
-      const currentBuyerBal = customerWallet.balance || 0;
-      await walletRepository.update(customerWallet.id, {
-        balance: currentBuyerBal + buyerAmount,
-        lastUpdated: new Date().toISOString()
-      });
-
-      // Create REFUND credit transaction for Customer
-      const buyerTxId = `TX-REF-PRT-${Date.now()}`;
-      const buyerTx: Transaction = {
-        id: buyerTxId,
-        walletId: customerWallet.id,
-        userId: pp.customerId,
-        amount: buyerAmount,
-        type: 'CREDIT',
-        category: 'REFUND',
-        status: 'COMPLETED',
-        referenceId: ppId,
-        description: `Partial refund for disputed shipment ${pp.shipmentId} approved by Admin`,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await transactionRepository.create(buyerTxId, buyerTx);
-
-      // Create PROTECTION_RELEASE credit transaction for Merchant
-      const merchantTxId = `TX-REL-PRT-${Date.now()}`;
-      const merchantTx: Transaction = {
-        id: merchantTxId,
-        walletId: merchantWallet.id,
-        userId: pp.merchantId,
-        amount: merchantAmount,
-        type: 'CREDIT',
-        category: 'PROTECTION_RELEASE',
-        status: 'PENDING',
-        referenceId: ppId,
-        description: `Partial release from dispute for shipment ${pp.shipmentId} approved by Admin`,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      await transactionRepository.create(merchantTxId, merchantTx);
+    await paymentProtectionRepository.update(pp.id, {
+      status: 'PARTIAL_REFUND_APPROVED',
+      paymentReleasedAt: new Date().toISOString(),
+      releasedBy: actorId,
+      refundAmount: buyerAmount,
+      metadata: {
+        ...pp.metadata,
+        partialSplit: { buyerAmount, merchantAmount }
+      },
+      updatedAt: new Date().toISOString()
     });
 
     await auditRepository.logAction(actorId, 'PAYMENT_PROTECTION_PARTIAL_REFUND_BY_ADMIN', { ppId, buyerAmount, merchantAmount }, ppId);
 
-    await notificationService.send(pp.customerId, 'Partial Refund Approved', `The dispute has been resolved with a partial split. ${pp.currency} ${buyerAmount} has been refunded to your wallet.`, 'SUCCESS', undefined, 'PAYMENT');
+    await notificationService.send(pp.customerId, 'Partial Refund Approved', `The dispute has been resolved with a partial split. ${pp.currency} ${buyerAmount} has been refunded.`, 'SUCCESS', undefined, 'PAYMENT');
 
-    await notificationService.send(pp.merchantId, 'Partial Payout Released', `The dispute has been resolved with a partial split. ${pp.currency} ${merchantAmount} has been paid to your wallet.`, 'SUCCESS', undefined, 'PAYMENT');
+    await notificationService.send(pp.merchantId, 'Partial Payout Released', `The dispute has been resolved with a partial split. ${pp.currency} ${merchantAmount} has been released.`, 'SUCCESS', undefined, 'PAYMENT');
   }
 
   async requestInspectionExtension(ppId: string, actorId: string): Promise<void> {
