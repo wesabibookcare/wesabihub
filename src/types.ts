@@ -1188,19 +1188,130 @@ export interface Complaint extends BaseEntity {
 // =========================================================================
 
 export type PaymentProtectionStatus =
+  | 'DRAFT'
+  | 'PROPOSED'
+  | 'AWAITING_PARTY_ACCEPTANCE'
+  | 'AGREED'
   | 'PENDING_PAYMENT'
+  | 'PAYMENT_PENDING'
   | 'FUNDS_SECURED'
+  | 'READY_FOR_FULFILLMENT'
+  | 'IN_TRANSIT'
   | 'SHIPMENT_IN_TRANSIT'
+  | 'DELIVERED'
   | 'DELIVERED_AWAITING_CONFIRMATION'
+  | 'INSPECTION'
   | 'INSPECTION_IN_PROGRESS'
+  | 'ACCEPTED'
+  | 'RELEASE_PENDING'
   | 'PAYMENT_RELEASED'
+  | 'CANCELLED'
   | 'DISPUTE_OPENED'
   | 'UNDER_INVESTIGATION'
+  | 'REFUND_PENDING'
+  | 'REFUNDED'
   | 'REFUND_APPROVED'
   | 'PARTIAL_REFUND_APPROVED'
   | 'PAYMENT_COMPLETED'
   | 'TRANSACTION_CLOSED'
-  | 'CANCELLED';
+  | 'EXPIRED'
+  | 'FAILED';
+
+export type SafePayFeePayer = 'BUYER' | 'SELLER' | 'SPLIT';
+
+export interface SafePayFeeConfig {
+  percentageFee: number;
+  fixedFee: number;
+  minimumFee: number;
+  maximumFee: number;
+  isActive: boolean;
+  currency: string;
+  effectiveDate: string;
+}
+
+export interface SafePayAgreementTerms {
+  itemCondition: string;
+  testing: string;
+  warranty: string;
+  returnPolicy: string;
+  authenticity: string;
+  contents: string;
+  serialImei: string;
+  packaging: string;
+  delivery: string;
+  inspection: string;
+  defectDefinition: string;
+  specialInstructions?: string;
+  customTerms?: Array<{ key: string; value: string }>;
+}
+
+export interface SafePayAgreementVersion {
+  version: number;
+  transactionId: string;
+  conversationId?: string;
+  proposerId: string;
+  proposerRole: 'BUYER' | 'SELLER';
+  timestamp: string;
+  previousVersionRef?: string;
+  terms: SafePayAgreementTerms;
+  agreedAmount: number;
+  feeConfigSnapshot: SafePayFeeConfig;
+  feePayer: SafePayFeePayer;
+  feeAmount: number;
+  buyerFeeShare: number;
+  sellerFeeShare: number;
+  buyerAccepted: boolean;
+  buyerAcceptedAt?: string;
+  sellerAccepted: boolean;
+  sellerAcceptedAt?: string;
+  safePayTermsAcceptedByBuyer: boolean;
+  safePayTermsAcceptedBySeller: boolean;
+  status: 'DRAFT' | 'PROPOSED' | 'AWAITING_PARTY_ACCEPTANCE' | 'AGREED' | 'SUPERSEDED';
+}
+
+export interface SafePayTransaction extends BaseEntity {
+  transactionId: string;
+  conversationId?: string;
+  buyerId: string;
+  buyerName: string;
+  buyerEmail?: string;
+  sellerId: string;
+  sellerName: string;
+  sellerEmail?: string;
+  itemTitle: string;
+  itemDescription?: string;
+  itemPrice: number;
+  orderId?: string;
+  parcelId?: string;
+  trackingNumber?: string;
+  logisticsChoice: 'NONE' | 'WESABIHUB_HUB' | 'WESABIHUB_RIDER' | 'EXTERNAL_COURIER' | 'SELLER_DELIVERY' | 'BUYER_PICKUP';
+  agreedAmount: number;
+  feeAmount: number;
+  feePayer: SafePayFeePayer;
+  buyerFeeShare: number;
+  sellerFeeShare: number;
+  authoritativePaymentRequired: number;
+  currentVersion: number;
+  versions: SafePayAgreementVersion[];
+  activeAgreement?: SafePayAgreementVersion;
+  status: PaymentProtectionStatus;
+  paymentStatus: 'UNPAID' | 'PAYMENT_PENDING' | 'FUNDS_SECURED' | 'RELEASED' | 'REFUNDED' | 'FAILED';
+  flutterwaveRef?: string;
+  provider: string;
+  isSandbox?: boolean;
+  disputeId?: string;
+  evidence?: {
+    sellerPreDispatchVideo?: { url: string; durationSeconds: number; timestamp: string };
+    buyerUnboxingVideo?: { url: string; durationSeconds: number; timestamp: string };
+    photos?: string[];
+  };
+  auditLog: Array<{
+    timestamp: string;
+    actorId: string;
+    action: string;
+    details?: any;
+  }>;
+}
 
 export type SafePayStatus = PaymentProtectionStatus;
 export type SafePayRecord = PaymentProtectionRecord;
@@ -1208,15 +1319,15 @@ export type SafePaySettings = PaymentProtectionSettings;
 
 export interface PaymentProtectionRecord extends BaseEntity {
   paymentProtectionId: string;
-  shipmentId: string;
-  parcelId: string;
-  trackingNumber: string;
+  shipmentId?: string;
+  parcelId?: string;
+  trackingNumber?: string;
   customerId: string; // Buyer
   merchantId: string; // Seller
   amount: number;
   currency: string;
   status: PaymentProtectionStatus;
-  inspectionPeriodHours: number;
+  inspectionPeriodHours?: number;
   inspectionStartedAt?: string;
   inspectionExpiresAt?: string;
   paymentReleasedAt?: string;
@@ -1229,6 +1340,25 @@ export interface PaymentProtectionRecord extends BaseEntity {
   isSandbox?: boolean;
   verifyMetadata?: any;
   webhookReceived?: boolean;
+  // Extended fields for P1 SafePay Workspace
+  transactionId?: string;
+  conversationId?: string;
+  agreedAmount?: number;
+  feeAmount?: number;
+  feePayer?: SafePayFeePayer;
+  buyerFeeShare?: number;
+  sellerFeeShare?: number;
+  authoritativePaymentRequired?: number;
+  logisticsChoice?: string;
+  currentVersion?: number;
+  versions?: SafePayAgreementVersion[];
+  activeAgreement?: SafePayAgreementVersion;
+  auditLog?: Array<{
+    timestamp: string;
+    actorId: string;
+    action: string;
+    details?: any;
+  }>;
 }
 
 export interface PaymentProtectionSettings extends BaseEntity {
@@ -1237,6 +1367,8 @@ export interface PaymentProtectionSettings extends BaseEntity {
   allowInspectionExtension: boolean;
   autoReleaseAfterInspection: boolean;
   supportedPaymentProviders: string[];
+  // Extended SafePay Fee Configuration
+  feeConfig?: SafePayFeeConfig;
 }
 
 // =========================================================================

@@ -4060,7 +4060,416 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   });
 
   // Netlify Functions (and most serverless platforms) set one of these env
-  // vars. In that environment we must NOT call app.listen() -- the platform
+  // vars. In that environment we must NOT call app.listen() directly.
+  // ==========================================================
+  // SAFEPAY DEDICATED WORKSPACE & TRANSACTION ENGINE ENDPOINTS
+  // ==========================================================
+
+  // Helper: Calculate server-authoritative fee snapshot
+  const calculateSafePayFee = async (db, amount) => {
+    let feeConfig = {
+      percentageFee: 2.5,
+      fixedFee: 100,
+      minimumFee: 100,
+      maximumFee: 50000,
+      isActive: true,
+      currency: 'NGN',
+      effectiveDate: new Date().toISOString()
+    };
+    try {
+      const snap = await db.collection('systemSettings').doc('global').get();
+      if (snap.exists && snap.data()?.safePayFeeConfig) {
+        feeConfig = { ...feeConfig, ...snap.data().safePayFeeConfig };
+      }
+    } catch (e) {
+      console.warn('Could not read global safePayFeeConfig, using defaults', e);
+    }
+
+    const itemAmt = Number(amount) || 0;
+    let computed = (itemAmt * (feeConfig.percentageFee / 100)) + feeConfig.fixedFee;
+    if (feeConfig.minimumFee > 0 && computed < feeConfig.minimumFee) computed = feeConfig.minimumFee;
+    if (feeConfig.maximumFee > 0 && computed > feeConfig.maximumFee) computed = feeConfig.maximumFee;
+
+    return {
+      feeAmount: Math.round(computed * 100) / 100,
+      feeConfigSnapshot: feeConfig
+    };
+  };
+
+  // 1. Create or retrieve SafePay Transaction Workspace
+  app.post('/api/safepay/workspace/create', requireAuth(), async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'Database offline' });
+
+      const actorId = req.authUser!.uid;
+      const {
+        buyerId,
+        buyerName,
+        buyerEmail,
+        sellerId,
+        sellerName,
+        sellerEmail,
+        itemTitle,
+        itemDescription,
+        itemPrice,
+        conversationId,
+        logisticsChoice,
+        terms
+      } = req.body;
+
+      if (!buyerId || !sellerId || !itemTitle || !itemPrice) {
+        return res.status(400).json({ error: 'Missing required fields: buyerId, sellerId, itemTitle, itemPrice' });
+      }
+
+      if (actorId !== buyerId && actorId !== sellerId && !userHasAnyRole(req.authUser!, STAFF_ROLES)) {
+        return res.status(403).json({ error: 'Forbidden: You must be a party to this SafePay transaction' });
+      }
+
+      const numericPrice = Number(itemPrice);
+      if (isNaN(numericPrice) || numericPrice <= 0) {
+        return res.status(400).json({ error: 'Invalid item price' });
+      }
+
+      const { feeAmount, feeConfigSnapshot } = await calculateSafePayFee(db, numericPrice);
+      const feePayer = req.body.feePayer || 'BUYER';
+      let buyerFeeShare = feeAmount;
+      let sellerFeeShare = 0;
+      if (feePayer === 'SELLER') {
+        buyerFeeShare = 0;
+        sellerFeeShare = feeAmount;
+      } else if (feePayer === 'SPLIT') {
+        buyerFeeShare = Math.round((feeAmount / 2) * 100) / 100;
+        sellerFeeShare = Math.round((feeAmount - buyerFeeShare) * 100) / 100;
+      }
+
+      const authoritativePaymentRequired = numericPrice + buyerFeeShare;
+      const transactionId = 'SP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+
+      const initialTerms = terms || {
+        itemCondition: 'New',
+        testing: 'Testing allowed',
+        warranty: 'No warranty',
+        returnPolicy: 'Return only for defect',
+        authenticity: 'Original',
+        contents: 'Complete package',
+        serialImei: 'Not required',
+        packaging: 'Seller packaging',
+        delivery: logisticsChoice || 'WeSabiHub Hub',
+        inspection: 'Standard SafePay inspection',
+        defectDefinition: 'Item does not function as described',
+        specialInstructions: ''
+      };
+
+      const proposerRole = actorId === buyerId ? 'BUYER' : 'SELLER';
+
+      const v1 = {
+        version: 1,
+        transactionId,
+        conversationId: conversationId || '',
+        proposerId: actorId,
+        proposerRole,
+        timestamp: new Date().toISOString(),
+        terms: initialTerms,
+        agreedAmount: numericPrice,
+        feeConfigSnapshot,
+        feePayer,
+        feeAmount,
+        buyerFeeShare,
+        sellerFeeShare,
+        buyerAccepted: actorId === buyerId,
+        buyerAcceptedAt: actorId === buyerId ? new Date().toISOString() : undefined,
+        sellerAccepted: actorId === sellerId,
+        sellerAcceptedAt: actorId === sellerId ? new Date().toISOString() : undefined,
+        safePayTermsAcceptedByBuyer: actorId === buyerId,
+        safePayTermsAcceptedBySeller: actorId === sellerId,
+        status: (actorId === buyerId && actorId === sellerId) ? 'AGREED' : 'PROPOSED'
+      };
+
+      const txRecord = {
+        id: transactionId,
+        transactionId,
+        conversationId: conversationId || '',
+        buyerId,
+        buyerName: buyerName || 'Buyer',
+        buyerEmail: buyerEmail || '',
+        sellerId,
+        sellerName: sellerName || 'Seller',
+        sellerEmail: sellerEmail || '',
+        itemTitle,
+        itemDescription: itemDescription || '',
+        itemPrice: numericPrice,
+        logisticsChoice: logisticsChoice || 'WESABIHUB_HUB',
+        agreedAmount: numericPrice,
+        feeAmount,
+        feePayer,
+        buyerFeeShare,
+        sellerFeeShare,
+        authoritativePaymentRequired,
+        currentVersion: 1,
+        versions: [v1],
+        activeAgreement: v1.status === 'AGREED' ? v1 : undefined,
+        status: v1.status === 'AGREED' ? 'AGREED' : 'PROPOSED',
+        paymentStatus: 'UNPAID',
+        provider: 'FLUTTERWAVE',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        auditLog: [{
+          timestamp: new Date().toISOString(),
+          actorId,
+          action: 'SAFEPAY_TRANSACTION_CREATED',
+          details: { transactionId, numericPrice, feeAmount, feePayer }
+        }]
+      };
+
+      await db.collection('safePayTransactions').doc(transactionId).set(txRecord);
+
+      // Mirror record to paymentProtections for unified compatibility
+      await db.collection('paymentProtections').doc(transactionId).set({
+        id: transactionId,
+        paymentProtectionId: transactionId,
+        shipmentId: transactionId,
+        parcelId: transactionId,
+        customerId: buyerId,
+        merchantId: sellerId,
+        amount: authoritativePaymentRequired,
+        currency: 'NGN',
+        status: v1.status === 'AGREED' ? 'AGREED' : 'PROPOSED',
+        provider: 'FLUTTERWAVE',
+        transactionId,
+        conversationId: conversationId || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({ success: true, transaction: txRecord });
+    } catch (e) {
+      console.error('Create workspace error:', e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // 2. Get SafePay Workspace details
+  app.get('/api/safepay/workspace/:id', requireAuth(), async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'Database offline' });
+
+      const txId = req.params.id;
+      const actorId = req.authUser!.uid;
+
+      const docSnap = await db.collection('safePayTransactions').doc(txId).get();
+      if (!docSnap.exists) {
+        // Fallback search by conversationId
+        const querySnap = await db.collection('safePayTransactions')
+          .where('conversationId', '==', txId)
+          .limit(1)
+          .get();
+
+        if (querySnap.empty) {
+          return res.status(404).json({ error: 'SafePay transaction not found' });
+        }
+        const record = querySnap.docs[0].data();
+        return res.json({ success: true, transaction: record });
+      }
+
+      const record = docSnap.data();
+      const isParty = record.buyerId === actorId || record.sellerId === actorId;
+      if (!isParty && !userHasAnyRole(req.authUser!, STAFF_ROLES)) {
+        return res.status(403).json({ error: 'Forbidden: You are not a party to this SafePay transaction' });
+      }
+
+      res.json({ success: true, transaction: record });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // 3. Propose New Agreement Version or Accept Existing
+  app.post('/api/safepay/workspace/:id/agreement', requireAuth(), async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'Database offline' });
+
+      const txId = req.params.id;
+      const actorId = req.authUser!.uid;
+      const { action, terms, feePayer, safePayTermsAccepted } = req.body;
+
+      const docRef = db.collection('safePayTransactions').doc(txId);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) return res.status(404).json({ error: 'SafePay transaction not found' });
+
+      const record = docSnap.data();
+      const isBuyer = record.buyerId === actorId;
+      const isSeller = record.sellerId === actorId;
+
+      if (!isBuyer && !isSeller) {
+        return res.status(403).json({ error: 'Forbidden: Only buyer or seller can modify agreement' });
+      }
+
+      const versions = record.versions || [];
+      const latestVersion = versions[versions.length - 1];
+
+      if (action === 'ACCEPT') {
+        if (!safePayTermsAccepted) {
+          return res.status(400).json({ error: 'You must explicitly accept the SafePay Terms & Conditions.' });
+        }
+
+        if (isBuyer) {
+          latestVersion.buyerAccepted = true;
+          latestVersion.buyerAcceptedAt = new Date().toISOString();
+          latestVersion.safePayTermsAcceptedByBuyer = true;
+        }
+        if (isSeller) {
+          latestVersion.sellerAccepted = true;
+          latestVersion.sellerAcceptedAt = new Date().toISOString();
+          latestVersion.safePayTermsAcceptedBySeller = true;
+        }
+
+        const isBothAccepted = latestVersion.buyerAccepted && latestVersion.sellerAccepted;
+        if (isBothAccepted) {
+          latestVersion.status = 'AGREED';
+          record.activeAgreement = latestVersion;
+          record.status = 'AGREED';
+          record.paymentStatus = 'PAYMENT_PENDING';
+        }
+
+        record.auditLog = record.auditLog || [];
+        record.auditLog.push({
+          timestamp: new Date().toISOString(),
+          actorId,
+          action: isBothAccepted ? 'AGREEMENT_FULLY_ACCEPTED' : 'AGREEMENT_PARTIALLY_ACCEPTED',
+          details: { version: latestVersion.version, role: isBuyer ? 'BUYER' : 'SELLER' }
+        });
+
+        record.updatedAt = new Date().toISOString();
+        await docRef.update(record);
+
+        // Keep paymentProtections synchronized
+        await db.collection('paymentProtections').doc(txId).update({
+          status: record.status,
+          amount: record.authoritativePaymentRequired,
+          activeAgreement: latestVersion,
+          updatedAt: new Date().toISOString()
+        }).catch(() => {});
+
+        return res.json({ success: true, transaction: record });
+      }
+
+      if (action === 'PROPOSE_NEW') {
+        if (!terms) return res.status(400).json({ error: 'Missing terms for new agreement version' });
+
+        const nextVersionNumber = (record.currentVersion || 1) + 1;
+        const newFeePayer = feePayer || latestVersion.feePayer || 'BUYER';
+        // Preserve original agreement fee snapshot!
+        const feeConfigSnapshot = latestVersion.feeConfigSnapshot;
+        const feeAmount = latestVersion.feeAmount;
+
+        let buyerFeeShare = feeAmount;
+        let sellerFeeShare = 0;
+        if (newFeePayer === 'SELLER') {
+          buyerFeeShare = 0;
+          sellerFeeShare = feeAmount;
+        } else if (newFeePayer === 'SPLIT') {
+          buyerFeeShare = Math.round((feeAmount / 2) * 100) / 100;
+          sellerFeeShare = Math.round((feeAmount - buyerFeeShare) * 100) / 100;
+        }
+
+        const authoritativePaymentRequired = record.agreedAmount + buyerFeeShare;
+
+        const newVersion = {
+          version: nextVersionNumber,
+          transactionId: txId,
+          conversationId: record.conversationId,
+          proposerId: actorId,
+          proposerRole: isBuyer ? 'BUYER' : 'SELLER',
+          timestamp: new Date().toISOString(),
+          previousVersionRef: 'V' + latestVersion.version,
+          terms,
+          agreedAmount: record.agreedAmount,
+          feeConfigSnapshot,
+          feePayer: newFeePayer,
+          feeAmount,
+          buyerFeeShare,
+          sellerFeeShare,
+          buyerAccepted: isBuyer,
+          buyerAcceptedAt: isBuyer ? new Date().toISOString() : undefined,
+          sellerAccepted: isSeller,
+          sellerAcceptedAt: isSeller ? new Date().toISOString() : undefined,
+          safePayTermsAcceptedByBuyer: isBuyer ? !!safePayTermsAccepted : false,
+          safePayTermsAcceptedBySeller: isSeller ? !!safePayTermsAccepted : false,
+          status: 'PROPOSED'
+        };
+
+        latestVersion.status = 'SUPERSEDED';
+
+        record.currentVersion = nextVersionNumber;
+        record.versions.push(newVersion);
+        record.feePayer = newFeePayer;
+        record.buyerFeeShare = buyerFeeShare;
+        record.sellerFeeShare = sellerFeeShare;
+        record.authoritativePaymentRequired = authoritativePaymentRequired;
+        record.status = 'PROPOSED';
+
+        record.auditLog = record.auditLog || [];
+        record.auditLog.push({
+          timestamp: new Date().toISOString(),
+          actorId,
+          action: 'AGREEMENT_NEW_VERSION_PROPOSED',
+          details: { version: nextVersionNumber, proposerRole: isBuyer ? 'BUYER' : 'SELLER' }
+        });
+
+        record.updatedAt = new Date().toISOString();
+        await docRef.update(record);
+
+        return res.json({ success: true, transaction: record });
+      }
+
+      return res.status(400).json({ error: 'Invalid action. Supported: ACCEPT, PROPOSE_NEW' });
+    } catch (e) {
+      console.error('Agreement update error:', e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // 4. Update Admin SafePay Fee Configuration
+  app.post('/api/safepay/admin/fee-config', requireRole(FINANCE_ROLES), async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'Database offline' });
+
+      const { percentageFee, fixedFee, minimumFee, maximumFee, isActive } = req.body;
+      const feeConfig = {
+        percentageFee: Number(percentageFee) || 0,
+        fixedFee: Number(fixedFee) || 0,
+        minimumFee: Number(minimumFee) || 0,
+        maximumFee: Number(maximumFee) || 0,
+        isActive: isActive !== false,
+        currency: 'NGN',
+        effectiveDate: new Date().toISOString()
+      };
+
+      await db.collection('systemSettings').doc('global').set({
+        safePayFeeConfig: feeConfig
+      }, { merge: true });
+
+      await auditEngine.logEvent({
+        userId: req.authUser!.uid,
+        userRole: req.authUser!.role || undefined,
+        action: 'SAFEPAY_FEE_CONFIG_UPDATED',
+        details: feeConfig,
+        result: 'SUCCESS',
+        ipAddress: req.ip,
+        deviceInfo: req.get('user-agent')
+      });
+
+      res.json({ success: true, feeConfig });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Note: on Netlify serverless, we do not call app.listen()
   // invokes the Express app's request handler directly via serverless-http
   // (see netlify/functions/api.ts). Everything else about the app (routes,
   // middleware, error handling) stays identical either way.

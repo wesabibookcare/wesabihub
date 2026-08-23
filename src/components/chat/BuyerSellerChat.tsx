@@ -929,6 +929,48 @@ export const BuyerSellerChat = () => {
 
               {/* Action buttons on header */}
               <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const isMerchant = currentUserRole === 'MERCHANT';
+                      const partnerId = activeConv.type === 'USERNAME'
+                        ? (activeConv.participants.find(id => id !== currentUserId) || activeConv.participants[0])
+                        : (activeConv.sellerId === currentUserId ? activeConv.buyerId : activeConv.sellerId);
+
+                      const res = await fetch('/api/safepay/workspace/create', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${fbUser ? await fbUser.getIdToken() : ''}`
+                        },
+                        body: JSON.stringify({
+                          buyerId: activeConv.buyerId || currentUserId,
+                          buyerName: activeConv.buyerName || currentUserName,
+                          sellerId: activeConv.sellerId || partnerId,
+                          sellerName: activeConv.sellerName || 'Seller',
+                          itemTitle: activeConv.itemInfo?.title || 'Agreed SafePay Purchase',
+                          itemPrice: activeConv.itemInfo?.estimatedValue || 10000,
+                          conversationId: activeConv.id,
+                          logisticsChoice: 'WESABIHUB_HUB'
+                        })
+                      });
+                      const data = await res.json();
+                      if (data.success && data.transaction) {
+                        navigate(`/safepay/workspace/${data.transaction.transactionId}`);
+                      } else {
+                        toast.error(data.error || 'Failed to open SafePay Workspace');
+                      }
+                    } catch (e: any) {
+                      toast.error('Could not initialize SafePay Workspace');
+                    }
+                  }}
+                  className="rounded-xl flex items-center gap-1.5 text-[11px] h-8 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                >
+                  <ShieldCheck size={14} /> SafePay Workspace
+                </Button>
+
                 {(activeConv.type === 'SHIPMENT' || activeConv.linkedShipmentId) && (
                   <>
                     <Button

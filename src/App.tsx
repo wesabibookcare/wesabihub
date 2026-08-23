@@ -20,6 +20,7 @@ import { ContactPage } from './pages/public/ContactPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { HowItWorksPage } from './pages/public/HowItWorksPage';
 import { SafePayPage } from './pages/public/SafePayPage';
+import { SafePayWorkspace } from './components/payment/SafePayWorkspace';
 import { MerchantSolutionsPage } from './pages/public/MerchantSolutionsPage';
 import { LogisticsPartnerPage } from './pages/public/LogisticsPartnerPage';
 import { BecomeDispatchPartnerPage } from './pages/public/BecomeDispatchPartnerPage';
@@ -183,6 +184,8 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/safepay" element={<SafePayPage />} />
+          <Route path="/safepay/workspace" element={<ProtectedRoute><SafePayWorkspace /></ProtectedRoute>} />
+          <Route path="/safepay/workspace/:id" element={<ProtectedRoute><SafePayWorkspace /></ProtectedRoute>} />
           <Route path="/find-center" element={<FindCenterPage />} />
           <Route path="/merchants" element={<MerchantSolutionsPage />} />
           <Route path="/centers" element={<BecomeCenterPage />} />
