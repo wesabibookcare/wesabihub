@@ -45,7 +45,7 @@ class PaymentEngine {
     }
 
     // Payment Method Enforcement for normal platform payments
-    const isSafePay = paymentType === 'SAFEPAY';
+    const isSafePay = paymentType === 'SAFEPAY' || paymentType === 'ESCROW';
     const requestedMethod = data.paymentMethod || data.metadata?.paymentMethod || data.metadata?.method;
 
     if (!isSafePay) {
@@ -81,17 +81,21 @@ class PaymentEngine {
     }
 
     // 2. Determine provider and retry/fallback policy
-    let primaryProviderName = isSafePay ? config.primarySafePayProvider : config.primaryPlatformProvider;
+    // SafePay strictly uses Flutterwave only
+    let primaryProviderName = isSafePay ? 'FLUTTERWAVE' : (config.primaryPlatformProvider || 'PAYSTACK');
 
-    // --- SANDBOX FALLBACK ---
-    // If no real gateway API key is configured yet (e.g. during development,
-    // or before going live with real Flutterwave/Paystack credentials), don't
-    // let the payment fail outright. Redirect to WeSabiHub's own built-in
-    // sandbox payment simulator instead, so the rest of the flow (redirect,
-    // return, verify, SafePay/wallet update) can still be tested end-to-end.
+    const isProduction = process.env.NODE_ENV === 'production';
     const hasFlutterwaveKey = !!process.env.FLUTTERWAVE_SECRET_KEY;
     const hasPaystackKey = !!process.env.PAYSTACK_SECRET_KEY;
-    if (!hasFlutterwaveKey && !hasPaystackKey) {
+
+    if (isProduction) {
+      if (isSafePay && !hasFlutterwaveKey) {
+        throw new Error('SafePay service is currently unavailable. Provider configuration missing.');
+      }
+      if (!isSafePay && !hasPaystackKey && !hasFlutterwaveKey) {
+        throw new Error('Payment service is currently unavailable. Provider configuration missing.');
+      }
+    } else if (!hasFlutterwaveKey && !hasPaystackKey) {
       const shipmentId = data.metadata?.shipmentId || '';
       const mockCheckoutUrl = `/api/payment-protection/mock-checkout?tx_ref=${encodeURIComponent(data.reference)}&amount=${encodeURIComponent(data.amount)}&shipmentId=${encodeURIComponent(shipmentId)}`;
       await auditEngine.logEvent({
@@ -108,7 +112,7 @@ class PaymentEngine {
       };
     }
 
-    // Fallback eligibility (SafePay is never eligible for fallback)
+    // Fallback eligibility (SafePay is NEVER eligible for fallback)
     const fallbackAllowed = !isSafePay && config.enableFallback && config.allowedFallbackTypes.includes(paymentType);
     const backupProviderName = isSafePay ? '' : (primaryProviderName === 'PAYSTACK' ? 'FLUTTERWAVE' : 'PAYSTACK');
 
@@ -500,16 +504,15 @@ class PaymentEngine {
    * Verification, Refund, and Release Methods
    */
   async verifyExternalPayment(reference: string, providerName?: string): Promise<any> {
-    // --- SANDBOX FALLBACK ---
-    // Mirrors the same fallback in initiateExternalPayment: if no real gateway
-    // key is configured, there is no real transaction to check with a
-    // provider. Treat it as successful so the rest of the flow (crediting a
-    // wallet, securing SafePay-protected funds, etc.) can still be tested end-to-end.
-    // amount/currency are intentionally omitted so callers that compare them
-    // against the stored expected amount skip that check rather than failing.
+    const isProduction = process.env.NODE_ENV === 'production';
     const hasFlutterwaveKey = !!process.env.FLUTTERWAVE_SECRET_KEY;
     const hasPaystackKey = !!process.env.PAYSTACK_SECRET_KEY;
-    if (!hasFlutterwaveKey && !hasPaystackKey) {
+
+    if (isProduction) {
+      if (!hasFlutterwaveKey && !hasPaystackKey) {
+        throw new Error('Payment verification failed: Provider credentials missing in production.');
+      }
+    } else if (!hasFlutterwaveKey && !hasPaystackKey) {
       return { reference, status: 'SUCCESS', rawResponse: { sandbox: true } };
     }
 

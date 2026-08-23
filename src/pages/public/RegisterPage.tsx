@@ -60,15 +60,7 @@ const roles = [
   { id: 'MERCHANT' as UserRole, label: 'Merchant', desc: 'Send business shipments', icon: ShoppingBag },
   { id: 'CENTER_OWNER' as UserRole, label: 'Hub Owner', desc: 'Host a local parcel point', icon: MapPin },
   { id: 'CENTER_STAFF' as UserRole, label: 'Hub Staff', desc: 'Work at a local point', icon: Users },
-  { id: 'LOGISTICS_COMPANY' as UserRole, label: 'Logistics Company', desc: 'Manage fleet & business', icon: Truck },
   { id: 'DISPATCH_RIDER' as UserRole, label: 'Dispatch Rider', desc: 'Deliver as neighborhood hero', icon: Package },
-  { id: 'DEVELOPER' as UserRole, label: 'Developer', desc: 'Build with our APIs', icon: Code },
-].filter(r => !HIDDEN_FROM_REGISTER.includes(r.id));
-
-const LOGISTICS_SUB_ROLES = [
-  { id: 'LOGISTICS_COMPANY' as UserRole, label: 'Company Owner', desc: 'Own a logistics business' },
-  { id: 'FLEET_MANAGER' as UserRole, label: 'Fleet Manager', desc: 'Manage vehicles for an owner' },
-  { id: 'DRIVER' as UserRole, label: 'Driver', desc: 'Employee driver for a company' },
 ];
 
 export const RegisterPage: React.FC = () => {
@@ -107,32 +99,8 @@ export const RegisterPage: React.FC = () => {
     setError(null);
 
     try {
-      const roleToRegister = selectedRole === 'LOGISTICS_COMPANY' ? logisticsSubRole : selectedRole;
+      const roleToRegister = selectedRole;
       const extraData: any = {};
-
-      // Validate Invite Code if applicable
-      if (['FLEET_MANAGER', 'DRIVER'].includes(roleToRegister)) {
-        if (!inviteCode) {
-          setError('Invitation code is required for this role');
-          setLoading(false);
-          return;
-        }
-
-        const inv = await invitationEngine.validateCode(inviteCode, roleToRegister);
-
-        if (!inv) {
-          setError('Invalid or expired invitation code. Please check with your company owner.');
-          setLoading(false);
-          return;
-        }
-
-        extraData.companyId = inv.senderId;
-        extraData.invitationId = inv.id;
-      }
-
-      if (roleToRegister === 'LOGISTICS_COMPANY') {
-        extraData.companyName = companyName;
-      }
 
       if (roleToRegister === 'DISPATCH_RIDER') {
         extraData.guarantors = guarantors;
@@ -339,58 +307,6 @@ export const RegisterPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Logistics Sub-roles */}
-              {selectedRole === 'LOGISTICS_COMPANY' && (
-                <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <label className="text-sm font-medium text-slate-900 block text-center border-b pb-2 mb-2">Refine Your Logistics Role</label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {LOGISTICS_SUB_ROLES.map((sr) => (
-                      <button
-                        key={sr.id}
-                        type="button"
-                        onClick={() => setLogisticsSubRole(sr.id)}
-                        className={cn(
-                          "p-2 px-3 rounded-lg border text-left transition-all",
-                          logisticsSubRole === sr.id
-                            ? "border-blue-600 bg-blue-50 text-blue-700 ring-1 ring-blue-600"
-                            : "border-slate-200 bg-white text-slate-800"
-                        )}
-                      >
-                        <div className="text-xs font-bold">{sr.label}</div>
-                        <div className="text-[10px] opacity-70">{sr.desc}</div>
-                      </button>
-                    ))}
-                  </div>
-
-                  {logisticsSubRole === 'LOGISTICS_COMPANY' && (
-                    <div className="pt-2 animate-in fade-in slide-in-from-top-1">
-                      <label className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">Company Legal Name</label>
-                      <Input
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                        placeholder="e.g. Swift Logistics Ltd"
-                        className="mt-1"
-                        required
-                      />
-                    </div>
-                  )}
-
-                  {['FLEET_MANAGER', 'DRIVER'].includes(logisticsSubRole) && (
-                    <div className="pt-2 animate-in fade-in slide-in-from-top-1">
-                      <label className="text-[10px] font-bold text-slate-900 uppercase tracking-wider">Invitation Code</label>
-                      <Input
-                        value={inviteCode}
-                        onChange={(e) => setInviteCode(e.target.value)}
-                        placeholder="6-digit company code"
-                        className="mt-1"
-                        maxLength={6}
-                        required
-                      />
-                      <p className="text-[10px] text-slate-800 mt-1 italic">Contact your company owner for this code</p>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Dispatch Rider Guarantors */}
               {selectedRole === 'DISPATCH_RIDER' && (
