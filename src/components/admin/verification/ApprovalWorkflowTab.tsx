@@ -160,15 +160,17 @@ export const ApprovalWorkflowTab: React.FC = () => {
       }
 
       // Grant the approved role: merge it into the user's existing roles
-      // instead of just flipping account status, so approval actually
-      // unlocks the role's features (RoleGuard checks user.roles).
+      // so approval makes the account possess multiple roles (e.g. ['CUSTOMER', 'MERCHANT']).
       const applicant = await userRepository.getById(app.userId);
-      const existingRoles = applicant?.roles || [];
+      const existingRoles = applicant?.roles || ['CUSTOMER'];
       const mergedRoles = existingRoles.includes(app.role) ? existingRoles : [...existingRoles, app.role];
 
       await userRepository.update(app.userId, {
         status: 'ACTIVE',
         roles: mergedRoles,
+        role: app.role, // set primary active role to newly approved role
+        pendingRoleApplication: false,
+        requestedRole: undefined,
         updatedAt: new Date().toISOString(),
         ...extraProfileData
       });

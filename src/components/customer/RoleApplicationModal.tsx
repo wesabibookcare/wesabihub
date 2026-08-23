@@ -36,8 +36,12 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
 
   const [docType, setDocType] = useState<DocType>('NIN_CARD');
   const [docImage, setDocImage] = useState<string | null>(null);
+  const [docBackImage, setDocBackImage] = useState<string | null>(null);
   const [selfieImage, setSelfieImage] = useState<string | null>(null);
 
+  const [nin, setNin] = useState('');
+  const [ninName, setNinName] = useState('');
+  const [cac, setCac] = useState('');
   const [fullName, setFullName] = useState(user?.displayName || '');
   const [phone, setPhone] = useState(user?.phoneNumber || '');
   const [address, setAddress] = useState('');
@@ -121,15 +125,23 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
   };
 
   const canProceedFromStep = (s: number) => {
-    if (s === 0) return !!docImage;
+    if (s === 0) return !!docImage && !!docBackImage && !!nin.trim() && !!ninName.trim() && (role !== 'CENTER_OWNER' || !!cac.trim());
     if (s === 1) return !!selfieImage;
-    if (s === 2) return fullName.trim() && phone.trim() && address.trim() && city.trim() && state.trim();
+    if (s === 2) {
+      const nameMatch = fullName.trim().toLowerCase() === ninName.trim().toLowerCase();
+      return fullName.trim() && phone.trim() && address.trim() && city.trim() && state.trim() && nameMatch;
+    }
     return true;
   };
 
   const handleSubmit = async () => {
     const userId = user?.uid || user?.id;
     if (!userId) return;
+
+    if (fullName.trim().toLowerCase() !== ninName.trim().toLowerCase()) {
+      toast.error('Your Full Name must match your Name on NIN exactly.');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -141,7 +153,11 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
         status: 'SUBMITTED',
         data: {
           documentType: docType,
+          nin,
+          ninName,
+          cac,
           document_id: docImage || '',
+          document_nin_back: docBackImage || '',
           document_selfie: selfieImage || '',
           fullName,
           phone,
@@ -149,7 +165,7 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
           city,
           state,
         },
-        documents: [docImage || '', selfieImage || ''].filter(Boolean),
+        documents: [docImage || '', docBackImage || '', selfieImage || ''].filter(Boolean),
         submittedAt: new Date().toISOString(),
       } as RoleApplication;
 
@@ -190,48 +206,91 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
           ))}
         </div>
 
-        {/* Step 0: Document capture */}
+        {/* Step 0: NIN & Document capture */}
         {step === 0 && (
           <div className="space-y-4">
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Select your document type</p>
-            <div className="grid grid-cols-2 gap-2">
-              {DOC_TYPES.map(d => (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => setDocType(d.id)}
-                  className={cn(
-                    "p-3 rounded-xl border-2 text-xs font-bold text-left transition-all",
-                    docType === d.id ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 text-primary-700 dark:text-primary-400" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">NIN Identification Details</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="NIN (National ID Number)"
+                value={nin}
+                onChange={e => setNin(e.target.value)}
+                placeholder="11-digit NIN"
+                required
+              />
+              <Input
+                label="Name on NIN"
+                value={ninName}
+                onChange={e => setNinName(e.target.value)}
+                placeholder="Must match Full Name"
+                required
+              />
+            </div>
+
+            {(role === 'CENTER_OWNER' || role === 'MERCHANT') && (
+              <Input
+                label={role === 'CENTER_OWNER' ? "CAC Registration Number (Required)" : "CAC Registration Number (Optional)"}
+                value={cac}
+                onChange={e => setCac(e.target.value)}
+                placeholder="e.g. RC123456"
+                required={role === 'CENTER_OWNER'}
+              />
+            )}
+
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300 pt-2">Snap NIN Card (Front & Back)</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Front Capture */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-slate-600">NIN Card Front</span>
+                <div className="rounded-xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative">
+                  {docImage ? (
+                    <img src={docImage} alt="Captured NIN Front" className="w-full h-full object-cover" />
+                  ) : cameraError ? (
+                    <p className="text-white text-xs text-center p-4">{cameraError}</p>
+                  ) : (
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                   )}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
+                </div>
+                {docImage ? (
+                  <Button variant="outline" size="sm" onClick={() => { setDocImage(null); startCamera('environment'); }} className="w-full gap-1">
+                    <RefreshCw size={14} /> Retake Front
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={handleCaptureDoc} disabled={!!cameraError} className="w-full gap-1 bg-primary-600">
+                    <IdCard size={14} /> Snap Front
+                  </Button>
+                )}
+              </div>
 
-            <div className="rounded-2xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative">
-              {docImage ? (
-                <img src={docImage} alt="Captured document" className="w-full h-full object-cover" />
-              ) : cameraError ? (
-                <p className="text-white text-xs text-center p-6">{cameraError}</p>
-              ) : (
-                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-              )}
+              {/* Back Capture */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-slate-600">NIN Card Back</span>
+                <div className="rounded-xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative">
+                  {docBackImage ? (
+                    <img src={docBackImage} alt="Captured NIN Back" className="w-full h-full object-cover" />
+                  ) : cameraError ? (
+                    <p className="text-white text-xs text-center p-4">{cameraError}</p>
+                  ) : (
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  )}
+                </div>
+                {docBackImage ? (
+                  <Button variant="outline" size="sm" onClick={() => { setDocBackImage(null); startCamera('environment'); }} className="w-full gap-1">
+                    <RefreshCw size={14} /> Retake Back
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={() => {
+                    const frame = captureFrame();
+                    if (frame) { setDocBackImage(frame); stopCamera(); }
+                    else toast.error('Failed to capture document back.');
+                  }} disabled={!!cameraError} className="w-full gap-1 bg-primary-600">
+                    <IdCard size={14} /> Snap Back
+                  </Button>
+                )}
+              </div>
             </div>
-
-            <div className="flex gap-3">
-              {docImage ? (
-                <Button variant="outline" onClick={() => { setDocImage(null); startCamera('environment'); }} className="flex-1 gap-2">
-                  <RefreshCw size={16} /> Retake
-                </Button>
-              ) : (
-                <Button onClick={handleCaptureDoc} disabled={!!cameraError} className="flex-1 gap-2 bg-primary-600 hover:bg-primary-700">
-                  <IdCard size={16} /> Capture Document
-                </Button>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-500">Hold your {DOC_TYPES.find(d => d.id === docType)?.label} steady and in focus. Make sure all details are clearly visible.</p>
           </div>
         )}
 

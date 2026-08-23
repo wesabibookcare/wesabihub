@@ -5,12 +5,13 @@ import { useAuth } from '../../context/AuthContext';
 export const useAccountPending = () => {
   const { user } = useAuth();
 
-  // Checks if the user is in a pending state
-  const isPending = user?.status === 'pending_approval' || user?.status === 'PENDING';
+  // Checks if the user has a pending role application under review (while active as customer)
+  const isPending = !!(user?.pendingRoleApplication || user?.status === 'pending_approval' || user?.status === 'PENDING' || user?.status === 'UNDER_REVIEW');
 
   return {
     isPending,
     status: user?.status || null,
+    requestedRole: user?.requestedRole || null,
   };
 };
 
@@ -20,26 +21,8 @@ interface AccountPendingWrapperProps {
 }
 
 export const AccountPendingWrapper: React.FC<AccountPendingWrapperProps> = ({
-  children,
-  fallback = <Navigate to="/account-restricted" replace />
+  children
 }) => {
-  const { isPending } = useAccountPending();
-  const location = useLocation();
-
-  // Allow essential views like settings and support for communication/configuration
-  const allowedPaths = [
-    '/customer/settings',
-    '/customer/support',
-    '/account-restricted',
-    '/login',
-    '/register',
-    '/role-selection',
-    '/profile-completion'
-  ];
-
-  if (isPending && !allowedPaths.includes(location.pathname)) {
-    return <>{fallback}</>;
-  }
-
+  // Users are no longer locked out of Customer functionality even with a pending role application
   return <>{children}</>;
 };

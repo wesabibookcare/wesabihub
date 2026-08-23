@@ -35,15 +35,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/role-selection" replace />;
   }
 
-  // Check for blocked, suspended, or pending status
+  // Check for blocked, suspended, or disabled status.
+  // Pending role applications do NOT lock users out of Customer access.
   if (user && (
     user.status === 'BLOCKED' ||
     user.status === 'SUSPENDED' ||
-    user.status === 'DISABLED' ||
-    user.status === 'PENDING' ||
-    user.status === 'pending_approval' ||
-    user.status === 'UNDER_REVIEW' ||
-    user.status === 'EMAIL_UNVERIFIED'
+    user.status === 'DISABLED'
   )) {
     return <Navigate to="/account-restricted" replace />;
   }
