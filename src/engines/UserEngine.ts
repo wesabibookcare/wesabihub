@@ -54,17 +54,15 @@ class UserEngine {
         return existingUser;
       }
 
-      // 1. Determine status via Configuration Engine
-    const countryCode = profileData.country || 'NG';
-    const requiresReview = await configurationEngine.doesRoleRequireReview(role, countryCode);
+    // 1. Determine status and roles:
+    // Customer and Hub Staff roles get direct instant active access.
+    // Every other role (Merchant, Hub Owner, Dispatch Rider, etc.) gets instant active access as CUSTOMER,
+    // while their requested role application sits in "pending" box waiting for Admin review.
+    const isDirectAccess = role === 'CUSTOMER' || role === 'CENTER_STAFF';
 
-    let userStatus: UserStatus = requiresReview ? 'UNDER_REVIEW' : 'ACTIVE';
-    let appStatus: ApplicationStatus | null = requiresReview ? 'SUBMITTED' : null;
-
-    if (role === 'CENTER_STAFF' && profileData.isInvited) {
-      userStatus = 'ACTIVE';
-      appStatus = null;
-    }
+    // Status is always ACTIVE so they are not blocked from using Customer features immediately
+    const userStatus: UserStatus = 'ACTIVE';
+    const appStatus: ApplicationStatus | null = isDirectAccess ? null : 'SUBMITTED';
 
     // 2. Storage Engine for docs
     const uploadedDocs: Record<string, string> = {};
@@ -81,12 +79,11 @@ class UserEngine {
 
     const finalProfileData = { ...profileData, ...uploadedDocs, updatedAt: new Date().toISOString() };
 
+    // Assigned active primary role is CUSTOMER for approval-required roles, or requested role if direct access
+    const assignedRole: UserRole = isDirectAccess ? role : 'CUSTOMER';
+    const assignedRoles: UserRole[] = isDirectAccess ? [role] : ['CUSTOMER'];
+
     // 3. Persist User
-    // IMPORTANT: role/roles/id/uid are spread LAST, after finalProfileData,
-    // so they can never be silently overwritten by a stray same-named key
-    // that might exist in the submitted profile form data. This was a real
-    // bug -- previously these were set before the spread, meaning any
-    // matching key in finalProfileData would silently win instead.
     const userDoc: User = {
       displayName,
       email,
@@ -95,11 +92,13 @@ class UserEngine {
       updatedAt: new Date().toISOString(),
       verificationStatus: { email: !!options.sendVerification, phone: false, kyc: false },
       wesabiUsername: (finalProfileData as any).wesabiUsername || `WSH_${uid.substring(0, 8)}`,
+      requestedRole: isDirectAccess ? undefined : role,
+      pendingRoleApplication: !isDirectAccess,
       ...finalProfileData,
       id: uid,
       uid,
-      roles: [role],
-      role,
+      roles: assignedRoles,
+      role: assignedRole,
     };
 
     await userRepository.create(uid, userDoc);
@@ -121,14 +120,13 @@ class UserEngine {
 
       await roleApplicationRepository.create(applicationId, roleApplication);
 
-      await notificationEngine.sendFromTemplate(
+      await notificationEngine.send(
         uid,
-        'received',
-        { role: role.replace(/_/g, ' ') },
-        'Application Received',
-        `Your application to become a ${role.replace(/_/g, ' ')} has been received and is currently under review.`,
+        'Application Received & Customer Account Active',
+        `You're approved as a Customer for now, your ${role.replace(/_/g, ' ')} application is under review.`,
         'INFO',
-        'APPROVAL'
+        '/customer/dashboard',
+        'SYSTEM'
       );
     } else {
       await notificationEngine.send(

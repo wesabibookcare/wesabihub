@@ -8,6 +8,8 @@ import { Alert } from '../../components/ui/Alert';
 import { userEngine } from '../../engines';
 import { ROLE_REDIRECTS } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import { LiveFaceScanModal } from '../../components/common/LiveFaceScanModal';
+import { User } from '../../types';
 
 export const LoginPage: React.FC = () => {
   const { bootstrapNeeded } = useAuth();
@@ -16,9 +18,42 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [faceScanModalOpen, setFaceScanModalOpen] = useState(false);
+  const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [pendingRedirectPath, setPendingRedirectPath] = useState<string>('/dashboard');
+
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || null;
+
+  const getDeviceId = () => {
+    let deviceId = localStorage.getItem('wesabi_device_id');
+    if (!deviceId) {
+      deviceId = `DEV-${Math.random().toString(36).substring(2, 10)}-${Date.now()}`;
+      localStorage.setItem('wesabi_device_id', deviceId);
+    }
+    return deviceId;
+  };
+
+  const processPostLogin = async (user: User, redirectPath: string) => {
+    const deviceId = getDeviceId();
+    const isKnownDevice = user.knownDevices && user.knownDevices.includes(deviceId);
+    const hasApprovalRole = !!(user.requestedRole || (user.roles && user.roles.some(r => r !== 'CUSTOMER')));
+
+    if (!isKnownDevice && hasApprovalRole) {
+      setPendingUser(user);
+      setPendingRedirectPath(redirectPath);
+      setFaceScanModalOpen(true);
+      return;
+    }
+
+    if (!user.knownDevices || !user.knownDevices.includes(deviceId)) {
+      const updatedDevices = [...(user.knownDevices || []), deviceId];
+      await userEngine.updateUser(user.uid || user.id, { knownDevices: updatedDevices });
+    }
+
+    navigate(redirectPath);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +63,7 @@ export const LoginPage: React.FC = () => {
     try {
       const user = await userEngine.login(email, password);
       const redirectPath = from || ROLE_REDIRECTS[user.role] || '/dashboard';
-      navigate(redirectPath);
+      await processPostLogin(user, redirectPath);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -43,7 +78,7 @@ export const LoginPage: React.FC = () => {
       const user = await userEngine.signInWithGoogle();
       if (user) {
         const redirectPath = from || ROLE_REDIRECTS[user.role] || '/dashboard';
-        navigate(redirectPath);
+        await processPostLogin(user, redirectPath);
       } else {
         navigate('/role-selection');
       }
@@ -244,6 +279,20 @@ export const LoginPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      <LiveFaceScanModal
+        isOpen={faceScanModalOpen}
+        onClose={() => setFaceScanModalOpen(false)}
+        onCapture={async () => {
+          if (pendingUser) {
+            const deviceId = getDeviceId();
+            const updatedDevices = [...(pendingUser.knownDevices || []), deviceId];
+            await userEngine.updateUser(pendingUser.uid || pendingUser.id, { knownDevices: updatedDevices });
+          }
+          setFaceScanModalOpen(false);
+          navigate(pendingRedirectPath);
+        }}
+      />
     </div>
   );
 };

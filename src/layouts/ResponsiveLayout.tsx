@@ -77,17 +77,13 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     return false;
   });
 
-  const { activeRole } = useAuth();
-  const { isPending } = useAccountPending();
+  const { user, activeRole } = useAuth();
+  const { isPending, requestedRole } = useAccountPending();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const filteredMenuItems = isPending
-    ? menuItems.filter(item =>
-        item.label.toLowerCase().includes('settings') ||
-        item.label.toLowerCase().includes('support')
-      )
-    : menuItems;
+  // Full menu items are available so user can immediately use Customer features
+  const filteredMenuItems = menuItems;
 
   const getDashboardPath = () => {
     switch (activeRole) {
@@ -299,6 +295,16 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
 
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
+          {isPending && (
+            <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-3 text-amber-900 dark:text-amber-200 text-xs sm:text-sm font-medium flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-2 max-w-[1600px] mx-auto w-full">
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <span>
+                  <strong>Account Status:</strong> You're approved as a Customer for now, your <strong>{(requestedRole || user?.requestedRole || 'role').replace(/_/g, ' ')}</strong> application is under review by admin.
+                </span>
+              </div>
+            </div>
+          )}
           <div className="w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
             {showBackButton && !isDashboardPage && (
               <div className="mb-6">

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Loader2, CheckCircle2, FileUp, X } from 'lucide-react';
+import { Loader2, CheckCircle2, FileUp, X, Camera, ShieldCheck } from 'lucide-react';
 import { auth } from '../../lib/firebase';
 import { ROLE_REDIRECTS } from '../../services/authService';
 import { invitationEngine, complianceEngine } from '@/src/engines';
@@ -12,6 +12,7 @@ import { UserRole, DocumentRequirement, RoleApplicationConfig, ApplicationFieldC
 import { toast } from 'sonner';
 import { countryRepository } from '../../services/db/CountryRepository';
 import { FALLBACK_COUNTRIES, NIGERIA_STATES } from '../../data/fallbackGeography';
+import { LiveFaceScanModal } from '../../components/common/LiveFaceScanModal';
 
 const FileUploadInput: React.FC<{
   fieldName: string;
@@ -131,6 +132,8 @@ export const ProfileCompletionPage: React.FC = () => {
   const [profileData, setProfileData] = useState<any>({});
   const [countries, setCountries] = useState<any[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
+  const [faceScanModalOpen, setFaceScanModalOpen] = useState(false);
+  const [faceScanCaptured, setFaceScanCaptured] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -237,18 +240,30 @@ export const ProfileCompletionPage: React.FC = () => {
         ];
       case 'MERCHANT':
         return [
+          { name: 'fullName', label: 'Full Name', type: 'text', required: true },
+          { name: 'nin', label: 'NIN (National ID Number)', type: 'text', required: true },
+          { name: 'ninName', label: 'Name on NIN (Must match Full Name)', type: 'text', required: true },
           { name: 'businessName', label: 'Business Name', type: 'text', required: true },
+          { name: 'cacNumber', label: 'CAC Registration Number (Optional)', type: 'text', required: false },
           { name: 'wesabiUsername', label: 'Wesabi Username', type: 'text', required: false },
-          { name: 'businessRegNumber', label: 'Registration Number (Optional)', type: 'text', required: false },
-          { name: 'contactDetails', label: 'Contact Details', type: 'text', required: true },
+          { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+          { name: 'country', label: 'Country', type: 'geography-country', required: true },
+          { name: 'state', label: 'State / Province', type: 'geography-state', required: true },
+          { name: 'city', label: 'City', type: 'geography-city', required: true },
         ];
       case 'CENTER_OWNER':
         return [
+          { name: 'fullName', label: 'Full Name', type: 'text', required: true },
+          { name: 'nin', label: 'NIN (National ID Number)', type: 'text', required: true },
+          { name: 'ninName', label: 'Name on NIN (Must match Full Name)', type: 'text', required: true },
           { name: 'businessName', label: 'Hub/Business Name', type: 'text', required: true },
-          { name: 'wesabiUsername', label: 'Wesabi Username', type: 'text', required: false },
-          { name: 'businessRegNumber', label: 'Registration Number', type: 'text', required: true },
+          { name: 'cacNumber', label: 'CAC Registration Number', type: 'text', required: true },
           { name: 'businessAddress', label: 'Business Address', type: 'text', required: true },
-          { name: 'hubInfo', label: 'Hub Information', type: 'text', required: false },
+          { name: 'wesabiUsername', label: 'Wesabi Username', type: 'text', required: false },
+          { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+          { name: 'country', label: 'Country', type: 'geography-country', required: true },
+          { name: 'state', label: 'State / Province', type: 'geography-state', required: true },
+          { name: 'city', label: 'City', type: 'geography-city', required: true },
         ];
       case 'LOGISTICS_COMPANY':
         return [
@@ -364,6 +379,7 @@ export const ProfileCompletionPage: React.FC = () => {
         throw new Error('Authentication session lost. Please log in again.');
       }
 
+      const isApprovalRole = !['CUSTOMER', 'CENTER_STAFF'].includes(role);
       const missingFields: string[] = [];
       const fields = getFields();
 
@@ -371,6 +387,28 @@ export const ProfileCompletionPage: React.FC = () => {
       for (const field of fields) {
         if (field.required && !profileData[field.name]) {
           missingFields.push(field.label);
+        }
+      }
+
+      // Check Name on NIN matching
+      if (isApprovalRole && profileData.ninName && profileData.fullName) {
+        const cleanFullName = String(profileData.fullName).trim().toLowerCase();
+        const cleanNinName = String(profileData.ninName).trim().toLowerCase();
+        if (cleanFullName !== cleanNinName) {
+          throw new Error(`Your Full Name ("${profileData.fullName}") must match your Name on NIN ("${profileData.ninName}") exactly.`);
+        }
+      }
+
+      // Approval roles require NIN Card Front & Back and Live Face Scan
+      if (isApprovalRole) {
+        if (!filesToUpload['document_nin_front']) {
+          missingFields.push('NIN Card Front Photo');
+        }
+        if (!filesToUpload['document_nin_back']) {
+          missingFields.push('NIN Card Back Photo');
+        }
+        if (!faceScanCaptured) {
+          missingFields.push('Live Face Camera Scan');
         }
       }
 
@@ -581,10 +619,76 @@ export const ProfileCompletionPage: React.FC = () => {
                   );
                 })}
 
-                {/* Custom active document requirements section */}
+                {/* Mandatory Identity Documents & Live Scan for Approval Roles */}
+                {!['CUSTOMER', 'CENTER_STAFF'].includes(role) && (
+                  <div className="space-y-4 border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+                    <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Required Identity Verification Documents</h3>
+
+                    {/* Live Face Scan */}
+                    <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl space-y-2 border border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Camera size={14} className="text-primary-500" /> Live Face Camera Scan <span className="text-red-500">*</span>
+                          </p>
+                          <p className="text-[10px] text-slate-500">Must be a live camera scan (no photo uploads permitted)</p>
+                        </div>
+                        {faceScanCaptured ? (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md flex items-center gap-1">
+                            <ShieldCheck size={12} /> Captured
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {faceScanCaptured ? (
+                        <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg">
+                          <img src={faceScanCaptured} alt="Face scan" className="w-12 h-12 rounded-full object-cover border border-emerald-500" />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setFaceScanModalOpen(true)}
+                            className="text-xs rounded-lg"
+                          >
+                            Retake Scan
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setFaceScanModalOpen(true)}
+                          className="w-full text-xs font-bold py-2 border-primary-500 text-primary-600 hover:bg-primary-50 rounded-lg flex items-center justify-center gap-2"
+                        >
+                          <Camera size={14} /> Start Live Face Scan
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* NIN Card Front & Back */}
+                    <FileUploadInput
+                      fieldName="document_nin_front"
+                      label="NIN Card Front Photo"
+                      required={true}
+                      file={filesToUpload['document_nin_front'] || null}
+                      onChange={file => setFilesToUpload({ ...filesToUpload, document_nin_front: file as File })}
+                      acceptedTypes={['png', 'jpg', 'jpeg', 'pdf']}
+                    />
+                    <FileUploadInput
+                      fieldName="document_nin_back"
+                      label="NIN Card Back Photo"
+                      required={true}
+                      file={filesToUpload['document_nin_back'] || null}
+                      onChange={file => setFilesToUpload({ ...filesToUpload, document_nin_back: file as File })}
+                      acceptedTypes={['png', 'jpg', 'jpeg', 'pdf']}
+                    />
+                  </div>
+                )}
+
+                {/* Custom active document requirements section from Admin */}
                 {docReqs.length > 0 && (
                   <div className="space-y-4 border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
-                    <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Required Verification Documents</h3>
+                    <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Additional Required Documents</h3>
                     {docReqs.map(docReq => (
                       <FileUploadInput
                         key={docReq.id}
@@ -636,6 +740,17 @@ export const ProfileCompletionPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      <LiveFaceScanModal
+        isOpen={faceScanModalOpen}
+        onClose={() => setFaceScanModalOpen(false)}
+        onCapture={(dataUrl, blob) => {
+          setFaceScanCaptured(dataUrl);
+          // Convert dataUrl into a File object for submission
+          const file = new File([blob], `live_face_scan_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          setFilesToUpload(prev => ({ ...prev, document_live_face_scan: file }));
+        }}
+      />
     </div>
   );
 };

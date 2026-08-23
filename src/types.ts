@@ -51,6 +51,9 @@ export interface User extends BaseEntity {
   phone?: string;
   roles: UserRole[]; // Changed from role: UserRole
   role?: UserRole; // Backward compatibility
+  requestedRole?: UserRole; // Requested role pending approval
+  pendingRoleApplication?: boolean; // Flag indicating role application is under review
+  knownDevices?: string[]; // List of recognized device IDs
   status: UserStatus;
   country?: string;
   lastLogin?: string;
