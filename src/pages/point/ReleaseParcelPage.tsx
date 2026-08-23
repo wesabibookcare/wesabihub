@@ -14,6 +14,8 @@ import { SuccessAnimation, SuccessAnimationStyle } from '@/src/components/ui/Suc
 import { receiptService } from '@/src/services/ReceiptService';
 import { userRepository } from '@/src/services/db/UserRepository';
 import { NativeMediaHandler } from '@/src/components/ui/NativeMediaHandler';
+import { QRScanner } from '@/src/components/ui/QRScanner';
+import { shipmentRepository } from '@/src/services/db/ShipmentRepository';
 import {
   PackageCheck,
   Search,
@@ -75,13 +77,13 @@ export const ReleaseParcelPage = () => {
   useEffect(() => {
     if (!selectedParcel?.id) return;
     const wasUnpaid = selectedParcel.status === 'AWAITING_PAYMENT'
-      || (selectedParcel.SafePayStatus && selectedParcel.SafePayStatus !== 'HELD' && selectedParcel.SafePayStatus !== 'RELEASED');
+      || (selectedParcel.SafePayStatus && (selectedParcel.SafePayStatus as any) !== 'HELD' && (selectedParcel.SafePayStatus as any) !== 'RELEASED');
 
     const unsubscribe = shipmentRepository.subscribe(selectedParcel.id, (updated) => {
       if (!updated) return;
       setSelectedParcel(updated);
       const nowPaid = updated.status !== 'AWAITING_PAYMENT'
-        && (!updated.SafePayStatus || updated.SafePayStatus === 'HELD' || updated.SafePayStatus === 'RELEASED');
+        && (!updated.SafePayStatus || (updated.SafePayStatus as any) === 'HELD' || (updated.SafePayStatus as any) === 'RELEASED');
       if (wasUnpaid && nowPaid) {
         setJustConfirmedPayment(true);
         toast.success('Payment confirmed! You can now release this parcel.');
@@ -502,7 +504,7 @@ export const ReleaseParcelPage = () => {
   const isReleasePaymentCleared = (parcel: Parcel | null) => {
     if (!parcel) return false;
     if (parcel.SafePayStatus) {
-      return parcel.SafePayStatus === 'HELD' || parcel.SafePayStatus === 'RELEASED';
+      return (parcel.SafePayStatus as any) === 'HELD' || (parcel.SafePayStatus as any) === 'RELEASED' || (parcel.SafePayStatus as any) === 'FUNDS_SECURED';
     }
     return parcel.status !== 'AWAITING_PAYMENT';
   };

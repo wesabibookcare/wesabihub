@@ -160,15 +160,18 @@ export const SearchPage = () => {
                 ) : (
                   <div className="flex flex-wrap gap-2">
                      {recentSearches.map((s, idx) => (
-                       <span key={idx}>
+                       <button
+                         key={idx}
+                         type="button"
+                         onClick={() => handleSearch(s)}
+                       >
                          <Badge
                            variant="outline"
                            className="h-9 px-4 rounded-xl cursor-pointer hover:border-primary-500 hover:text-primary-600 transition-all bg-white dark:bg-slate-900"
-                           onClick={() => handleSearch(s)}
                          >
                            {s}
                          </Badge>
-                       </span>
+                       </button>
                      ))}
                   </div>
                 )}

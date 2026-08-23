@@ -39,7 +39,6 @@ export interface RoleInfo {
 // offered when they register.
 export const PAUSED_ROLES: string[] = [
   'LOGISTICS_COMPANY',
-  'DISPATCH_RIDER',
   'DISPATCH_COMPANY',
   'FLEET_MANAGER',
   'DRIVER',

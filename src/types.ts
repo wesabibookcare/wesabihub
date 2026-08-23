@@ -302,6 +302,7 @@ export interface Parcel extends BaseEntity {
     transferDiscount?: number; // Retrieved from business rules
   };
   protectionStatus: 'HELD' | 'RELEASED' | 'REFUNDED' | 'DISPUTED';
+  SafePayStatus?: SafePayStatus;
   // Whether the merchant chose to use SafePay (protected buyer-seller
   // payment via Flutterwave) for this specific shipment. Optional and
   // per-transaction -- most shipments will not have this enabled.
