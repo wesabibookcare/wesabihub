@@ -83,7 +83,7 @@ class InfrastructureEngine {
     // 1. Database Check
     try {
       if (db) {
-        await db.collection('_health_check').doc('ping').set({ lastPing: new Date().toISOString() });
+        await db.collection('_health_check').doc('ping').get();
         status.services.database = 'HEALTHY';
       } else {
         status.services.database = 'UNAVAILABLE';

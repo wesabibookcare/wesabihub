@@ -174,6 +174,7 @@ import { WebhooksPage as DeveloperWebhooksPage } from './pages/developer/Webhook
 import { DispatchDashboard } from './pages/dispatch/Dashboard';
 import { VerifyRiderPage } from './pages/public/VerifyRiderPage';
 import { VerifyReceiptPage } from './pages/public/VerifyReceiptPage';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 export default function App() {
   return (
@@ -184,6 +185,7 @@ export default function App() {
           <Toaster position="top-right" richColors />
           <AnnouncementBanner />
           <main className="flex-1 flex flex-col min-h-0">
+            <ErrorBoundary>
             <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -351,6 +353,7 @@ export default function App() {
         {/* Catch-all 404 Route */}
         <Route path="*" element={<NotFoundPage />} />
             </Routes>
+            </ErrorBoundary>
           </main>
           <AdBanner />
           <HelpCenterWidget />

@@ -17,6 +17,7 @@ import { paymentProtectionEngine } from './PaymentProtectionEngine';
 import { paymentProtectionRepository } from './db/PaymentProtectionRepository';
 import { notificationEngine } from '../engines/NotificationEngine';
 import { timelineEngine } from '../engines/TimelineEngine';
+import { getApiUrl } from '../lib/apiClient';
 
 export class ParcelEngine {
   async createShipment(
@@ -48,7 +49,7 @@ export class ParcelEngine {
     const trackingNumber = `WSH-${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
 
     // Calculate Pricing via Secure Backend API
-    const response = await fetch('/api/calculate-price', {
+    const response = await fetch(getApiUrl('/api/calculate-price'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -194,7 +195,7 @@ export class ParcelEngine {
         if (!idToken) {
           console.warn('Skipping points-award hook: no auth token available for this action.');
         } else {
-          fetch('/api/points/award', {
+          fetch(getApiUrl('/api/points/award'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

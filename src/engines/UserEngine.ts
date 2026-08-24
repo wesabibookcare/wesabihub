@@ -13,6 +13,7 @@ import {
   auditEngine,
   configurationEngine
 } from './index';
+import { getApiUrl } from '../lib/apiClient';
 
 /**
  * OmorfiHub User & Identity Engine
@@ -232,7 +233,7 @@ class UserEngine {
   async requestPasswordReset(email: string): Promise<void> {
     try {
       // 1. Call server API to handle priority (Telegram > Email)
-      const response = await fetch('/api/auth/request-password-reset', {
+      const response = await fetch(getApiUrl('/api/auth/request-password-reset'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

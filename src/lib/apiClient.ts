@@ -1,6 +1,30 @@
 import { User as FirebaseUser } from 'firebase/auth';
 
 /**
+ * Helper function to resolve full API URL based on VITE_API_BASE_URL environment configuration.
+ * For same-origin deployments, defaults to relative /api/... paths.
+ * For separate frontend/backend deployments, uses configured VITE_API_BASE_URL.
+ */
+export function getApiUrl(path: string): string {
+  let baseUrl = '';
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    } else if (typeof process !== 'undefined' && process.env) {
+      baseUrl = process.env.VITE_API_BASE_URL || '';
+    }
+  } catch {
+    baseUrl = '';
+  }
+
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  if (!baseUrl) {
+    return cleanPath;
+  }
+  return `${baseUrl.replace(/\/+$/, '')}${cleanPath}`;
+}
+
+/**
  * Calls a OmorfiHub backend API route with the caller's verified Firebase ID
  * token attached, the way every Phase A1-hardened /api/* route expects.
  *
@@ -35,7 +59,9 @@ export async function apiFetch<T = any>(
     throw new Error('Your session could not be verified. Please log in again.');
   }
 
-  const response = await fetch(path, {
+  const fullUrl = getApiUrl(path);
+
+  const response = await fetch(fullUrl, {
     method: options.method || (options.body ? 'POST' : 'GET'),
     headers: {
       'Content-Type': 'application/json',
