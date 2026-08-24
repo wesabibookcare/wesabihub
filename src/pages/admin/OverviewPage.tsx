@@ -112,7 +112,7 @@ export const OverviewPage = () => {
   const toggleMaintenanceMode = () => {
     const confirmation = window.confirm(
       maintenanceMode
-        ? "Are you sure you want to RE-ENABLE public access to WeSabiHub?"
+        ? "Are you sure you want to RE-ENABLE public access to OmorfiHub?"
         : "CRITICAL: You are turning on MAINTENANCE MODE. This blocks all customers, merchants, and staff, presenting them with a service-interrupted dashboard. Do you wish to proceed?"
     );
     if (confirmation) {

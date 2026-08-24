@@ -267,7 +267,7 @@ export const BulkIntakePage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-primary-600 uppercase tracking-wider mb-1">
               <Layers size={14} />
-              WeSabiHub Hub Operations
+              OmorfiHub Hub Operations
             </div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
               Bulk Parcel Intake Engine
@@ -694,7 +694,7 @@ export const BulkIntakePage: React.FC = () => {
               <div className="bg-slate-900 text-slate-300 p-5 rounded-2xl border border-slate-800 space-y-3 text-xs">
                 <div className="font-bold text-white flex items-center gap-2">
                   <BarChart3 size={16} className="text-primary-400" />
-                  WeSabiHub Intake Rules
+                  OmorfiHub Intake Rules
                 </div>
                 <ul className="space-y-2 text-[11px] list-disc list-inside text-slate-400">
                   <li>Scanning updates parcel status to Received at Hub.</li>

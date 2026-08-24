@@ -13,7 +13,7 @@ export const AboutPage = () => {
   const [aboutText, setAboutText] = useState('');
 
   const countryName = settings?.localization?.countryName || settings?.defaultCountry || 'Nigeria';
-  const defaultText = settings?.landingPage?.aboutUsText || `WeSabiHub is ${countryName}'s trusted Pick-Up & Drop-Off (PUDO) network, connecting millions through a secure platform of verified neighborhood centers. By turning verified local businesses—pharmacies, supermarkets, and shops—into secure pickup points, we've created a network that is as reliable as it is accessible.`;
+  const defaultText = settings?.landingPage?.aboutUsText || `OmorfiHub is ${countryName}'s trusted Pick-Up & Drop-Off (PUDO) network, connecting millions through a secure platform of verified neighborhood centers. By turning verified local businesses—pharmacies, supermarkets, and shops—into secure pickup points, we've created a network that is as reliable as it is accessible.`;
 
   useEffect(() => {
     const loadContent = async () => {
@@ -80,13 +80,13 @@ export const AboutPage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div className="space-y-8">
-              <h2 className="text-4xl font-bold text-slate-900 dark:text-white font-display tracking-tight">The WeSabiHub Story</h2>
+              <h2 className="text-4xl font-bold text-slate-900 dark:text-white font-display tracking-tight">The OmorfiHub Story</h2>
               <div className="space-y-6 text-lg text-slate-800 dark:text-slate-300 leading-relaxed">
                 <p>
                   In a rapidly evolving digital economy, the "last mile" remains the biggest hurdle for e-commerce and logistics. High costs, security concerns, and unpredictable delivery times have slowed growth for businesses and frustrated customers.
                 </p>
                 <p>
-                  WeSabiHub was born from a simple yet powerful idea: Use existing neighborhood trust and infrastructure to solve the logistics gap. By turning verified local businesses—pharmacies, supermarkets, and shops—into secure pickup points, we've created a network that is as reliable as it is accessible.
+                  OmorfiHub was born from a simple yet powerful idea: Use existing neighborhood trust and infrastructure to solve the logistics gap. By turning verified local businesses—pharmacies, supermarkets, and shops—into secure pickup points, we've created a network that is as reliable as it is accessible.
                 </p>
                 <p>
                   Today, we are more than just a tech platform. We are an ecosystem that empowers small business owners, enables e-commerce growth, and provides individuals with a safe, affordable way to send and receive goods anywhere.
@@ -119,7 +119,7 @@ export const AboutPage = () => {
               Our Core Architecture
             </h2>
             <p className="text-lg text-slate-900 font-medium leading-relaxed">
-              WeSabiHub operates an interconnected suite of tools and services designed to power robust, nationwide logistics.
+              OmorfiHub operates an interconnected suite of tools and services designed to power robust, nationwide logistics.
             </p>
           </div>
 
@@ -130,11 +130,11 @@ export const AboutPage = () => {
                 desc: 'Empowering merchants to register inventories, manage client orders, generate batch shipping sheets, and utilize automated client chat notifications.'
               },
               {
-                title: 'WeSabiHub Centres',
+                title: 'OmorfiHub Centres',
                 desc: 'A decentralized network of verified neighborhood retail locations serving as secure pick-up, drop-off, and parcel return locker points.'
               },
               {
-                title: 'WeSabiDispatch',
+                title: 'OmorfiHubDispatch',
                 desc: 'Onboarding verified independent courier riders equipped with real-time route optimization, dynamic digital identity QR checks, and SafePay wallets.'
               },
               {
@@ -151,7 +151,7 @@ export const AboutPage = () => {
               },
               {
                 title: 'API Platform',
-                desc: 'Developers and enterprise marketplaces integrate WeSabiHub directly into checkout portals to power seamless inter-hub delivery capabilities.'
+                desc: 'Developers and enterprise marketplaces integrate OmorfiHub directly into checkout portals to power seamless inter-hub delivery capabilities.'
               }
             ].map((comp, idx) => (
               <Card key={idx} className="p-8 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">

@@ -61,7 +61,7 @@ const STANDARD_ROLES = [
   {
     id: 'SUPER_ADMIN',
     name: 'Super Admin',
-    description: 'Full, unrestricted administrative access across the entire WeSabiHub platform.',
+    description: 'Full, unrestricted administrative access across the entire OmorfiHub platform.',
     permissions: [
       'USERS_VIEW', 'USERS_CREATE', 'USERS_EDIT', 'USERS_SUSPEND', 'USERS_DELETE',
       'SHIPMENTS_VIEW', 'SHIPMENTS_EDIT', 'SHIPMENTS_ASSIGN', 'SHIPMENTS_CANCEL',
@@ -188,7 +188,7 @@ const PERMISSION_GROUPS = [
     ]
   },
   {
-    category: 'WeSabiChat & Evidence',
+    category: 'OmorfiHubChat & Evidence',
     permissions: [
       { key: 'CHAT_VIEW_AUTHORIZED', name: 'View Authorized Chats', desc: 'Read ongoing buyer-merchant disputed chats' },
       { key: 'CHAT_ACCESS_EVIDENCE', name: 'Access Media Evidence', desc: 'Examine image and PDF upload evidence' },
@@ -207,7 +207,7 @@ const PERMISSION_GROUPS = [
   {
     category: 'Hub Points & Centres',
     permissions: [
-      { key: 'CENTRES_VIEW', name: 'View Points', desc: 'Read list of registered WeSabiHub points' },
+      { key: 'CENTRES_VIEW', name: 'View Points', desc: 'Read list of registered OmorfiHub points' },
       { key: 'CENTRES_APPROVE', name: 'Approve Points', desc: 'Approve new physical points to operate' },
       { key: 'CENTRES_SUSPEND', name: 'Suspend Points', desc: 'Suspend point credentials on violations' },
       { key: 'CENTRES_EDIT', name: 'Edit Point Details', desc: 'Modify point pricing tiers or boundaries' }
@@ -406,7 +406,7 @@ export const UsersPage = () => {
       const payload = {
         uid: adminId,
         displayName: adminForm.displayName,
-        wesabiUsername: selectedAdmin?.wesabiUsername || `WeSabi${adminForm.displayName.replace(/\s+/g, '')}`,
+        wesabiUsername: selectedAdmin?.wesabiUsername || `OmorfiHub${adminForm.displayName.replace(/\s+/g, '')}`,
         email: adminForm.email,
         phoneNumber: adminForm.phoneNumber,
         role: adminForm.role,
@@ -967,7 +967,7 @@ export const UsersPage = () => {
                   placeholder={
                     activeTab === 'roles'
                       ? "Search custom or preset roles by name..."
-                      : "Search by Name, Email or Username starting with WeSabi..."
+                      : "Search by Name, Email or Username starting with OmorfiHub..."
                   }
                   className="bg-transparent border-none focus:outline-none text-sm font-bold w-full text-slate-800"
                 />
@@ -1053,7 +1053,7 @@ export const UsersPage = () => {
                                      </div>
                                      <p className="text-xs text-slate-800 font-medium">{admin.email}</p>
                                      <p className="text-[10px] text-slate-900 font-bold bg-slate-100 px-1.5 py-0.2 rounded inline-block mt-1">
-                                       @{admin.wesabiUsername || `WeSabiAdmin`}
+                                       @{admin.wesabiUsername || `OmorfiHubAdmin`}
                                      </p>
                                   </div>
                                </div>
@@ -1200,7 +1200,7 @@ export const UsersPage = () => {
                    <thead>
                       <tr className="bg-slate-50 border-b border-slate-100">
                          <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">Client Profile</th>
-                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">WeSabi Tier</th>
+                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">OmorfiHub Tier</th>
                          <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">Country</th>
                          <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">Account Status</th>
                          <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">Joined Date</th>
@@ -1434,7 +1434,7 @@ export const UsersPage = () => {
                     type="email"
                     value={adminForm.email}
                     onChange={(e) => setAdminForm(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="e.g. name@wesabihub.com"
+                    placeholder="e.g. name@omorfihub.com"
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm font-bold text-slate-800"
                   />
                 </div>

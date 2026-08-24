@@ -45,7 +45,7 @@ export interface BaseEntity {
 export interface User extends BaseEntity {
   uid: string;
   displayName: string;
-  wesabiUsername?: string; // New: Unique across platform starting with "WeSabi"
+  wesabiUsername?: string; // New: Unique across platform starting with "OmorfiHub"
   email: string;
   phoneNumber?: string;
   phone?: string;

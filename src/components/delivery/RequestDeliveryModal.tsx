@@ -43,7 +43,7 @@ export const RequestDeliveryModal: React.FC<RequestDeliveryModalProps> = ({ parc
             exit={{ scale: 0.9 }}
             className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-full max-w-md shadow-xl"
           >
-            <h2 className="text-xl font-bold mb-4 dark:text-white">Request WeSabiDelivery</h2>
+            <h2 className="text-xl font-bold mb-4 dark:text-white">Request OmorfiHubDelivery</h2>
             <input
               type="text"
               placeholder="Enter your doorstep address..."

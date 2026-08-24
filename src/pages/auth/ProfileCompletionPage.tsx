@@ -717,7 +717,7 @@ export const ProfileCompletionPage: React.FC = () => {
                   />
                   <label htmlFor="acceptedConsent" className="text-[10px] text-slate-900 leading-relaxed">
                     I have read and I agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>.
-                    I understand that these documents govern my use of the WeSabiHub platform.
+                    I understand that these documents govern my use of the OmorfiHub platform.
                   </label>
                 </div>
               </div>

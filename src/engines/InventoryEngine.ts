@@ -1,7 +1,7 @@
 import { parcelEngine } from './ParcelEngine';
 
 /**
- * WeSabiHub Inventory Engine
+ * OmorfiHub Inventory Engine
  * Authoritative engine for shelf allocation and storage inventory management.
  */
 class InventoryEngine {

@@ -296,7 +296,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
               </div>
               <p className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
                 <Sparkles size={12} className="text-primary-400 animate-spin" />
-                WeSabi Camera Simulator Active
+                OmorfiHub Camera Simulator Active
               </p>
               <p className="text-[10px] text-slate-400 mt-1 max-w-xs">
                 {simulatorStep === 'CAPTURING' ? 'Scanning lens sensor... processing image' :

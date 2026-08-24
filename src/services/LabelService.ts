@@ -36,10 +36,10 @@ class LabelService {
     // Colors
     const black = [0, 0, 0];
 
-    // Header - WeSabiHub
+    // Header - OmorfiHub
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(14);
-    doc.text('WeSabiHub Shipping Label', 5, 10);
+    doc.text('OmorfiHub Shipping Label', 5, 10);
     doc.setLineWidth(0.5);
     doc.line(5, 12, 95, 12);
 
@@ -82,7 +82,7 @@ class LabelService {
 
     // Footer info
     doc.setFontSize(7);
-    doc.text('Scan to update status or track at WeSabiHub.com', 50, 135, { align: 'center' });
+    doc.text('Scan to update status or track at OmorfiHub.com', 50, 135, { align: 'center' });
     doc.text('DO NOT SHARE OTP WITH DRIVERS', 50, 140, { align: 'center' });
 
     // Boundary box

@@ -29,7 +29,7 @@ export const BecomeCenterPage = () => {
             <div className="space-y-8">
               <Badge className="bg-primary-500/10 text-primary-400 border-primary-500/20">Partnership Program</Badge>
               <h1 className="text-5xl md:text-6xl font-bold text-white font-display tracking-tight leading-tight">
-                Turn your business into a <span className="text-primary-400">WeSabiHub.</span>
+                Turn your business into a <span className="text-primary-400">OmorfiHub.</span>
               </h1>
               <p className="text-xl text-slate-300 leading-relaxed max-w-2xl">
                 Increase foot traffic, earn additional revenue, and serve your community by becoming a verified Pick-Up & Drop-Off center.
@@ -61,7 +61,7 @@ export const BecomeCenterPage = () => {
       <section className="py-32">
         <div className="max-w-7xl mx-auto px-4">
           <SectionHeader
-            title="Why partner with WeSabiHub?"
+            title="Why partner with OmorfiHub?"
             description="We provide the technology and the customers. You provide the space and the trust."
           />
 
@@ -80,7 +80,7 @@ export const BecomeCenterPage = () => {
               {
                 icon: Truck,
                 title: "Rider Collaboration",
-                desc: "Direct integration with verified WeSabiDispatch riders who handle quick last-mile dropoffs."
+                desc: "Direct integration with verified OmorfiHubDispatch riders who handle quick last-mile dropoffs."
               },
               {
                 icon: ShieldCheck,

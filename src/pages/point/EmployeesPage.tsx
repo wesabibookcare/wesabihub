@@ -326,7 +326,7 @@ export const EmployeesPage = () => {
               <div className="space-y-2">
                  <h3 className="text-xl font-bold font-display">Staff Training & Compliance</h3>
                  <p className="text-slate-800 text-sm max-w-xl">
-                    Ensure your staff are up to date with WeSabiHub standard operating procedures. Certified points have 40% fewer disputes.
+                    Ensure your staff are up to date with OmorfiHub standard operating procedures. Certified points have 40% fewer disputes.
                  </p>
               </div>
               <Badge variant="outline" className="h-12 px-6 flex items-center gap-2 text-white border-white/20 font-normal whitespace-nowrap">

@@ -12,13 +12,13 @@ export interface FlyerCustomOptions {
   showEmail?: boolean;
   showSocial?: boolean;
   showQrCode?: boolean;
-  showWeSabiBranding?: boolean;
+  showOmorfiHubBranding?: boolean;
   designTemplate?: 'modern' | 'classic' | 'vibrant' | 'minimal';
   layoutFormat?: 'single_a6' | 'grid_6_per_a4';
 }
 
 /**
- * WeSabiHub Flyer Engine
+ * OmorfiHub Flyer Engine
  * Authoritative engine for generating Merchant Parcel Flyer data.
  */
 class FlyerEngine {
@@ -79,17 +79,17 @@ class FlyerEngine {
         weightKg: parcel.weightKg
       },
       branding: {
-        platformName: settings?.platformName || 'WeSabiHub',
+        platformName: settings?.platformName || 'OmorfiHub',
         logoUrl: settings?.branding?.logoUrl || '',
         primaryColor: settings?.branding?.primaryColor || '#0284c7'
       },
-      customNote: customOptions?.thankYouNote || 'Thank you for your order! Your parcel is handled with care via WeSabiHub.',
+      customNote: customOptions?.thankYouNote || 'Thank you for your order! Your parcel is handled with care via OmorfiHub.',
       showAddress: customOptions?.showAddress ?? true,
       showPhone: customOptions?.showPhone ?? true,
       showEmail: customOptions?.showEmail ?? true,
       showSocial: customOptions?.showSocial ?? true,
       showQrCode: customOptions?.showQrCode ?? true,
-      showWeSabiBranding: customOptions?.showWeSabiBranding ?? true,
+      showOmorfiHubBranding: customOptions?.showOmorfiHubBranding ?? true,
       designTemplate: customOptions?.designTemplate || 'modern',
       layoutFormat: customOptions?.layoutFormat || 'single_a6',
       qrUrl: publicTrackUrl

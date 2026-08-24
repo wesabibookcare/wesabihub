@@ -201,7 +201,7 @@ export const PayoutsPage = () => {
                   <h3 className="text-lg font-black text-amber-900 dark:text-amber-500">Payment Protection Policy</h3>
                </div>
                <p className="text-sm font-medium text-amber-800/80 dark:text-amber-500/80 leading-relaxed">
-                  All earnings are held under the WeSabiHub Secure Payment Protection system for 48 hours after delivery completion to ensure customer satisfaction and verification.
+                  All earnings are held under the OmorfiHub Secure Payment Protection system for 48 hours after delivery completion to ensure customer satisfaction and verification.
                </p>
                <Button variant="link" className="p-0 h-auto text-amber-700 dark:text-amber-600 font-black mt-4 gap-2">
                   Learn More <ChevronRight size={16} />

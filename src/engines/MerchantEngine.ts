@@ -6,7 +6,7 @@ import { userEngine } from './UserEngine';
 import { permissionService } from '../services/permissionService';
 
 /**
- * WeSabiHub Merchant Engine
+ * OmorfiHub Merchant Engine
  * Manages Merchant Business Profiles, Verifications, and Operations.
  */
 class MerchantEngine {

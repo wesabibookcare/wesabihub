@@ -43,7 +43,7 @@ export const SearchResultsPage = () => {
       <AdminLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
           <Search className="animate-pulse text-primary-500" size={48} />
-          <p className="text-slate-900 font-bold animate-pulse">Searching the WeSabiHub ecosystem...</p>
+          <p className="text-slate-900 font-bold animate-pulse">Searching the OmorfiHub ecosystem...</p>
         </div>
       </AdminLayout>
     );

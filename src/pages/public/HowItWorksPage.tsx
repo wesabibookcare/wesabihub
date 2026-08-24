@@ -34,7 +34,7 @@ export const HowItWorksPage = () => {
             <span className="text-primary-500">Logistics Workflow.</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            WeSabiHub connects merchants, physical neighborhood hubs, independent dispatch riders, and enterprise API systems through a unified secure payment protection ledger.
+            OmorfiHub connects merchants, physical neighborhood hubs, independent dispatch riders, and enterprise API systems through a unified secure payment protection ledger.
           </p>
         </div>
       </section>
@@ -54,7 +54,7 @@ export const HowItWorksPage = () => {
               {
                 icon: ShoppingBag,
                 title: '1. The Merchant',
-                desc: 'Uploads store inventories, manages customer orders, registers bulk parcel shipments, and chooses between WeSabiDispatch, corporate logistics, or self-delivery methods.'
+                desc: 'Uploads store inventories, manages customer orders, registers bulk parcel shipments, and chooses between OmorfiHubDispatch, corporate logistics, or self-delivery methods.'
               },
               {
                 icon: Code,
@@ -187,7 +187,7 @@ export const HowItWorksPage = () => {
           <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center text-primary-600 mx-auto mb-8">
             <Zap size={32} />
           </div>
-          <h2 className="text-3xl lg:text-5xl font-black dark:text-white font-display mb-6 uppercase italic tracking-tight">Ready to leverage WeSabiHub?</h2>
+          <h2 className="text-3xl lg:text-5xl font-black dark:text-white font-display mb-6 uppercase italic tracking-tight">Ready to leverage OmorfiHub?</h2>
           <p className="text-lg text-slate-900 mb-10 font-medium">Join our growing ecosystem as a customer, merchant, hub, or dispatcher today.</p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" className="h-16 px-10 rounded-2xl text-lg font-bold" asChild>

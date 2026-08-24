@@ -22,7 +22,7 @@ class SearchService {
       point.address.toLowerCase().includes(q)
     );
 
-    // Prioritize rankings based on WeSabiPoints, Trust Score, and Tier level (Diamond, Platinum, Gold first)
+    // Prioritize rankings based on OmorfiHubPoints, Trust Score, and Tier level (Diamond, Platinum, Gold first)
     return filtered.sort((a, b) => {
       const aTier = (a as any).tier || 'Bronze';
       const bTier = (b as any).tier || 'Bronze';

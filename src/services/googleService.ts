@@ -67,7 +67,7 @@ export const createGoogleCalendarEvent = async (event: CalendarEventPayload, tok
     body: JSON.stringify({
       summary: event.summary,
       description: event.description,
-      location: event.location || 'WeSabiHub Center / Address',
+      location: event.location || 'OmorfiHub Center / Address',
       start: {
         dateTime: event.startTime,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,

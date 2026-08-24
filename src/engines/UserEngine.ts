@@ -15,7 +15,7 @@ import {
 } from './index';
 
 /**
- * WeSabiHub User & Identity Engine
+ * OmorfiHub User & Identity Engine
  * Manages user lifecycle, authentication mapping, and permissions.
  */
 class UserEngine {
@@ -134,7 +134,7 @@ class UserEngine {
     } else {
       await notificationEngine.send(
         uid,
-        'Welcome to WeSabiHub! 🚀',
+        'Welcome to OmorfiHub! 🚀',
         `Your account as a ${safeRole.replace(/_/g, ' ')} is now active. Explore the dashboard to get started.`,
         'SUCCESS',
         '/dashboard',

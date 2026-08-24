@@ -56,9 +56,9 @@ export const MerchantSolutionsPage = () => {
       <section className="py-32">
         <div className="max-w-7xl mx-auto px-4">
           <SectionHeader
-            badge="Why WeSabiHub"
+            badge="Why OmorfiHub"
             title="The Smart Choice for Modern Merchants"
-            description="Traditional door-to-door delivery is expensive and prone to failure. WeSabiHub provides a more reliable alternative."
+            description="Traditional door-to-door delivery is expensive and prone to failure. OmorfiHub provides a more reliable alternative."
           />
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -113,7 +113,7 @@ export const MerchantSolutionsPage = () => {
                          desc: 'Use our web portal to book shipments manually and give your Instagram or WhatsApp customers professional pickup options.'
                       },
                       {
-                         title: 'WeSabiDispatch & Courier Fulfillment',
+                         title: 'OmorfiHubDispatch & Courier Fulfillment',
                          desc: 'Instantly assign bulk shipments to verified independent dispatch riders with live tracking and secure SafePay payment protections.'
                       },
                       {
@@ -174,7 +174,7 @@ export const MerchantSolutionsPage = () => {
                 <div className="space-y-8">
                    <h2 className="text-4xl md:text-5xl font-bold text-white font-display leading-tight">
                       Ready to integrate <br />
-                      <span className="text-primary-400">WeSabiHub?</span>
+                      <span className="text-primary-400">OmorfiHub?</span>
                    </h2>
                    <p className="text-xl text-slate-800 leading-relaxed">
                       Our API is built by developers, for developers. Get up and running in minutes with our comprehensive SDKs and documentation.
@@ -201,8 +201,8 @@ export const MerchantSolutionsPage = () => {
                       <span className="text-slate-900 text-xs">Merchant Integration</span>
                    </div>
                    <pre className="text-primary-400 overflow-x-auto">
-                      <code>{`// Initialize WeSabiHub
-const hub = new WeSabiHub({
+                      <code>{`// Initialize OmorfiHub
+const hub = new OmorfiHub({
   apiKey: 'wsh_live_...'
 });
 

@@ -6,7 +6,7 @@ import { paymentEngine } from './PaymentEngine';
 import { monitoringEngine } from './MonitoringEngine';
 
 /**
- * WeSabiHub Webhook Engine
+ * OmorfiHub Webhook Engine
  * Centralized handling, validation, idempotency, and routing for incoming webhooks.
  */
 class WebhookEngine {

@@ -6,7 +6,7 @@ import { auditEngine } from './AuditEngine';
 import { auth } from '../lib/firebase';
 
 /**
- * WeSabiHub Compliance & Legal Engine
+ * OmorfiHub Compliance & Legal Engine
  * Manages legal documents, KYC states, and user consents.
  */
 class ComplianceEngine {

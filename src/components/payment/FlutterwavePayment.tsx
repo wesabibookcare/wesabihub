@@ -109,9 +109,9 @@ export const FlutterwavePayment = ({
           trackingNumber
         },
         customizations: {
-          title: "WeSabiHub Payment Protection",
+          title: "OmorfiHub Payment Protection",
           description: `Secure Protected Holding for Shipment #${trackingNumber}`,
-          logo: "https://wesabihub.com/logo.png",
+          logo: "https://omorfihub.com/logo.png",
         },
         callback: (data: any) => {
           console.log("Flutterwave raw callback data:", data);

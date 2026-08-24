@@ -87,9 +87,9 @@ export const HomePage = () => {
       icon: ShoppingBag,
       link: '/merchants'
     },
-    /* PAUSED: WeSabiDispatch homepage card -- restore by uncommenting
+    /* PAUSED: OmorfiHubDispatch homepage card -- restore by uncommenting
     {
-      title: 'WeSabiDispatch',
+      title: 'OmorfiHubDispatch',
       description: 'Onboard as an authorized independent rider, secure high transit volumes, and cashout weekly.',
       icon: Truck,
       link: '/become-dispatch-partner'
@@ -214,7 +214,7 @@ export const HomePage = () => {
             <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
               <Badge variant="info">Ecosystem Architecture</Badge>
               <h2 className="text-3xl lg:text-5xl font-black font-display tracking-tight text-slate-900 dark:text-white uppercase italic">
-                How WeSabiHub Supports Everyone
+                How OmorfiHub Supports Everyone
               </h2>
               <p className="text-lg text-slate-800 dark:text-slate-300 font-medium">
                 Our platform bridges verified merchants, neighborhood centers, independent dispatchers, and API enterprise partners inside one secure payment protection ledger.
@@ -233,7 +233,7 @@ export const HomePage = () => {
                 <ul className="space-y-2 mb-6">
                   <li className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-slate-300">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-                    Professional WeSabiDispatch independent riders
+                    Professional OmorfiHubDispatch independent riders
                   </li>
                   <li className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-slate-300">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />

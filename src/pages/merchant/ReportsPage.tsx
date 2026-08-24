@@ -127,7 +127,7 @@ export const ReportsPage = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `WeSabiHub_Report_${range.label.replace(/\s+/g, '_')}.csv`;
+      link.download = `OmorfiHub_Report_${range.label.replace(/\s+/g, '_')}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

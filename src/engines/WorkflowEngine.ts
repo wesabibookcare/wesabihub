@@ -16,7 +16,7 @@ import { monitoringEngine } from './MonitoringEngine';
 import { WOSResponse, createWOSResponse } from './types';
 
 /**
- * WeSabiHub Workflow Engine (WOS Coordinator)
+ * OmorfiHub Workflow Engine (WOS Coordinator)
  * Orchestrates high-level business processes across multiple domains.
  */
 class WorkflowEngine {
@@ -64,7 +64,7 @@ class WorkflowEngine {
         user.id,
         'approved', // Use existing template if available or generic
         { role: user.role },
-        'Welcome to WeSabiHub! 🎉',
+        'Welcome to OmorfiHub! 🎉',
         `Your registration as a ${user.role} has been successful.`,
         'SUCCESS',
         'SYSTEM'

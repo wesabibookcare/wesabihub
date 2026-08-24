@@ -6,7 +6,7 @@ import { configurationEngine } from './ConfigurationEngine';
 import { auditEngine, notificationEngine } from './index';
 
 /**
- * WeSabiHub Centre (Hub) Engine
+ * OmorfiHub Centre (Hub) Engine
  * Manages Hub Points, Staff, and Local Operations.
  */
 class CentreEngine {

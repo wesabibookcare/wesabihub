@@ -1,7 +1,7 @@
 export const BRAND_ASSETS = {
-  companyName: 'WeSabiHub',
+  companyName: 'OmorfiHub',
   parentCompany: 'Omorfi Limited',
-  attributionText: 'WeSabiHub is a product of Omorfi Limited',
+  attributionText: 'OmorfiHub is a product of Omorfi Limited',
   fullLogo: '/assets/brand/official-logo.png',
   iconLogo: '/assets/brand/official-logo.png',
   omorfiLogo: '/assets/brand/omorfi-logo.png',

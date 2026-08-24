@@ -74,7 +74,7 @@ export const VerifyReceiptPage = () => {
           W
         </div>
         <div>
-          <span className="font-display font-black text-lg tracking-tight text-slate-800 dark:text-white">WeSabi<span className="text-primary-600">Hub</span></span>
+          <span className="font-display font-black text-lg tracking-tight text-slate-800 dark:text-white">OmorfiHub<span className="text-primary-600">Hub</span></span>
           <span className="text-[10px] block font-mono text-slate-800 font-bold uppercase tracking-widest">Certified Ledger Registry</span>
         </div>
       </div>
@@ -104,7 +104,7 @@ export const VerifyReceiptPage = () => {
                 <p className="text-sm text-slate-900 max-w-md mx-auto">{error}</p>
               </div>
               <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/15 border border-amber-100 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 text-left text-xs leading-relaxed">
-                <strong>Attention Holder:</strong> Valid WeSabiHub digital receipts contain cryptographic signatures backed by real-time Firestore ledger audits. If you believe this receipt is valid, please contact dispatch operations support.
+                <strong>Attention Holder:</strong> Valid OmorfiHub digital receipts contain cryptographic signatures backed by real-time Firestore ledger audits. If you believe this receipt is valid, please contact dispatch operations support.
               </div>
               <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild variant="outline" className="rounded-2xl h-12 px-6">

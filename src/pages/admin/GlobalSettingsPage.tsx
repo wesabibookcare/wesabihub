@@ -133,14 +133,14 @@ export const GlobalSettingsPage = () => {
         smsConfig: {
           provider: 'FALLBACK',
           apiKey: '',
-          senderId: 'WeSabiHub',
+          senderId: 'OmorfiHub',
           enabled: false,
           ...globalSettings.smsConfig
         },
         emailConfig: {
           provider: 'FALLBACK',
           apiKey: '',
-          defaultSender: 'no-reply@wesabihub.com',
+          defaultSender: 'no-reply@omorfihub.com',
           enabled: false,
           ...globalSettings.emailConfig
         },
@@ -156,7 +156,7 @@ export const GlobalSettingsPage = () => {
         },
         notificationTemplates: {
           received: { title: 'Parcel Received', body: 'We have received your parcel {{trackingNumber}} at our hub center.', enabled: true },
-          approved: { title: 'Account Approved', body: 'Welcome to WeSabiHub! Your {{role}} role application is approved.', enabled: true },
+          approved: { title: 'Account Approved', body: 'Welcome to OmorfiHub! Your {{role}} role application is approved.', enabled: true },
           rejected: { title: 'Application Rejected', body: 'Your registration application was rejected. Please review feedback.', enabled: true },
           reupload: { title: 'Document Action Needed', body: 'Please reupload document {{docName}} due to compliance issues.', enabled: true },
           suspended: { title: 'Account Suspended', body: 'Your account has been suspended due to policy violations.', enabled: true },
@@ -1892,7 +1892,7 @@ export const GlobalSettingsPage = () => {
                             emailConfig: { ...settings.emailConfig!, defaultSender: e.target.value }
                           })}
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-sans font-medium"
-                          placeholder="no-reply@wesabihub.com"
+                          placeholder="no-reply@omorfihub.com"
                         />
                       </div>
                       <div className="space-y-1.5 md:col-span-2">
@@ -1965,7 +1965,7 @@ export const GlobalSettingsPage = () => {
                             smsConfig: { ...settings.smsConfig!, senderId: e.target.value }
                           })}
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-sans font-bold"
-                          placeholder="WeSabiHub"
+                          placeholder="OmorfiHub"
                         />
                       </div>
                       <div className="space-y-1.5 md:col-span-2">

@@ -81,7 +81,7 @@ export const ROLES: RoleInfo[] = [
   {
     id: 'MERCHANT',
     title: 'Merchant',
-    description: 'Sell products, manage shipments and communicate with customers through WeSabiChat.',
+    description: 'Sell products, manage shipments and communicate with customers through OmorfiHubChat.',
     icon: ShoppingBag,
     approvalStatus: 'REQUIRED',
     responsibilities: [
@@ -103,7 +103,7 @@ export const ROLES: RoleInfo[] = [
   {
     id: 'CENTER_OWNER',
     title: 'Centre Owner',
-    description: 'Operate an approved WeSabiHub collection centre and manage staff.',
+    description: 'Operate an approved OmorfiHub collection centre and manage staff.',
     icon: MapPin,
     approvalStatus: 'APPLICATION',
     responsibilities: [
@@ -191,7 +191,7 @@ export const ROLES: RoleInfo[] = [
   {
     id: 'DEVELOPER',
     title: 'Developer / API Partner',
-    description: 'Integrate your application or marketplace with WeSabiHub through secure APIs.',
+    description: 'Integrate your application or marketplace with OmorfiHub through secure APIs.',
     icon: Code,
     approvalStatus: 'APPLICATION',
     responsibilities: [
@@ -218,7 +218,7 @@ export const ROLES: RoleInfo[] = [
     approvalStatus: 'APPLICATION',
     responsibilities: [
       'High-volume transaction management',
-      'Integrating enterprise ERP with WeSabiHub',
+      'Integrating enterprise ERP with OmorfiHub',
       'Maintaining dedicated API credentials'
     ],
     benefits: [

@@ -31,7 +31,7 @@ export const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ childr
     { icon: Wallet, label: 'Wallet', href: '/customer/wallet' },
     { icon: BookMarked, label: 'Saved Addresses', href: '/customer/addresses' },
     { icon: CreditCard, label: 'Payment Methods', href: '/customer/payments' },
-    { icon: Sparkles, label: 'WeSabiChat', href: '/customer/chat' },
+    { icon: Sparkles, label: 'OmorfiHubChat', href: '/customer/chat' },
     { icon: LifeBuoy, label: 'Support', href: '/customer/support' },
     { icon: Settings, label: 'Settings', href: '/customer/settings' },
   ];

@@ -149,7 +149,7 @@ export const ProfilePage = () => {
     setSaving(true);
     try {
       if (!wesabiUsername) {
-        throw new Error('WeSabi Username is required.');
+        throw new Error('OmorfiHub Username is required.');
       }
 
       let formattedUsername = wesabiUsername.trim().replace(/^@/, '');
@@ -170,7 +170,7 @@ export const ProfilePage = () => {
       // Query uniqueness
       const existing = await userEngine.getByUsername(formattedUsername);
       if (existing && existing.uid !== user.uid) {
-        throw new Error('This WeSabi Username is already taken.');
+        throw new Error('This OmorfiHub Username is already taken.');
       }
 
       await userEngine.updateProfile(user.uid, {
@@ -347,7 +347,7 @@ export const ProfilePage = () => {
                           <Input value={displayName} onChange={e => setDisplayName(e.target.value)} leftIcon={<Building2 size={18} />} />
                        </div>
                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">WeSabi Username</label>
+                          <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">OmorfiHub Username</label>
                           <Input
                              value={wesabiUsername}
                              onChange={e => setWesabiUsername(e.target.value)}
@@ -374,7 +374,7 @@ export const ProfilePage = () => {
                        <div className="flex items-start gap-4">
                           <AtSign className="text-slate-800 mt-1" size={20} />
                           <div>
-                             <p className="text-xs font-bold text-slate-800 uppercase tracking-widest">WeSabi Username</p>
+                             <p className="text-xs font-bold text-slate-800 uppercase tracking-widest">OmorfiHub Username</p>
                              <p className="text-sm font-bold text-primary-600 font-mono mt-1">{user?.wesabiUsername || 'Not Set'}</p>
                              <p className="text-[10px] text-slate-800 mt-1">Share this exact text so others can find and chat with you.</p>
                           </div>

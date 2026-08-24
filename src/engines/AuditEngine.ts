@@ -3,7 +3,7 @@ import { auditRepository } from '../services/db/AuditRepository';
 import { orderBy, limit } from 'firebase/firestore';
 
 /**
- * WeSabiHub Audit Engine
+ * OmorfiHub Audit Engine
  * Authoritative source for system auditing and security logging.
  */
 class AuditEngine {

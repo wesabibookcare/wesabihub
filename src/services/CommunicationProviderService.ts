@@ -218,7 +218,7 @@ class CommunicationProviderService {
             success = await this.sendEmail(
               provider,
               settings?.emailConfig?.apiKey || 'mock-key',
-              settings?.emailConfig?.defaultSender || 'no-reply@wesabihub.com',
+              settings?.emailConfig?.defaultSender || 'no-reply@omorfihub.com',
               data.recipient,
               data.title,
               data.body
@@ -227,7 +227,7 @@ class CommunicationProviderService {
               // Failover logic to Backup provider
               errorMsg = `Primary provider ${provider} failed. Initiating Failover.`;
               providerName = 'FALLBACK_EMAIL';
-              success = await this.sendEmail('FALLBACK', 'fallback-key', 'failover@wesabihub.com', data.recipient, data.title, data.body);
+              success = await this.sendEmail('FALLBACK', 'fallback-key', 'failover@omorfihub.com', data.recipient, data.title, data.body);
             }
           } else {
             errorMsg = 'Email delivery disabled';
@@ -241,7 +241,7 @@ class CommunicationProviderService {
             success = await this.sendSMS(
               provider,
               settings?.smsConfig?.apiKey || 'mock-key',
-              settings?.smsConfig?.senderId || 'WeSabiHub',
+              settings?.smsConfig?.senderId || 'OmorfiHub',
               data.recipient,
               data.body
             );
@@ -249,7 +249,7 @@ class CommunicationProviderService {
               // Failover logic to Backup SMS
               errorMsg = `Primary SMS provider ${provider} failed. Initiating Failover.`;
               providerName = 'FALLBACK_SMS';
-              success = await this.sendSMS('FALLBACK', 'fallback-key', 'WeSabiSMS', data.recipient, data.body);
+              success = await this.sendSMS('FALLBACK', 'fallback-key', 'OmorfiHubSMS', data.recipient, data.body);
             }
           } else {
             errorMsg = 'SMS delivery disabled';
@@ -380,7 +380,7 @@ class CommunicationProviderService {
 
   private async sendTelegram(botToken: string, chatId: string, title: string, body: string): Promise<boolean> {
     try {
-      const formattedMessage = `*${title}*\n\n${body}\n\n_Sent via WeSabiHub Enterprise Comms_`;
+      const formattedMessage = `*${title}*\n\n${body}\n\n_Sent via OmorfiHub Enterprise Comms_`;
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
       const res = await fetch(url, {
         method: 'POST',

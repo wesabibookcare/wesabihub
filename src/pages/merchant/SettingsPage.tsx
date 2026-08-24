@@ -325,7 +325,7 @@ export const MerchantSettingsPage = () => {
                       <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
                          <div>
                             <h2 className="text-2xl font-bold dark:text-white font-display">Store Branding</h2>
-                            <p className="text-sm text-slate-800">Customize how your store appears on WeSabiHub.</p>
+                            <p className="text-sm text-slate-800">Customize how your store appears on OmorfiHub.</p>
                          </div>
 
                          <div className="space-y-6">

@@ -153,7 +153,7 @@ export const TrackParcelPage = () => {
     await handleSearchInternal(trackingNumber);
   };
 
-  const handleWeSabiChat = async () => {
+  const handleOmorfiHubChat = async () => {
     if (!user) return;
 
     if (conversationExists) {
@@ -180,7 +180,7 @@ export const TrackParcelPage = () => {
       navigate('/customer/chat');
     } catch (error) {
       console.error(error);
-      toast.error('Failed to initialize WeSabiChat');
+      toast.error('Failed to initialize OmorfiHubChat');
     } finally {
       setIsCreatingChat(false);
     }
@@ -203,7 +203,7 @@ export const TrackParcelPage = () => {
     const protectionId = paymentProtectionRecord?.paymentProtectionId || paymentProtectionRecord?.id;
 
     if (!paymentProtectionRecord?.metadata?.buyerEvidenceVideo) {
-      toast.error('Please record your unboxing/inspection video in WeSabiChat before releasing payment.');
+      toast.error('Please record your unboxing/inspection video in OmorfiHubChat before releasing payment.');
       navigate('/customer/chat');
       return;
     }
@@ -274,7 +274,7 @@ export const TrackParcelPage = () => {
   const trackingEvents = realEvents.length > 0
     ? realEvents.map(e => ({
         title: e.statusDescription || e.status || 'Status Updated',
-        location: e.locationName || 'WeSabiHub Logistics Center',
+        location: e.locationName || 'OmorfiHub Logistics Center',
         time: e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
         date: e.timestamp ? new Date(e.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Pending',
         status: 'completed'
@@ -445,10 +445,10 @@ export const TrackParcelPage = () => {
                         <div className="flex-1">
                           <p className="text-sm font-bold text-amber-800 dark:text-amber-400">Unboxing video required</p>
                           <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
-                            Record an unboxing/inspection video in WeSabiChat before releasing payment. If you're reporting a problem instead, record it now if you can — it's strong evidence for your dispute.
+                            Record an unboxing/inspection video in OmorfiHubChat before releasing payment. If you're reporting a problem instead, record it now if you can — it's strong evidence for your dispute.
                           </p>
                           <Button size="sm" variant="outline" className="mt-3 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400" onClick={() => navigate('/customer/chat')}>
-                            <Video size={14} className="mr-2" /> Record in WeSabiChat
+                            <Video size={14} className="mr-2" /> Record in OmorfiHubChat
                           </Button>
                         </div>
                       </div>
@@ -531,7 +531,7 @@ export const TrackParcelPage = () => {
                    <div className="space-y-3 pt-2">
                       {[
                         { label: 'Weight', value: '1.2 kg' },
-                        { label: 'Carrier', value: 'WeSabi Fleet' },
+                        { label: 'Carrier', value: 'OmorfiHub Fleet' },
                         { label: 'Service', value: 'Express' },
                       ].map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
@@ -542,7 +542,7 @@ export const TrackParcelPage = () => {
                    </div>
                 </Card>
 
-                {/* WeSabiChat Card */}
+                {/* OmorfiHubChat Card */}
                 <Card className="p-6 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex flex-col items-center text-center space-y-4">
                    <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600">
                       <MessageSquare size={24} />
@@ -554,10 +554,10 @@ export const TrackParcelPage = () => {
                    <Button
                       variant="default"
                       className="w-full h-10 rounded-xl bg-primary-600 hover:bg-primary-700"
-                      onClick={handleWeSabiChat}
+                      onClick={handleOmorfiHubChat}
                       disabled={isCreatingChat}
                    >
-                      {isCreatingChat ? 'Please wait...' : (conversationExists ? 'Open WeSabiChat' : 'Start WeSabiChat')}
+                      {isCreatingChat ? 'Please wait...' : (conversationExists ? 'Open OmorfiHubChat' : 'Start OmorfiHubChat')}
                    </Button>
                 </Card>
 
@@ -583,7 +583,7 @@ export const TrackParcelPage = () => {
         isOpen={showSuccessAnim}
         style={animationStyle}
         title="Parcel Collected!"
-        subtitle="Your parcel has just been handed over successfully. Thank you for using WeSabiHub!"
+        subtitle="Your parcel has just been handed over successfully. Thank you for using OmorfiHub!"
         onComplete={() => setShowSuccessAnim(false)}
       />
     </CustomerLayout>

@@ -30,7 +30,7 @@ export const AccountRestrictedPage: React.FC = () => {
           {isPending ? (
             'Your application is currently under review by our team. We will notify you via email once your account has been verified and activated.'
           ) : (
-            'We noticed some unusual activity or pending verification on your account. As a result, your access to WeSabiHub has been temporarily restricted.'
+            'We noticed some unusual activity or pending verification on your account. As a result, your access to OmorfiHub has been temporarily restricted.'
           )}
         </p>
 
@@ -48,7 +48,7 @@ export const AccountRestrictedPage: React.FC = () => {
 
         <div className="space-y-4">
           <Button className="w-full gap-2" variant="outline" asChild>
-            <a href="mailto:support@wesabihub.com">
+            <a href="mailto:support@omorfihub.com">
               <Mail className="h-4 w-4" />
               Contact Support
             </a>

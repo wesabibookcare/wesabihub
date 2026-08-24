@@ -45,7 +45,7 @@ export const PaymentMethodsPage = () => {
 
       // No fake/demo payment methods are seeded here anymore -- customers
       // see an honest empty state and add their real bank account themselves.
-      // (Card payments are not offered; WeSabiHub is bank-transfer only.)
+      // (Card payments are not offered; OmorfiHub is bank-transfer only.)
       setMethods(data);
     } catch (error) {
       toast.error('Failed to load payment methods');

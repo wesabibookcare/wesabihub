@@ -8,7 +8,7 @@ import { custodyRepository } from '../services/db/CustodyRepository';
 import { returnRepository } from '../services/db/ReturnRepository';
 
 /**
- * WeSabiHub Parcel & Tracking Engine
+ * OmorfiHub Parcel & Tracking Engine
  * Orchestrates parcel lifecycle, routing, tracking, pricing, and QR verification.
  */
 class ParcelEngine {

@@ -38,9 +38,9 @@ export class FlutterwaveProvider implements PaymentGateway {
             ...data.metadata
           },
           customizations: {
-            title: "WeSabiHub Secure Payment",
+            title: "OmorfiHub Secure Payment",
             description: `Payment Reference: ${data.reference}`,
-            logo: "https://wesabihub.com/logo.png"
+            logo: "https://omorfihub.com/logo.png"
           }
         })
       });

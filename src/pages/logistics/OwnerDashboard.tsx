@@ -108,7 +108,7 @@ export const OwnerDashboard = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `wesabihub_logistics_report_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `omorfihub_logistics_report_${new Date().toISOString().slice(0, 10)}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();

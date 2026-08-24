@@ -22,7 +22,7 @@ const DEFAULT_TERMS: SafePayAgreementTerms = {
   contents: 'Complete package',
   serialImei: 'Not required',
   packaging: 'Seller packaging',
-  delivery: 'WeSabiHub Hub',
+  delivery: 'OmorfiHub Hub',
   inspection: 'Standard SafePay inspection',
   defectDefinition: 'Item does not function as described',
   specialInstructions: ''
@@ -188,7 +188,7 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
       <Card className="p-4 bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-100 dark:border-indigo-900/40 rounded-2xl flex items-start gap-3">
         <ShieldCheck className="text-primary-600 shrink-0 mt-0.5" size={20} />
         <p className="text-xs text-indigo-950 dark:text-indigo-200 leading-relaxed font-medium">
-          SafePay is a separate protected transaction service for buyer–seller purchases. It helps protect the agreed transaction through payment, evidence, inspection and resolution. SafePay is independent of WeSabiHub logistics and is not WeSabiHub's ordinary payment system.
+          SafePay is a separate protected transaction service for buyer–seller purchases. It helps protect the agreed transaction through payment, evidence, inspection and resolution. SafePay is independent of OmorfiHub logistics and is not OmorfiHub's ordinary payment system.
         </p>
       </Card>
 
@@ -362,8 +362,8 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
                   onChange={e => setTerms({ ...terms, delivery: e.target.value })}
                   className="w-full p-2.5 border rounded-xl dark:bg-slate-900 dark:text-white"
                 >
-                  <option value="WeSabiHub Hub">WeSabiHub Hub</option>
-                  <option value="WeSabiHub Dispatch Rider">WeSabiHub Dispatch Rider</option>
+                  <option value="OmorfiHub Hub">OmorfiHub Hub</option>
+                  <option value="OmorfiHub Dispatch Rider">OmorfiHub Dispatch Rider</option>
                   <option value="Seller delivery">Seller delivery</option>
                   <option value="Buyer pickup">Buyer pickup</option>
                   <option value="External courier">External courier</option>
@@ -580,7 +580,7 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
                       body: JSON.stringify({
                         shipmentId: transaction.transactionId,
                         amount: transaction.authoritativePaymentRequired,
-                        customerEmail: transaction.buyerEmail || user?.email || 'buyer@wesabihub.com',
+                        customerEmail: transaction.buyerEmail || user?.email || 'buyer@omorfihub.com',
                         customerName: transaction.buyerName,
                         merchantId: transaction.sellerId,
                         trackingNumber: transaction.transactionId

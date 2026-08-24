@@ -32,7 +32,7 @@ export const PublicLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const brandName = settings?.platformName || 'WeSabiHub';
+  const brandName = settings?.platformName || 'OmorfiHub';
   const logoUrl = settings?.branding?.logoUrl;
   const countryName = settings?.countryConfig?.defaultCountry || 'Nigeria';
 
@@ -208,7 +208,7 @@ export const PublicLayout = ({ children }: { children: React.ReactNode }) => {
                     <li><Link to="/merchants" className="text-slate-500 hover:text-primary-600 transition-colors">For Merchants</Link></li>
                     <li><Link to="/safepay" className="text-slate-500 hover:text-primary-600 transition-colors">SafePay</Link></li>
                     <li><Link to="/centers" className="text-slate-500 hover:text-primary-600 transition-colors">Become a Hub</Link></li>
-                    {/* PAUSED: WeSabiDispatch / dispatch partner recruiting links */}
+                    {/* PAUSED: OmorfiHubDispatch / dispatch partner recruiting links */}
                   </>
                 )}
               </ul>
@@ -241,7 +241,7 @@ export const PublicLayout = ({ children }: { children: React.ReactNode }) => {
               </p>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 <img src="/assets/brand/omorfi-logo.png" onError={(e) => { e.currentTarget.style.display = 'none'; }} alt="Omorfi Logo" className="h-4 w-4 object-contain inline-block" />
-                <span>WeSabiHub is a product of Omorfi Limited</span>
+                <span>OmorfiHub is a product of Omorfi Limited</span>
               </div>
             </div>
             <div className="flex items-center gap-2 text-slate-500 text-sm">

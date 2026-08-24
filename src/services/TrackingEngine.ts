@@ -107,7 +107,7 @@ class TrackingEngine {
         actorId: parcel.senderId || 'SYSTEM',
         actorRole: 'MERCHANT',
         location: parcel.originCenterId || 'Origin Hub',
-        remarks: 'Shipment created and registered in WeSabiHub system.',
+        remarks: 'Shipment created and registered in OmorfiHub system.',
         statusDescription: 'Shipment Created',
         timestamp: new Date(baseTime).toISOString()
       }

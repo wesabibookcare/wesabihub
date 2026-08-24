@@ -322,7 +322,7 @@ export const MerchantDashboard = () => {
                     </div>
                     <div className="space-y-1">
                        <h4 className="font-bold text-lg">Merchant Tip</h4>
-                       <p className="text-sm text-primary-100">Using WeSabiHub Points for bulk drops can save you up to 25% on shipping costs.</p>
+                       <p className="text-sm text-primary-100">Using OmorfiHub Points for bulk drops can save you up to 25% on shipping costs.</p>
                     </div>
                     <Button className="w-full bg-white text-primary-600 hover:bg-primary-50 rounded-xl font-bold transition-transform active:scale-95" asChild>
                        <Link to="/merchant/support">Learn More</Link>

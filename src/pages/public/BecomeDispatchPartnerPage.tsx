@@ -58,7 +58,7 @@ export const BecomeDispatchPartnerPage = () => {
                 <span className="text-primary-500">Earn on Your Own Terms.</span>
               </h1>
               <p className="text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto">
-                Join WeSabiDispatch—{countryName}'s first decentralized, trust-ledger based logistics partner network. Deliver parcel shipments between verified hubs and customers.
+                Join OmorfiHubDispatch—{countryName}'s first decentralized, trust-ledger based logistics partner network. Deliver parcel shipments between verified hubs and customers.
               </p>
 
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -90,7 +90,7 @@ export const BecomeDispatchPartnerPage = () => {
                 {
                   icon: Wallet,
                   title: 'Secure Payout Settlement',
-                  desc: `All earnings route securely through WeSabi SafePay Wallet. Get paid immediately upon successful delivery confirmation. Access fast bank cashouts anytime.`
+                  desc: `All earnings route securely through OmorfiHub SafePay Wallet. Get paid immediately upon successful delivery confirmation. Access fast bank cashouts anytime.`
                 },
                 {
                   icon: Award,
@@ -104,13 +104,13 @@ export const BecomeDispatchPartnerPage = () => {
                 },
                 {
                   icon: GraduationCap,
-                  title: 'WeSabi Training Academy',
+                  title: 'OmorfiHub Training Academy',
                   desc: 'Access mandatory onboarding courses covering safe transit of parcel valuables, professional dispute resolution, and fuel route optimization.'
                 },
                 {
                   icon: UserCheck,
                   title: 'Equal Opportunity Account Multi-roles',
-                  desc: 'Already a verified merchant or hub centre owner on WeSabiHub? Seamlessly activate independent rider capabilities with one unified dashboard.'
+                  desc: 'Already a verified merchant or hub centre owner on OmorfiHub? Seamlessly activate independent rider capabilities with one unified dashboard.'
                 },
                 {
                   icon: ShieldCheck,
@@ -183,7 +183,7 @@ export const BecomeDispatchPartnerPage = () => {
                     { title: '1. Register & Submit Application', desc: 'Create your account and apply for the Dispatch Rider role.' },
                     { title: '2. Complete Core KYC Checklist', desc: 'Provide your vehicle documents, emergency contacts, guarantors declaration, national ID, and Class-A riders license.' },
                     { title: '3. Verification & Academy Training', desc: 'Our regional operations managers review your files. Take mandatory courses inside the Training Academy.' },
-                    { title: '4. Sign Partner Agreement', desc: 'E-sign the latest WeSabiDispatch Partner Agreement v2.4 to generate your digital ID card with secure field QR code verification.' }
+                    { title: '4. Sign Partner Agreement', desc: 'E-sign the latest OmorfiHubDispatch Partner Agreement v2.4 to generate your digital ID card with secure field QR code verification.' }
                   ].map((step, sIdx) => (
                     <div key={sIdx} className="flex gap-4">
                       <div className="shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white font-black text-xs flex items-center justify-center">

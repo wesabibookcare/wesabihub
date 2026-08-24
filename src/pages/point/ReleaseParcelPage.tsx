@@ -662,7 +662,7 @@ export const ReleaseParcelPage = () => {
           await notificationEngine.send(
             recipientUser.uid || recipientUser.id,
             'Parcel Collected',
-            `Your parcel ${selectedParcel.trackingNumber} has been released and collected by ${collectedByName} (Relation: ${collectedRelation}) at Hub ${centerId}. Thank you for using WeSabiHub!`,
+            `Your parcel ${selectedParcel.trackingNumber} has been released and collected by ${collectedByName} (Relation: ${collectedRelation}) at Hub ${centerId}. Thank you for using OmorfiHub!`,
             'SUCCESS',
             undefined,
             'SHIPMENT'
@@ -681,7 +681,7 @@ export const ReleaseParcelPage = () => {
         if (!hubDetails) {
           hubDetails = {
             id: centerId,
-            name: centerId || 'WeSabiHub Point',
+            name: centerId || 'OmorfiHub Point',
             location: 'Nigeria'
           };
         }
