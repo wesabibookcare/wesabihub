@@ -175,7 +175,7 @@ export const BootstrapPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 rounded-xl"
-                    placeholder="admin@omorfihub.com"
+                    placeholder="wesabibookcare@gmail.com"
                     disabled={loading}
                   />
                 </div>
