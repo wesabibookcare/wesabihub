@@ -85,9 +85,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshBootstrapStatus = async () => {
     try {
       const globalRef = doc(db, 'systemSettings', 'global');
-      const globalSnap = await getDoc(globalRef);
+      const globalSnap = await getDoc(globalRef).catch(err => {
+        console.warn('Failed to fetch systemSettings global doc:', err);
+        return null;
+      });
 
-      if (globalSnap.exists() && globalSnap.data().isSuperAdminBootstrapped === true) {
+      if (globalSnap && globalSnap.exists() && globalSnap.data().isSuperAdminBootstrapped === true) {
         setBootstrapNeeded(false);
         return;
       }
@@ -96,8 +99,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (auth.currentUser) {
         try {
           const q = query(collection(db, 'users'), where('roles', 'array-contains', 'SUPER_ADMIN'), limit(1));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
+          const querySnapshot = await getDocs(q).catch(err => {
+            console.warn('Direct users query catch:', err);
+            return null;
+          });
+          if (querySnapshot && !querySnapshot.empty) {
             setBootstrapNeeded(false);
             // Self-heal global settings if possible
             await updateDoc(globalRef, { isSuperAdminBootstrapped: true }).catch(e => {
