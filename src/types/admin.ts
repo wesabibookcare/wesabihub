@@ -95,7 +95,7 @@ export const MOCK_BRAND_ASSETS: BrandAssets = {
   typography: BRAND_ASSETS.typography,
   companyInfo: {
     address: '123 Logistics Way, Tech City',
-    email: 'admin@omorfihub.com',
+    email: 'wesabibookcare@gmail.com',
     phone: '+1 234 567 890'
   }
 };
