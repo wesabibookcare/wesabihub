@@ -1,4 +1,5 @@
 import { HubCenter } from '../types';
+import { getApiUrl } from '../lib/apiClient';
 
 class MapService {
   calculateDistance(
@@ -23,7 +24,7 @@ class MapService {
     const destStr = typeof destination === 'string' ? destination : `${destination.lat},${destination.lng}`;
 
     try {
-      const response = await fetch('/api/maps/distance-matrix', {
+      const response = await fetch(getApiUrl('/api/maps/distance-matrix'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ origins: originStr, destinations: destStr })
@@ -63,7 +64,7 @@ class MapService {
     const destStr = typeof destination === 'string' ? destination : `${destination.lat},${destination.lng}`;
 
     try {
-      const response = await fetch('/api/maps/route', {
+      const response = await fetch(getApiUrl('/api/maps/route'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ origin: originStr, destination: destStr })

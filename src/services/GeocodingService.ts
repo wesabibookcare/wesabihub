@@ -1,7 +1,9 @@
+import { getApiUrl } from '../lib/apiClient';
+
 class GeocodingService {
   async geocode(address: string): Promise<{ lat: number; lng: number } | null> {
     try {
-      const response = await fetch(`/api/maps/geocode?address=${encodeURIComponent(address)}`);
+      const response = await fetch(getApiUrl(`/api/maps/geocode?address=${encodeURIComponent(address)}`));
       if (!response.ok) {
         throw new Error(`Geocoding failed with status: ${response.status}`);
       }
@@ -18,7 +20,7 @@ class GeocodingService {
 
   async reverseGeocode(lat: number, lng: number): Promise<string> {
     try {
-      const response = await fetch(`/api/maps/reverse-geocode?lat=${lat}&lng=${lng}`);
+      const response = await fetch(getApiUrl(`/api/maps/reverse-geocode?lat=${lat}&lng=${lng}`));
       if (!response.ok) {
         throw new Error(`Reverse geocoding failed with status: ${response.status}`);
       }

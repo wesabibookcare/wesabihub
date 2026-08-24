@@ -74,9 +74,12 @@ function getDb() {
         console.warn("FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON. Firebase Admin features will be disabled.");
         return null;
       }
-    } else {
-      console.log("Using applicationDefault credentials for Firebase Admin.");
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      console.log("Using GOOGLE_APPLICATION_CREDENTIALS for Firebase Admin.");
       credential = applicationDefault();
+    } else {
+      console.log("No FIREBASE_SERVICE_ACCOUNT_KEY or GOOGLE_APPLICATION_CREDENTIALS provided. Firebase Admin features will be disabled.");
+      return null;
     }
 
     try {
@@ -268,13 +271,35 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
   async function startServer() {
   const app = express();
-  const PORT = 3000;
 
   app.use(express.json());
   app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" }
   }));
+
+  // Host-Portable CORS Middleware
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.VITE_APP_URL || '')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      }
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Correlation-ID, Idempotency-Key');
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+    next();
+  });
 
   // Production Observability: Correlation ID & Request Logging
   app.use((req, res, next) => {
@@ -328,11 +353,20 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   }
 
   // --- INFRASTRUCTURE & HEALTH ENDPOINTS ---
-  app.get("/health", async (req, res) => {
+  const handleHealthCheck = async (req: express.Request, res: express.Response) => {
     const db = getDb();
     const health = await infrastructureEngine.performHealthCheck(db);
-    res.status(health.services.database === 'HEALTHY' ? 200 : 503).json(health);
-  });
+    const isOk = health.services.database === 'HEALTHY' || health.services.database === 'DEGRADED' || health.services.database === 'UNKNOWN';
+    res.status(isOk ? 200 : 503).json({
+      status: isOk ? 'ok' : 'degraded',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      services: health.services
+    });
+  };
+
+  app.get("/health", handleHealthCheck);
+  app.get("/api/health", handleHealthCheck);
 
   app.get("/api/infrastructure/certify", requireRole(ADMIN_ROLES), async (req, res) => {
     const db = getDb();
@@ -5686,14 +5720,21 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   // invokes the Express app's request handler directly via serverless-http
   // (see netlify/functions/api.ts). Everything else about the app (routes,
   // middleware, error handling) stays identical either way.
-  const isServerlessEnv = !!(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
+  return app;
+}
 
-  if (!isServerlessEnv) {
+export const createApp = startServer;
+export const appReadyPromise = startServer();
+
+const PORT = Number(process.env.PORT) || 3000;
+const isServerlessEnv = !!(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY || process.env.VERCEL || process.env.NO_LISTEN === 'true');
+
+if (!isServerlessEnv) {
+  appReadyPromise.then((app) => {
     const server = app.listen(PORT, "0.0.0.0", () => {
       logger.info(`Server booted successfully and running on port ${PORT}`);
     });
 
-    // Graceful shutdown listeners
     const shutdown = () => {
       console.log("[INFO] Received shutdown signal. Closing server...");
       server.close(() => {
@@ -5708,14 +5749,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
-  }
-
-  return app;
+  }).catch((err) => {
+    console.error("Failed to start server:", err);
+  });
 }
-
-// In normal Node hosting (npm run dev / npm start), this builds the app AND
-// starts listening immediately, exactly as before.
-// In a Netlify Function, this same call builds the app but skips listening
-// (see isServerlessEnv above), and the exported promise is awaited by
-// netlify/functions/api.ts to get the ready-to-use Express app.
-export const appReadyPromise = startServer();
