@@ -337,6 +337,15 @@ export const AdminDisputesPage = () => {
       setResolutionText('');
       setSaveStatus({ type: 'success', message: "Financial decision executed successfully. Funds moved, accounts updated, and custody cases resolved." });
       toast.success("Financial decision executed successfully");
+      // Instantly update selectedDispute local state so the view updates without delay
+      setSelectedDispute(prev => prev ? {
+        ...prev,
+        status: 'RESOLVED',
+        resolutionType: decisionType === 'RELEASE_MERCHANT' ? 'RELEASE_TO_SELLER' : (decisionType === 'REFUND_BUYER' ? 'REFUND_TO_BUYER' : 'PARTIAL_SPLIT'),
+        resolutionNotes: resolutionText,
+        resolvedAt: new Date().toISOString(),
+        resolvedBy: currentUserId
+      } : null);
       await loadDisputes();
     } catch (err: any) {
       console.error(err);
