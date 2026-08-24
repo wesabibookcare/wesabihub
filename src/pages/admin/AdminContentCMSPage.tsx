@@ -26,7 +26,7 @@ export const AdminContentCMSPage = () => {
   const fetchData = async () => {
     const allFaqs = await contentEngine.getAllFaqs();
     setFaqs(allFaqs);
-    const pages = ['about', 'how-it-works', 'for-merchants', 'become-a-hub', 'wesabi-dispatch', 'become-a-dispatch-partner', 'privacy-policy', 'terms-of-service'];
+    const pages = ['about', 'how-it-works', 'for-merchants', 'become-a-hub', 'omorfi-dispatch', 'become-a-dispatch-partner', 'privacy-policy', 'terms-of-service'];
     const contents: Record<string, PageContent> = {};
     for (const page of pages) {
       const content: any = await contentEngine.getPageContent(page);
@@ -76,7 +76,7 @@ export const AdminContentCMSPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {['about', 'how-it-works', 'for-merchants', 'become-a-hub', 'wesabi-dispatch', 'become-a-dispatch-partner', 'privacy-policy', 'terms-of-service'].map(pageId => (
+              {['about', 'how-it-works', 'for-merchants', 'become-a-hub', 'omorfi-dispatch', 'become-a-dispatch-partner', 'privacy-policy', 'terms-of-service'].map(pageId => (
                   <div key={pageId} className="space-y-3 p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl">
                       <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 capitalize">{pageId.replace(/-/g, ' ')}</label>
                       <textarea

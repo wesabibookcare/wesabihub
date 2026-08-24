@@ -232,7 +232,7 @@ export const ProfileCompletionPage: React.FC = () => {
       case 'CUSTOMER':
         return [
           { name: 'fullName', label: 'Full Name', type: 'text', required: true },
-          { name: 'wesabiUsername', label: 'Wesabi Username', type: 'text', required: false },
+          { name: 'wesabiUsername', label: 'OmorfiHub Username', type: 'text', required: false },
           { name: 'phone', label: 'Phone Number', type: 'text', required: true },
           { name: 'country', label: 'Country', type: 'geography-country', required: true },
           { name: 'state', label: 'State / Province', type: 'geography-state', required: true },
