@@ -33,7 +33,9 @@ export const BootstrapPage: React.FC = () => {
   useEffect(() => {
     if (!bootstrapNeeded) {
       const checkAgain = async () => {
-        await refreshBootstrapStatus();
+        await refreshBootstrapStatus().catch(err => {
+          console.warn('Failed to refresh bootstrap status in BootstrapPage useEffect:', err);
+        });
       };
       checkAgain();
     }
@@ -65,7 +67,9 @@ export const BootstrapPage: React.FC = () => {
       setSuccess(true);
 
       // Refresh bootstrap status across the app state
-      await refreshBootstrapStatus();
+      await refreshBootstrapStatus().catch(err => {
+        console.warn('Failed to refresh bootstrap status after bootstrap creation:', err);
+      });
 
       setTimeout(() => {
         navigate('/admin');

@@ -6,7 +6,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app, 'ai-studio-wesabihub-2e494f4f-ad3c-457f-810e-d8619401db54');
+export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 export default app;
