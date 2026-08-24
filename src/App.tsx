@@ -158,6 +158,7 @@ import { HelpCenterWidget } from './components/support/HelpCenterWidget';
 
 import { OverviewPage } from './pages/admin/OverviewPage';
 import { PlatformOperationsPage as AdminPlatformOpsPage } from './pages/admin/PlatformOperationsPage';
+import { AdminIntegrationsPage } from './pages/admin/AdminIntegrationsPage';
 import { ReportsPage as AdminReportsPage } from './pages/admin/ReportsPage';
 import { NotificationsConfigPage } from './pages/admin/NotificationsConfigPage';
 import { TestModePage } from './pages/admin/TestModePage';
@@ -325,6 +326,8 @@ export default function App() {
         <Route path="/admin/business-rules/payment-protection" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><PaymentProtectionRulesPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/promotions" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER']}><PromotionsTaxesPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/taxes" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><PromotionsTaxesPage /></RoleGuard></ProtectedRoute>} />
+        <Route path="/admin/business-rules/integrations" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><AdminIntegrationsPage /></RoleGuard></ProtectedRoute>} />
+        <Route path="/admin/integrations" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><AdminIntegrationsPage /></RoleGuard></ProtectedRoute>} />
 
         <Route path="/admin/audit" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><SecurityDashboardPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/cctv-monitoring" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><OperationalCctvPage /></RoleGuard></ProtectedRoute>} />
