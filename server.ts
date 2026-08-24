@@ -40,6 +40,7 @@ import { infrastructureEngine } from "./src/engines/InfrastructureEngine.js";
 import { monitoringEngine } from "./src/engines/MonitoringEngine.js";
 import { auditEngine } from "./src/engines/AuditEngine.js";
 import crypto from "crypto";
+import helmet from "helmet";
 
 import fs from "fs";
 
@@ -270,6 +271,10 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   const PORT = 3000;
 
   app.use(express.json());
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
 
   // Production Observability: Correlation ID & Request Logging
   app.use((req, res, next) => {
@@ -2280,8 +2285,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
-  // Sandbox simulation portal
+  // Sandbox simulation portal (Disabled in production)
   app.get("/api/payment-protection/mock-checkout", (req, res) => {
+    if (process.env.NODE_ENV === "production") {
+      return res.status(404).json({ error: "Sandbox checkout is disabled in production environment." });
+    }
     const { tx_ref, amount, shipmentId } = req.query;
     res.send(`
       <html>
@@ -2326,8 +2334,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     `);
   });
 
-  // Sandbox simulated redirect callback
+  // Sandbox simulated redirect callback (Disabled in production)
   app.get("/api/payment-protection/mock-callback", async (req, res) => {
+    if (process.env.NODE_ENV === "production") {
+      return res.status(404).json({ error: "Sandbox callback is disabled in production environment." });
+    }
     try {
       const { status, tx_ref } = req.query;
       const db = getDb();
