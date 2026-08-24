@@ -344,7 +344,7 @@ export const ParcelFlyerPage = () => {
       if (options.showOmorfiHubBranding) {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.text('POWERED BY WESABIHUB', 60, 12);
+        doc.text('POWERED BY OMORFIHUB', 60, 12);
       }
 
       doc.setTextColor(30, 41, 59);

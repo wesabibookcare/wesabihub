@@ -14,7 +14,7 @@ export const ContactPage = () => {
 
   const countryName = settings?.localization?.countryName || settings?.defaultCountry || 'Nigeria';
   const email = settings?.contactEmail || 'hello@omorfihub.com';
-  const phone = settings?.contactPhone || '+234 800 WESABI';
+  const phone = settings?.contactPhone || '+234 800 OMORFI';
   const address = settings?.contactAddress || 'Victoria Island, Lagos, Nigeria';
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -130,7 +130,7 @@ export const MerchantSupportPage = () => {
     {
       icon: MessageSquare,
       title: 'WhatsApp Support',
-      desc: '+234 800 WESABI (937224)',
+      desc: '+234 800 OMORFI (666734)',
       color: 'bg-green-600',
       action: 'Send WhatsApp',
       handler: () => window.open(`https://wa.me/234800937224`, '_blank')
