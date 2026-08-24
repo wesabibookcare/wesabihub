@@ -164,18 +164,21 @@ export interface SupportTicket extends BaseEntity {
 
 export interface WebhookLog extends BaseEntity {
   userId: string;
+  applicationId?: string;
   event: string;
   url: string;
   status: number;
   response: string;
   payload: string;
+  signature?: string;
+  duration?: number;
   timestamp: string;
 }
 
 export interface DeveloperProfile extends BaseEntity {
   userId: string;
   webhookUrl: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  status: 'PENDING' | 'SANDBOX' | 'TESTING' | 'PROD_REQUESTED' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'REVOKED';
   apiKey?: string;
   apiKeyCreatedAt?: string;
   isApiKeyRevoked?: boolean;
@@ -185,6 +188,73 @@ export interface DeveloperProfile extends BaseEntity {
   useCase?: string;
   rateLimit?: number;
   apiCallCount?: number;
+}
+
+export type ApiScope =
+  | 'shipments:read'
+  | 'shipments:create'
+  | 'shipments:update'
+  | 'tracking:read'
+  | 'webhooks:manage'
+  | 'logistics:manage';
+
+export type ApiApplicationEnvironment = 'SANDBOX' | 'PRODUCTION';
+
+export type ApiApplicationStatus =
+  | 'PENDING'
+  | 'SANDBOX'
+  | 'TESTING'
+  | 'PROD_REQUESTED' | 'APPROVED'
+  | 'REJECTED'
+  | 'SUSPENDED'
+  | 'REVOKED';
+
+export interface ApiApplication extends BaseEntity {
+  userId: string;
+  appName: string;
+  companyName: string;
+  environment: ApiApplicationEnvironment;
+  apiKey: string;
+  apiKeyPrefix: string;
+  apiSecret?: string;
+  apiSecretHash?: string;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  scopes: ApiScope[];
+  status: ApiApplicationStatus;
+  rateLimitPerMin: number;
+  apiCallCount: number;
+  lastActivityAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ProviderIntegrationModel = 'MODEL_A' | 'MODEL_B';
+
+export interface LogisticsProviderAdapter extends BaseEntity {
+  providerName: string;
+  model: ProviderIntegrationModel;
+  companyId?: string;
+  apiKey?: string;
+  apiEndpointUrl?: string;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  apiHeaders?: Record<string, string>;
+  statusMappings: Record<string, 'AWAITING_DROP_OFF' | 'RECEIVED_AT_ORIGIN' | 'IN_TRANSIT' | 'ARRIVED_AT_DESTINATION' | 'READY_FOR_PICKUP' | 'DELIVERED' | 'DELIVERY_FAILED' | 'CANCELLED' | 'RETURNED'>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IdempotencyRecord extends BaseEntity {
+  idempotencyKey: string;
+  userId: string;
+  endpoint: string;
+  requestBodyHash: string;
+  responseCode: number;
+  responseBody: any;
+  createdAt: string;
+  expiresAt: string;
 }
 
 export interface PlatformPayment extends BaseEntity {

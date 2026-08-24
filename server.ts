@@ -3542,12 +3542,30 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   }
 
   // Webhook Dispatcher
-  async function dispatchWebhook(db: any, userId: string, event: string, payload: any) {
+  async function dispatchWebhook(db: any, userId: string, event: string, payload: any, applicationId?: string) {
     try {
-      const profileDoc = await db.collection('developerProfiles').doc(userId).get();
-      if (!profileDoc.exists) return;
-      const profile = profileDoc.data();
-      if (!profile.webhookUrl || profile.status !== 'APPROVED') return;
+      let webhookUrl = '';
+      let webhookSecret = '';
+
+      if (applicationId) {
+        const appDoc = await db.collection('apiApplications').doc(applicationId).get();
+        if (appDoc.exists) {
+          const app = appDoc.data();
+          webhookUrl = app.webhookUrl || '';
+          webhookSecret = app.webhookSecret || '';
+        }
+      }
+
+      if (!webhookUrl) {
+        const profileDoc = await db.collection('developerProfiles').doc(userId).get();
+        if (profileDoc.exists) {
+          const profile = profileDoc.data();
+          webhookUrl = profile.webhookUrl || '';
+          webhookSecret = profile.secretKey || profile.webhookSecret || '';
+        }
+      }
+
+      if (!webhookUrl) return;
 
       const webhookLogId = crypto.randomUUID();
       const webhookPayload = {
@@ -3557,20 +3575,31 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         payload
       };
 
-      console.log(`Sending webhook ${event} to ${profile.webhookUrl}`);
+      let signature = '';
+      if (webhookSecret) {
+        signature = crypto.createHmac('sha256', webhookSecret).update(JSON.stringify(webhookPayload)).digest('hex');
+      }
+
+      console.log(`Sending webhook ${event} to ${webhookUrl}`);
       let status = 0;
       let responseText = '';
+      const startTime = Date.now();
 
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const response = await fetch(profile.webhookUrl, {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'User-Agent': 'OmorfiHub-Webhook-Bot/1.0'
+        };
+        if (signature) {
+          headers['X-OmorfiHub-Signature'] = signature;
+        }
+
+        const response = await fetch(webhookUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'WeSabiHub-Webhook-Bot/1.0'
-          },
+          headers,
           body: JSON.stringify(webhookPayload),
           signal: controller.signal
         });
@@ -3582,13 +3611,18 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         responseText = fetchErr.message || 'Network error';
       }
 
+      const duration = Date.now() - startTime;
+
       // Log webhook delivery
       await db.collection('webhookLogs').add({
         id: webhookLogId,
         userId,
+        applicationId: applicationId || '',
         event,
-        url: profile.webhookUrl,
+        url: webhookUrl,
         status,
+        signature,
+        duration,
         response: responseText.substring(0, 500),
         payload: JSON.stringify(payload),
         timestamp: new Date().toISOString()
@@ -3598,7 +3632,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       await auditEngine.logEvent({
         userId,
         action: 'WEBHOOK_DELIVERY',
-        details: { event, status, url: profile.webhookUrl },
+        details: { event, status, url: webhookUrl, duration },
         result: status >= 200 && status < 300 ? 'SUCCESS' : 'FAILURE'
       });
     } catch (err) {
@@ -3633,65 +3667,156 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
     try {
       const devProfileCacheKey = `devProfile_${apiKey}`;
-      let devProfile = getCachedData(devProfileCacheKey);
-      if (!devProfile) {
-        const devProfileSnapshot = await db.collection('developerProfiles')
+      let devContext = getCachedData(devProfileCacheKey);
+
+      if (!devContext) {
+        // 1. Check apiApplications collection first
+        const appSnapshot = await db.collection('apiApplications')
           .where('apiKey', '==', apiKey)
           .limit(1)
           .get();
 
-        if (devProfileSnapshot.empty) {
-          await auditEngine.logEvent({
-            userId: 'ANONYMOUS',
-            action: 'API_AUTH_FAILURE',
-            details: { error: 'Invalid API Key', path: req.path },
-            result: 'FAILURE',
-            ipAddress: req.ip,
-            deviceInfo: req.get('user-agent')
-          });
-          await monitoringEngine.captureError('Invalid API Key attempt', 'AUTH', 'HIGH', {
-            path: req.path,
-            ip: req.ip
-          });
-          return res.status(401).json({ error: 'Unauthorized: Invalid API Key' });
+        if (!appSnapshot.empty) {
+          const appDoc = appSnapshot.docs[0];
+          const appData = appDoc.data();
+          devContext = {
+            applicationId: appDoc.id,
+            userId: appData.userId,
+            appName: appData.appName,
+            companyName: appData.companyName,
+            environment: appData.environment || (apiKey.startsWith('sb_') ? 'SANDBOX' : 'PRODUCTION'),
+            status: appData.status,
+            scopes: appData.scopes || ['shipments:read', 'shipments:create', 'shipments:update', 'tracking:read', 'webhooks:manage'],
+            rateLimit: appData.rateLimitPerMin || (appData.environment === 'SANDBOX' ? 60 : 600),
+            webhookUrl: appData.webhookUrl || '',
+            webhookSecret: appData.webhookSecret || '',
+            apiKey
+          };
+        } else {
+          // 2. Fallback to developerProfiles collection for backward compatibility
+          const devProfileSnapshot = await db.collection('developerProfiles')
+            .where('apiKey', '==', apiKey)
+            .limit(1)
+            .get();
+
+          if (devProfileSnapshot.empty) {
+            await auditEngine.logEvent({
+              userId: 'ANONYMOUS',
+              action: 'API_AUTH_FAILURE',
+              details: { error: 'Invalid API Key', path: req.path },
+              result: 'FAILURE',
+              ipAddress: req.ip,
+              deviceInfo: req.get('user-agent')
+            });
+            await monitoringEngine.captureError('Invalid API Key attempt', 'AUTH', 'HIGH', {
+              path: req.path,
+              ip: req.ip
+            });
+            return res.status(401).json({ error: 'Unauthorized: Invalid API Key' });
+          }
+
+          const devProfileDoc = devProfileSnapshot.docs[0];
+          const devProfile = devProfileDoc.data();
+          const isSb = apiKey.startsWith('sb_') || devProfile.status === 'SANDBOX';
+          devContext = {
+            applicationId: devProfileDoc.id,
+            userId: devProfile.userId,
+            appName: devProfile.businessName || 'Default App',
+            companyName: devProfile.businessName || 'Default Business',
+            environment: isSb ? 'SANDBOX' : 'PRODUCTION',
+            status: devProfile.status,
+            scopes: ['shipments:read', 'shipments:create', 'shipments:update', 'tracking:read', 'webhooks:manage'],
+            rateLimit: devProfile.rateLimit || 60,
+            webhookUrl: devProfile.webhookUrl || '',
+            apiKey
+          };
         }
 
-        const devProfileDoc = devProfileSnapshot.docs[0];
-        devProfile = devProfileDoc.data();
-        setCachedData(devProfileCacheKey, devProfile, 60000); // 1 minute cache of API credentials for performance
+        setCachedData(devProfileCacheKey, devContext, 60000); // 1 minute cache
       }
 
-      if (devProfile.status === 'SUSPENDED') {
-        return res.status(403).json({ error: 'Forbidden: Developer Account Suspended' });
+      if (devContext.status === 'SUSPENDED' || devContext.status === 'REVOKED') {
+        return res.status(403).json({ error: 'Forbidden: API Application Suspended or Revoked' });
       }
 
-      if (devProfile.status !== 'APPROVED') {
-        return res.status(403).json({ error: 'Forbidden: Developer Account Pending Approval' });
+      // Production applications require APPROVED status
+      if (devContext.environment === 'PRODUCTION' && devContext.status !== 'APPROVED') {
+        return res.status(403).json({ error: 'Forbidden: Production Access Pending Approval' });
       }
 
-      // Check Rate Limits
-      const rateLimit = devProfile.rateLimit || 60;
+      // Check Rate Limits and Set Standard Headers
+      const rateLimit = devContext.rateLimit || 60;
+      const now = Date.now();
+      const limitData = rateLimits.get(apiKey);
+      let currentCount = limitData ? limitData.count : 0;
+      let resetTime = limitData ? limitData.resetTime : now + 60000;
+
       if (isRateLimited(apiKey, rateLimit)) {
         await db.collection('apiLogs').add({
           id: crypto.randomUUID(),
-          userId: devProfile.userId,
+          userId: devContext.userId,
+          applicationId: devContext.applicationId,
           apiKey: apiKey.substring(0, 8) + '...',
           endpoint: req.path,
           method: req.method,
           status: 429,
+          environment: devContext.environment,
           ipAddress: req.ip || '0.0.0.0',
           timestamp: new Date().toISOString(),
           errorMessage: 'Rate Limit Exceeded'
         });
+        res.setHeader('X-RateLimit-Limit', rateLimit);
+        res.setHeader('X-RateLimit-Remaining', 0);
+        res.setHeader('X-RateLimit-Reset', Math.ceil((resetTime - now) / 1000));
         return res.status(429).json({ error: 'Too Many Requests: Rate Limit Exceeded' });
       }
 
+      res.setHeader('X-RateLimit-Limit', rateLimit);
+      res.setHeader('X-RateLimit-Remaining', Math.max(0, rateLimit - currentCount - 1));
+      res.setHeader('X-RateLimit-Reset', Math.ceil((resetTime - now) / 1000));
+
       req.developer = {
-        userId: devProfile.userId,
-        businessName: devProfile.businessName,
+        applicationId: devContext.applicationId,
+        userId: devContext.userId,
+        businessName: devContext.companyName || devContext.appName,
         apiKey: apiKey,
+        environment: devContext.environment,
+        scopes: devContext.scopes,
         rateLimit: rateLimit
       };
+
+      // Idempotency check for state-changing requests
+      const idempotencyKey = req.headers['idempotency-key'] || req.headers['x-idempotency-key'];
+      if (idempotencyKey && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) {
+        const idempSnap = await db.collection('idempotencyRecords')
+          .where('idempotencyKey', '==', idempotencyKey)
+          .limit(1)
+          .get();
+
+        if (!idempSnap.empty) {
+          const cached = idempSnap.docs[0].data();
+          res.setHeader('X-Cache', 'HIT');
+          return res.status(cached.responseCode || 200).json(cached.responseBody);
+        }
+
+        // Intercept res.json to save idempotency response
+        const originalJson = res.json.bind(res);
+        res.json = (body: any) => {
+          res.setHeader('X-Cache', 'MISS');
+          db.collection('idempotencyRecords').add({
+            id: crypto.randomUUID(),
+            idempotencyKey,
+            userId: devContext.userId,
+            endpoint: req.path,
+            responseCode: res.statusCode,
+            responseBody: body,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          }).catch((err: any) => console.error("Failed to store idempotency record:", err));
+
+          return originalJson(body);
+        };
+      }
 
       next();
     } catch (err: any) {
@@ -4118,6 +4243,331 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
+  // Auth Verification Endpoint
+  app.post("/api/v1/auth/verify", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    res.json({
+      success: true,
+      authenticated: true,
+      developer: req.developer
+    });
+  });
+
+  // Endpoints: Status Update
+  app.patch("/api/v1/shipments/:id/status", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { status, remarks, location } = req.body;
+
+      const validStatuses = [
+        'AWAITING_DROP_OFF', 'RECEIVED_AT_ORIGIN', 'IN_TRANSIT',
+        'ARRIVED_AT_DESTINATION', 'READY_FOR_PICKUP', 'DELIVERED',
+        'DELIVERY_FAILED', 'CANCELLED', 'RETURNED'
+      ];
+
+      if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      }
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      const prevShipment = shipmentDoc.data();
+
+      await db.collection('shipments').doc(id).update({
+        status,
+        updatedAt: new Date().toISOString()
+      });
+
+      const trackingId = crypto.randomUUID();
+      await db.collection('trackingEvents').doc(trackingId).set({
+        id: trackingId,
+        parcelId: id,
+        status,
+        actorId: req.developer.businessName,
+        location: location || 'API Gateway Update',
+        remarks: remarks || `Status updated via Developer API to ${status}`,
+        timestamp: new Date().toISOString(),
+        isDeleted: false
+      });
+
+      // Map status to corresponding webhook event
+      const webhookEventMap: Record<string, string> = {
+        'RECEIVED_AT_ORIGIN': 'shipment.at_hub',
+        'IN_TRANSIT': 'shipment.in_transit',
+        'ARRIVED_AT_DESTINATION': 'shipment.at_hub',
+        'READY_FOR_PICKUP': 'shipment.out_for_delivery',
+        'DELIVERED': 'shipment.delivered',
+        'DELIVERY_FAILED': 'shipment.delivery_failed',
+        'CANCELLED': 'shipment.cancelled',
+        'RETURNED': 'shipment.returned'
+      };
+
+      const eventName = webhookEventMap[status] || 'shipment.updated';
+      await dispatchWebhook(db, req.developer.userId, eventName, {
+        shipmentId: id,
+        previousStatus: prevShipment.status,
+        currentStatus: status,
+        remarks,
+        updatedAt: new Date().toISOString()
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: `Shipment status updated to ${status}`,
+        shipmentId: id,
+        status
+      });
+    } catch (err: any) {
+      console.error("API update status error:", err);
+      res.status(500).json({ error: "Failed to update shipment status" });
+    }
+  });
+
+  // Endpoints: Pickup Request
+  app.post("/api/v1/shipments/:id/pickup-request", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { notes } = req.body;
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      await db.collection('shipments').doc(id).update({
+        pickupStatus: 'REQUESTED',
+        status: 'AWAITING_DROP_OFF',
+        updatedAt: new Date().toISOString()
+      });
+
+      await dispatchWebhook(db, req.developer.userId, 'shipment.picked_up', {
+        shipmentId: id,
+        pickupStatus: 'REQUESTED',
+        notes: notes || 'Pickup requested via API'
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: "Pickup requested successfully",
+        shipmentId: id
+      });
+    } catch (err: any) {
+      console.error("Pickup request error:", err);
+      res.status(500).json({ error: "Failed to request pickup" });
+    }
+  });
+
+  // Endpoints: Pickup Failure
+  app.post("/api/v1/shipments/:id/pickup-failure", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      await db.collection('shipments').doc(id).update({
+        pickupStatus: 'FAILED',
+        pickupFailureReason: reason || 'Merchant or package unavailable',
+        updatedAt: new Date().toISOString()
+      });
+
+      await dispatchWebhook(db, req.developer.userId, 'shipment.pickup_failed', {
+        shipmentId: id,
+        reason: reason || 'Merchant or package unavailable'
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: "Pickup failure recorded",
+        shipmentId: id
+      });
+    } catch (err: any) {
+      console.error("Pickup failure error:", err);
+      res.status(500).json({ error: "Failed to record pickup failure" });
+    }
+  });
+
+  // Endpoints: Delivery Confirmation
+  app.post("/api/v1/shipments/:id/confirm", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { pickupPin, recipientSignature, notes } = req.body;
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      const shipment = shipmentDoc.data();
+
+      // Validate PIN if configured
+      if (shipment.pickupPin && pickupPin && shipment.pickupPin !== pickupPin) {
+        return res.status(400).json({ error: "Invalid Pickup PIN" });
+      }
+
+      await db.collection('shipments').doc(id).update({
+        status: 'DELIVERED',
+        pickupPinVerified: true,
+        recipientSignatureUrl: recipientSignature || '',
+        deliveredAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      await dispatchWebhook(db, req.developer.userId, 'shipment.delivered', {
+        shipmentId: id,
+        trackingNumber: shipment.trackingNumber,
+        status: 'DELIVERED',
+        notes: notes || 'Delivery confirmed via API'
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: "Delivery confirmed successfully",
+        shipmentId: id,
+        status: 'DELIVERED'
+      });
+    } catch (err: any) {
+      console.error("Delivery confirm error:", err);
+      res.status(500).json({ error: "Failed to confirm delivery" });
+    }
+  });
+
+  // Endpoints: Delivery Failure
+  app.post("/api/v1/shipments/:id/failure", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      await db.collection('shipments').doc(id).update({
+        status: 'DELIVERY_FAILED',
+        deliveryFailureReason: reason || 'Recipient unreachable',
+        updatedAt: new Date().toISOString()
+      });
+
+      await dispatchWebhook(db, req.developer.userId, 'shipment.delivery_failed', {
+        shipmentId: id,
+        reason: reason || 'Recipient unreachable'
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: "Delivery failure recorded",
+        shipmentId: id,
+        status: 'DELIVERY_FAILED'
+      });
+    } catch (err: any) {
+      console.error("Delivery failure error:", err);
+      res.status(500).json({ error: "Failed to record delivery failure" });
+    }
+  });
+
+  // Endpoints: Cancel Shipment
+  app.post("/api/v1/shipments/:id/cancel", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      const shipment = shipmentDoc.data();
+      if (['DELIVERED', 'CANCELLED', 'RETURNED'].includes(shipment.status)) {
+        return res.status(400).json({ error: `Shipment cannot be cancelled from status '${shipment.status}'` });
+      }
+
+      await db.collection('shipments').doc(id).update({
+        status: 'CANCELLED',
+        cancellationReason: reason || 'Cancelled via Developer API',
+        cancelledAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      await dispatchWebhook(db, req.developer.userId, 'shipment.cancelled', {
+        shipmentId: id,
+        reason: reason || 'Cancelled via Developer API'
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: "Shipment cancelled successfully",
+        shipmentId: id,
+        status: 'CANCELLED'
+      });
+    } catch (err: any) {
+      console.error("Cancellation error:", err);
+      res.status(500).json({ error: "Failed to cancel shipment" });
+    }
+  });
+
+  // Endpoints: Attach Proof of Delivery Evidence
+  app.post("/api/v1/shipments/:id/evidence", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { photoUrl, signatureUrl, notes } = req.body;
+
+      const shipmentDoc = await db.collection('shipments').doc(id).get();
+      if (!shipmentDoc.exists) {
+        return res.status(404).json({ error: "Shipment not found" });
+      }
+
+      const updates: any = { updatedAt: new Date().toISOString() };
+      if (photoUrl) updates.proofOfDeliveryPhotoUrl = photoUrl;
+      if (signatureUrl) updates.recipientSignatureUrl = signatureUrl;
+      if (notes) updates.evidenceNotes = notes;
+
+      await db.collection('shipments').doc(id).update(updates);
+
+      await dispatchWebhook(db, req.developer.userId, 'shipment.updated', {
+        shipmentId: id,
+        event: 'evidence_attached',
+        photoUrl,
+        signatureUrl
+      }, req.developer.applicationId);
+
+      res.json({
+        success: true,
+        message: "Proof of delivery evidence saved",
+        shipmentId: id
+      });
+    } catch (err: any) {
+      console.error("Evidence upload error:", err);
+      res.status(500).json({ error: "Failed to attach delivery evidence" });
+    }
+  });
+
   // Endpoints: Regenerate PIN
   app.post("/api/v1/shipments/:id/pin", authenticateApiKey, async (req: express.Request & { developer: any }, res) => {
     const db = getDb();
@@ -4162,6 +4612,193 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     } catch (err: any) {
       console.error("API pin regeneration error:", err);
       res.status(500).json({ error: "Failed to regenerate pickup PIN" });
+    }
+  });
+
+  // ==========================================
+  // DEVELOPER PORTAL APPLICATION MANAGEMENT APIs
+  // ==========================================
+
+  // 1. List Applications
+  app.get("/api/v1/developer/applications", requireAuth(), async (req: any, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const snapshot = await db.collection('apiApplications')
+        .where('userId', '==', req.user.uid)
+        .get();
+
+      const apps = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      res.json({ success: true, applications: apps });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 2. Create Application
+  app.post("/api/v1/developer/applications", requireAuth(), async (req: any, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { appName, companyName, environment, scopes, webhookUrl } = req.body;
+      if (!appName || !companyName) {
+        return res.status(400).json({ error: "appName and companyName are required" });
+      }
+
+      const env = environment === 'PRODUCTION' ? 'PRODUCTION' : 'SANDBOX';
+      const keyPrefix = env === 'SANDBOX' ? 'sb_key_' : 'live_key_';
+      const rawSecret = 'sec_' + crypto.randomBytes(24).toString('hex');
+      const apiKey = keyPrefix + crypto.randomBytes(16).toString('hex');
+      const webhookSecret = 'whsec_' + crypto.randomBytes(16).toString('hex');
+
+      const appId = 'app_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      const appData = {
+        id: appId,
+        userId: req.user.uid,
+        appName,
+        companyName,
+        environment: env,
+        apiKey,
+        apiKeyPrefix: apiKey.substring(0, 12) + '...',
+        apiSecret: rawSecret,
+        webhookUrl: webhookUrl || '',
+        webhookSecret,
+        scopes: scopes || ['shipments:read', 'shipments:create', 'shipments:update', 'tracking:read', 'webhooks:manage'],
+        status: env === 'SANDBOX' ? 'APPROVED' : 'PROD_REQUESTED',
+        rateLimitPerMin: env === 'SANDBOX' ? 60 : 600,
+        apiCallCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      await db.collection('apiApplications').doc(appId).set(appData);
+
+      await auditEngine.logEvent({
+        userId: req.user.uid,
+        action: 'DEVELOPER_APPLICATION_CREATED',
+        details: { appId, appName, environment: env },
+        result: 'SUCCESS'
+      });
+
+      res.status(201).json({
+        success: true,
+        application: appData
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 3. Rotate Application Credentials
+  app.post("/api/v1/developer/applications/:id/rotate", requireAuth(), async (req: any, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const appDoc = await db.collection('apiApplications').doc(id).get();
+      if (!appDoc.exists) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+
+      const app = appDoc.data();
+      if (app.userId !== req.user.uid) {
+        return res.status(403).json({ error: "Forbidden: Not application owner" });
+      }
+
+      const keyPrefix = app.environment === 'SANDBOX' ? 'sb_key_' : 'live_key_';
+      const newApiKey = keyPrefix + crypto.randomBytes(16).toString('hex');
+      const newSecret = 'sec_' + crypto.randomBytes(24).toString('hex');
+
+      await db.collection('apiApplications').doc(id).update({
+        apiKey: newApiKey,
+        apiKeyPrefix: newApiKey.substring(0, 12) + '...',
+        apiSecret: newSecret,
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: "Credentials rotated successfully",
+        apiKey: newApiKey,
+        apiSecret: newSecret
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 4. Request Production Access
+  app.post("/api/v1/developer/applications/:id/request-production", requireAuth(), async (req: any, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const appDoc = await db.collection('apiApplications').doc(id).get();
+      if (!appDoc.exists) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+
+      const app = appDoc.data();
+      if (app.userId !== req.user.uid) {
+        return res.status(403).json({ error: "Forbidden: Not application owner" });
+      }
+
+      await db.collection('apiApplications').doc(id).update({
+        status: 'PROD_REQUESTED',
+        updatedAt: new Date().toISOString()
+      });
+
+      await auditEngine.logEvent({
+        userId: req.user.uid,
+        action: 'DEVELOPER_PRODUCTION_ACCESS_REQUESTED',
+        details: { appId: id },
+        result: 'SUCCESS'
+      });
+
+      res.json({
+        success: true,
+        message: "Production access request submitted for Admin Review."
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // 5. Update Webhook URL
+  app.post("/api/v1/developer/applications/:id/webhooks", requireAuth(), async (req: any, res) => {
+    const db = getDb();
+    if (!db) return res.status(500).json({ error: "Firebase not configured" });
+
+    try {
+      const { id } = req.params;
+      const { webhookUrl } = req.body;
+
+      const appDoc = await db.collection('apiApplications').doc(id).get();
+      if (!appDoc.exists) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+
+      const app = appDoc.data();
+      if (app.userId !== req.user.uid) {
+        return res.status(403).json({ error: "Forbidden: Not application owner" });
+      }
+
+      await db.collection('apiApplications').doc(id).update({
+        webhookUrl: webhookUrl || '',
+        updatedAt: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: "Webhook URL updated successfully",
+        webhookUrl
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   });
 
