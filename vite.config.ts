@@ -21,5 +21,22 @@ export default defineConfig(() => {
     define: {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
     },
+    build: {
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('firebase')) return 'vendor-firebase';
+              if (id.includes('recharts')) return 'vendor-recharts';
+              if (id.includes('lucide-react')) return 'vendor-icons';
+              if (id.includes('motion')) return 'vendor-motion';
+              if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('xlsx')) return 'vendor-documents';
+              return 'vendor-core';
+            }
+          }
+        }
+      }
+    }
   };
 });
