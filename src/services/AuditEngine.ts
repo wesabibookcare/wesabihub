@@ -81,8 +81,14 @@ class AuditEngine {
         // This should probably go through notificationEngine, but we are in a service.
         // For now, let's keep it direct or use a different service.
       }
-    } catch (err) {
-      console.error('AuditEngine failed to write hardened log to Firestore:', err);
+    } catch (err: any) {
+      // Safely handle unauthenticated or missing permission writes (e.g. login failures)
+      const errString = String(err?.message || err || '');
+      if (errString.includes('permissions') || errString.includes('permission-denied')) {
+        console.warn('AuditEngine log deferred (unauthenticated or restricted write permissions)');
+      } else {
+        console.error('AuditEngine failed to write hardened log to Firestore:', err);
+      }
     }
 
     return logEntry;

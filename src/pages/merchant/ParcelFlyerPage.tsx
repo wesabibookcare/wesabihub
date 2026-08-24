@@ -406,6 +406,20 @@ export const ParcelFlyerPage = () => {
     }
   };
 
+  const validateLogoFile = (file: File) => {
+    const validFormats = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (!validFormats.includes(file.type)) {
+      toast.error('Invalid image format. Please select a PNG, JPG, or WEBP photo.');
+      return false;
+    }
+    const maxMb = 5;
+    if (file.size > maxMb * 1024 * 1024) {
+      toast.error(`Your photo is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please choose a photo smaller than ${maxMb}MB.`);
+      return false;
+    }
+    return true;
+  };
+
   const handleDownloadPDF = async () => {
     if (!user || !selectedParcel) {
       toast.error('Please select a parcel first');
