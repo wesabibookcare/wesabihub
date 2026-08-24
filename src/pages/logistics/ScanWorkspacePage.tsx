@@ -305,7 +305,7 @@ export const ScanWorkspacePage = () => {
                 </div>
 
                 <p className="text-center text-[10px] font-bold text-slate-800 uppercase tracking-widest pt-4">
-                   Actions provided by WeSabiHub Rules Engine v2.0
+                   Actions provided by OmorfiHub Rules Engine v2.0
                 </p>
               </motion.div>
             )}

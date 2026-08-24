@@ -864,7 +864,7 @@ export const AdminDisputesPage = () => {
                             </div>
                             <div className="p-2 bg-blue-50/50 border border-blue-100 rounded-xl text-[10px] text-blue-800 leading-relaxed flex gap-1.5">
                               <ShieldCheck size={14} className="shrink-0 mt-0.5" />
-                              <p>Funds are locked in the WeSabi Secure smart wallet. Payout is physically frozen until an Admin action.</p>
+                              <p>Funds are locked in the OmorfiHub Secure smart wallet. Payout is physically frozen until an Admin action.</p>
                             </div>
                           </div>
 
@@ -1082,7 +1082,7 @@ export const AdminDisputesPage = () => {
                             <div className="p-3 bg-red-50 text-red-800 border border-red-100 rounded-xl text-[10px] leading-relaxed flex gap-2">
                               <AlertTriangle size={14} className="shrink-0 mt-0.5" />
                               <p>
-                                <strong>WARNING:</strong> Executing a final resolution triggers immediate, irreversible wallet transfers via the WeSabi Secure Smart Contract. Check that you have reviewed the evidence and compliance timelines carefully before clicking.
+                                <strong>WARNING:</strong> Executing a final resolution triggers immediate, irreversible wallet transfers via the OmorfiHub Secure Smart Contract. Check that you have reviewed the evidence and compliance timelines carefully before clicking.
                               </p>
                             </div>
 

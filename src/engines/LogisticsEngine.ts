@@ -8,7 +8,7 @@ import { auditEngine } from './AuditEngine';
 import { where } from 'firebase/firestore';
 
 /**
- * WeSabiHub Logistics Engine
+ * OmorfiHub Logistics Engine
  * Manages Logistics Companies, Fleets, and Business Metrics.
  */
 class LogisticsEngine {

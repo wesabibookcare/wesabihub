@@ -86,7 +86,7 @@ export const SavedHubsPage = () => {
       <div className="space-y-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold dark:text-white font-display">WeSabiHub Points</h1>
+            <h1 className="text-3xl font-bold dark:text-white font-display">OmorfiHub Points</h1>
             <p className="text-slate-800">Find and manage your preferred pick-up and drop-off locations.</p>
           </div>
         </div>

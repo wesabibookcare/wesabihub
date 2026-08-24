@@ -164,7 +164,7 @@ export const ComplaintCentrePage = () => {
           <div>
             <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white font-display">Support & Complaint Centre</h1>
             <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">
-              Official WeSabiHub Operations Command for resolving customer support tickets and platform disputes.
+              Official OmorfiHub Operations Command for resolving customer support tickets and platform disputes.
             </p>
           </div>
 

@@ -178,10 +178,10 @@ export const SupportPage = () => {
 
   const defaultFaqs = [
     { question: 'How do I track my parcel?', answer: 'You can track your parcel by entering the tracking number provided during shipment creation in the "Track Parcel" section of your dashboard.' },
-    { question: 'What is a WeSabiHub Point?', answer: 'A WeSabiHub Point is a verified local pickup and drop-off location (PUDO), such as a pharmacy or supermarket, where you can safely hand over or collect parcels.' },
-    { question: 'How long will my parcel stay at a Hub?', answer: 'Parcels are held at WeSabiHub Points for up to 7 days. After 3 days, small storage fees may apply. After 7 days, the parcel will be returned to the origin hub.' },
-    { question: 'Is my parcel insured?', answer: 'Yes, all shipments on WeSabiHub come with basic insurance coverage. You can opt for additional coverage during the shipment creation process.' },
-    { question: 'What payment methods are supported?', answer: 'WeSabiHub supports secure online payments including credit/debit cards, bank transfers, and mobile money. Cash on pickup is not accepted to maintain transaction safety.' }
+    { question: 'What is a OmorfiHub Point?', answer: 'A OmorfiHub Point is a verified local pickup and drop-off location (PUDO), such as a pharmacy or supermarket, where you can safely hand over or collect parcels.' },
+    { question: 'How long will my parcel stay at a Hub?', answer: 'Parcels are held at OmorfiHub Points for up to 7 days. After 3 days, small storage fees may apply. After 7 days, the parcel will be returned to the origin hub.' },
+    { question: 'Is my parcel insured?', answer: 'Yes, all shipments on OmorfiHub come with basic insurance coverage. You can opt for additional coverage during the shipment creation process.' },
+    { question: 'What payment methods are supported?', answer: 'OmorfiHub supports secure online payments including credit/debit cards, bank transfers, and mobile money. Cash on pickup is not accepted to maintain transaction safety.' }
   ];
 
   useEffect(() => {
@@ -317,11 +317,11 @@ export const SupportPage = () => {
     {
       icon: Mail,
       title: 'Email Support Team',
-      desc: settings?.contactInfo?.supportEmail || 'support@wesabihub.com',
+      desc: settings?.contactInfo?.supportEmail || 'support@omorfihub.com',
       color: 'bg-blue-600',
       action: 'Send Email',
       handler: () => {
-        window.location.href = `mailto:${settings?.contactInfo?.supportEmail || 'support@wesabihub.com'}`;
+        window.location.href = `mailto:${settings?.contactInfo?.supportEmail || 'support@omorfihub.com'}`;
       }
     },
   ];
@@ -595,7 +595,7 @@ export const SupportPage = () => {
             <div className="p-3 bg-primary-50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/40 rounded-xl flex items-start gap-2.5">
               <LifeBuoy className="text-primary-600 shrink-0 mt-0.5" size={16} />
               <p className="text-xs text-primary-900/80 dark:text-primary-300 leading-relaxed">
-                <strong>Where does your complaint go?</strong> Your support ticket is routed directly to the official <strong>WeSabiHub Support & Operations Centre</strong>. An assigned Support Officer will review and reply in real-time.
+                <strong>Where does your complaint go?</strong> Your support ticket is routed directly to the official <strong>OmorfiHub Support & Operations Centre</strong>. An assigned Support Officer will review and reply in real-time.
               </p>
             </div>
           </div>

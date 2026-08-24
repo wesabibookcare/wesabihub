@@ -9,7 +9,7 @@ import { developerProfileRepository } from '../services/db/DeveloperProfileRepos
 import { webhookLogRepository } from '../services/db/WebhookLogRepository';
 
 /**
- * WeSabiHub API & Integration Engine
+ * OmorfiHub API & Integration Engine
  * External service gateway (Maps, Geocoding, Search, QR, Webhooks).
  */
 class IntegrationEngine {

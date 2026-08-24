@@ -2,7 +2,7 @@ import { StorageService } from '../services/StorageService';
 import { monitoringEngine } from './MonitoringEngine';
 
 /**
- * WeSabiHub Storage Engine
+ * OmorfiHub Storage Engine
  * Manages all platform file persistence and URL generation.
  */
 class StorageEngine {

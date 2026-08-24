@@ -175,7 +175,7 @@ export const IdVerificationSection: React.FC = () => {
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 15px "Space Grotesk", sans-serif';
-    const fullName = user?.displayName || 'WeSabi User';
+    const fullName = user?.displayName || 'OmorfiHub User';
     ctx.fillText(fullName.toUpperCase(), 200, 145);
 
     ctx.fillStyle = '#94a3b8';
@@ -268,7 +268,7 @@ export const IdVerificationSection: React.FC = () => {
           imageBase64: previewUrl,
           mimeType: 'image/jpeg',
           documentType: docType,
-          expectedName: user.displayName || 'WeSabi User',
+          expectedName: user.displayName || 'OmorfiHub User',
           email: user.email,
           displayName: user.displayName
         })
@@ -285,7 +285,7 @@ export const IdVerificationSection: React.FC = () => {
         setVerification(v);
 
         if (v.status === 'VERIFIED') {
-          toast.success('Identity Verified Successfully by WeSabi AI! 🎉');
+          toast.success('Identity Verified Successfully by OmorfiHub AI! 🎉');
         } else {
           toast.warning('Document submitted, awaiting platform manual admin review.');
         }
@@ -488,7 +488,7 @@ export const IdVerificationSection: React.FC = () => {
                 <div className="p-4 bg-primary-50 dark:bg-primary-950/20 border border-primary-100 dark:border-primary-900 rounded-2xl flex items-center gap-3">
                   <Loader2 className="animate-spin text-primary-600" size={20} />
                   <div>
-                    <p className="text-xs font-black text-primary-800 dark:text-primary-400 uppercase tracking-widest">WeSabi Secure Scan Engine</p>
+                    <p className="text-xs font-black text-primary-800 dark:text-primary-400 uppercase tracking-widest">OmorfiHub Secure Scan Engine</p>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-0.5">{scanningStep}</p>
                   </div>
                 </div>
@@ -513,7 +513,7 @@ export const IdVerificationSection: React.FC = () => {
                 </Badge>
               </div>
               <p className="text-sm text-slate-500">
-                Your ID document has been submitted and analysed by WeSabi AI. Your verification details are currently undergoing standard security confirmation by WeSabi safety administrators.
+                Your ID document has been submitted and analysed by OmorfiHub AI. Your verification details are currently undergoing standard security confirmation by OmorfiHub safety administrators.
               </p>
             </div>
           </div>
@@ -550,7 +550,7 @@ export const IdVerificationSection: React.FC = () => {
                 </Badge>
               </div>
               <p className="text-sm text-emerald-100 leading-relaxed">
-                Your credentials have been securely matched and confirmed by the WeSabi Safety Engine. Your account holds TIER 1 Trust privileges.
+                Your credentials have been securely matched and confirmed by the OmorfiHub Safety Engine. Your account holds TIER 1 Trust privileges.
               </p>
             </div>
           </div>
@@ -595,7 +595,7 @@ export const IdVerificationSection: React.FC = () => {
                 </Badge>
               </div>
               <p className="text-sm text-slate-500">
-                Unfortunately, WeSabi Security AI or platform administrators could not confirm your details using the submitted document photo.
+                Unfortunately, OmorfiHub Security AI or platform administrators could not confirm your details using the submitted document photo.
               </p>
             </div>
           </div>

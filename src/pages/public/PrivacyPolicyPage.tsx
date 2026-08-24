@@ -8,7 +8,7 @@ export const PrivacyPolicyPage = () => {
   const [loading, setLoading] = useState(true);
 
   const defaultText = `1. Introduction
-WeSabiHub ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform, mobile application, and services.
+OmorfiHub ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform, mobile application, and services.
 
 2. Information We Collect
 We collect information that you provide directly to us, including:
@@ -28,7 +28,7 @@ We may share your information with Hub Partners and Logistics Partners to facili
 We implement a variety of security measures to maintain the safety of your personal information. However, no method of transmission over the Internet or electronic storage is 100% secure.
 
 6. Contact Us
-If you have any questions about this Privacy Policy, please contact us at privacy@wesabihub.com.`;
+If you have any questions about this Privacy Policy, please contact us at privacy@omorfihub.com.`;
 
   useEffect(() => {
     const loadContent = async () => {

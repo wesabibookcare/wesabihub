@@ -189,7 +189,7 @@ export const ApprovalWorkflowTab: React.FC = () => {
         'approved',
         { role: app.role.replace(/_/g, ' ') },
         'Application Approved 🎉',
-        `Your application to register as a ${app.role.replace(/_/g, ' ')} has been approved by our Verification team. Welcome to WeSabiHub!`,
+        `Your application to register as a ${app.role.replace(/_/g, ' ')} has been approved by our Verification team. Welcome to OmorfiHub!`,
         'SUCCESS',
         'APPROVAL'
       );

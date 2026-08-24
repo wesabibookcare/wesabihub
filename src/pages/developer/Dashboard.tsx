@@ -81,7 +81,7 @@ export const DeveloperDashboard = () => {
           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight font-display">
             Welcome, <span className="text-primary-600">{user?.displayName?.split(' ')[0] || 'Builder'}</span>
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">Build next-gen logistics integrations with WeSabiHub APIs.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Build next-gen logistics integrations with OmorfiHub APIs.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="rounded-xl border-slate-200 dark:border-slate-800 font-bold text-xs h-11 px-6">

@@ -8,7 +8,7 @@ import path from 'path';
 import { monitoringEngine } from './MonitoringEngine';
 
 /**
- * WeSabiHub Infrastructure Engine
+ * OmorfiHub Infrastructure Engine
  * Responsible for certifying production readiness, environment validation,
  * secret management verification, and service health monitoring.
  */

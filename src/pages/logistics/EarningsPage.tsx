@@ -61,7 +61,7 @@ export const EarningsPage = () => {
         <div>
            <p className="text-emerald-600 font-bold uppercase tracking-widest text-[10px] mb-2">Financial Records</p>
            <h1 className="text-4xl font-black tracking-tight dark:text-white">Transport Earnings</h1>
-           <p className="text-slate-900 font-medium mt-1">Real-time earnings calculated by the WeSabiHub Rules Engine.</p>
+           <p className="text-slate-900 font-medium mt-1">Real-time earnings calculated by the OmorfiHub Rules Engine.</p>
         </div>
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 max-w-md">
            <Info className="text-amber-600 shrink-0" size={20} />

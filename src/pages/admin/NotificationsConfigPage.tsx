@@ -169,7 +169,7 @@ export const NotificationsConfigPage = () => {
         {saveSuccess && (
           <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold rounded-2xl flex items-center gap-3">
             <Check size={16} className="text-emerald-600 shrink-0" />
-            <span>Success: Saved notification templates and automation rules to WeSabiHub configuration repository.</span>
+            <span>Success: Saved notification templates and automation rules to OmorfiHub configuration repository.</span>
           </div>
         )}
 

@@ -2,11 +2,11 @@ import React from 'react';
 import { useSettings } from '@/src/context/SettingsContext';
 import { cn } from '@/src/lib/utils';
 
-// The official WeSabiHub logo, used as the built-in default everywhere in the
+// The official OmorfiHub logo, used as the built-in default everywhere in the
 // app. An admin can still override this per-environment via Admin > Brand
 // Assets (Primary Logo / Dark Mode Logo) -- that upload always takes priority
 // over this default when set.
-const DEFAULT_LOGO_URL = '/assets/brand/wesabihub-logo.png';
+const DEFAULT_LOGO_URL = '/assets/brand/omorfihub-logo.png';
 
 interface BrandLogoProps {
   className?: string;
@@ -19,7 +19,7 @@ interface BrandLogoProps {
 /**
  * Single source of truth for displaying the company logo across the app.
  * Prefers the real, admin-editable branding settings (Admin > Brand Assets);
- * falls back to the built-in official WeSabiHub logo so nothing ever shows a
+ * falls back to the built-in official OmorfiHub logo so nothing ever shows a
  * broken image, even before any admin upload has happened.
  */
 export const BrandLogo: React.FC<BrandLogoProps> = ({ className, size = 32, withText = false }) => {
@@ -27,7 +27,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className, size = 32, with
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const configuredLogoUrl = (isDark ? settings?.branding?.logoDarkUrl : settings?.branding?.logoUrl)
     || settings?.branding?.logoUrl;
-  const platformName = settings?.platformName || 'WeSabiHub';
+  const platformName = settings?.platformName || 'OmorfiHub';
 
   const [logoUrl, setLogoUrl] = React.useState(configuredLogoUrl || DEFAULT_LOGO_URL);
   const [triedDefault, setTriedDefault] = React.useState(!configuredLogoUrl);

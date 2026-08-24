@@ -3,7 +3,7 @@ import { invitationRepository } from '../services/db/InvitationRepository';
 import { auditEngine } from './index';
 
 /**
- * WeSabiHub Invitation Engine
+ * OmorfiHub Invitation Engine
  * Manages recruitment, company invites, and affiliation.
  */
 class InvitationEngine {

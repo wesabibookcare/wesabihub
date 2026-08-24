@@ -50,7 +50,7 @@ interface GeneratedFlyerRecord {
 }
 
 const THANK_YOU_TEMPLATES = [
-  "Thank you for your order! Your parcel is handled with care via WeSabiHub.",
+  "Thank you for your order! Your parcel is handled with care via OmorfiHub.",
   "Thank you for supporting our small business! Your order means the world to us.",
   "We appreciate your purchase and trust in our brand!",
   "Your satisfaction matters deeply to us. Thank you for choosing us today!",
@@ -58,7 +58,7 @@ const THANK_YOU_TEMPLATES = [
   "Thank you for trusting our brand. Enjoy your item!",
   "We are thrilled to serve you. Thank you for being a valued customer!",
   "Your order is packed with care. Thank you for choosing us!",
-  "Thank you for choosing us! Track your order anytime via WeSabiHub.",
+  "Thank you for choosing us! Track your order anytime via OmorfiHub.",
   "Custom Message"
 ];
 
@@ -89,7 +89,7 @@ export const ParcelFlyerPage = () => {
   const [showEmail, setShowEmail] = useState(true);
   const [showSocial, setShowSocial] = useState(true);
   const [showQrCode, setShowQrCode] = useState(true);
-  const [showWeSabiBranding, setShowWeSabiBranding] = useState(true);
+  const [showOmorfiHubBranding, setShowOmorfiHubBranding] = useState(true);
 
   // Layout & Theme choices
   const [layoutFormat, setLayoutFormat] = useState<'single_a6' | 'grid_6_per_a4'>('single_a6');
@@ -187,7 +187,7 @@ export const ParcelFlyerPage = () => {
     showEmail: boolean;
     showSocial: boolean;
     showQrCode: boolean;
-    showWeSabiBranding: boolean;
+    showOmorfiHubBranding: boolean;
     designTemplate: string;
     layoutFormat: 'single_a6' | 'grid_6_per_a4';
     qrCodeDataUrl: string;
@@ -206,7 +206,7 @@ export const ParcelFlyerPage = () => {
       showEmail: options.showEmail,
       showSocial: options.showSocial,
       showQrCode: options.showQrCode,
-      showWeSabiBranding: options.showWeSabiBranding,
+      showOmorfiHubBranding: options.showOmorfiHubBranding,
       designTemplate: options.designTemplate as any,
       layoutFormat: options.layoutFormat
     });
@@ -254,9 +254,9 @@ export const ParcelFlyerPage = () => {
         doc.setFont('helvetica', 'bold');
         doc.text(flyerData.merchant.businessName.toUpperCase(), bx + 4, by + 9);
 
-        if (options.showWeSabiBranding) {
+        if (options.showOmorfiHubBranding) {
           doc.setFontSize(6.5);
-          doc.text('WeSabiHub', bx + blockWidth - 18, by + 9);
+          doc.text('OmorfiHub', bx + blockWidth - 18, by + 9);
         }
 
         // Tagline / Recipient
@@ -341,7 +341,7 @@ export const ParcelFlyerPage = () => {
         doc.text(options.tagline, 8, 17);
       }
 
-      if (options.showWeSabiBranding) {
+      if (options.showOmorfiHubBranding) {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
         doc.text('POWERED BY WESABIHUB', 60, 12);
@@ -426,7 +426,7 @@ export const ParcelFlyerPage = () => {
         showEmail,
         showSocial,
         showQrCode,
-        showWeSabiBranding,
+        showOmorfiHubBranding,
         designTemplate,
         layoutFormat,
         qrCodeDataUrl
@@ -797,8 +797,8 @@ export const ParcelFlyerPage = () => {
                   <span>Show QR Code</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={showWeSabiBranding} onChange={e => setShowWeSabiBranding(e.target.checked)} className="accent-primary-600" />
-                  <span>WeSabiHub Seal</span>
+                  <input type="checkbox" checked={showOmorfiHubBranding} onChange={e => setShowOmorfiHubBranding(e.target.checked)} className="accent-primary-600" />
+                  <span>OmorfiHub Seal</span>
                 </label>
               </div>
             </Card>
@@ -832,10 +832,10 @@ export const ParcelFlyerPage = () => {
                     <h3 className="font-bold text-sm tracking-wide uppercase">{businessName || 'YOUR BUSINESS NAME'}</h3>
                     {businessTagline && <p className="text-[10px] opacity-90 font-medium">{businessTagline}</p>}
                   </div>
-                  {showWeSabiBranding && (
+                  {showOmorfiHubBranding && (
                     <div className="text-right">
                       <span className="text-[8px] uppercase tracking-widest opacity-80 font-bold block">VERIFIED LOGISTICS</span>
-                      <span className="text-xs font-black tracking-tight">WeSabiHub</span>
+                      <span className="text-xs font-black tracking-tight">OmorfiHub</span>
                     </div>
                   )}
                 </div>
@@ -867,7 +867,7 @@ export const ParcelFlyerPage = () => {
                 {/* Live QR Scan Caption */}
                 {showQrCode && (
                   <p className="text-[9.5px] font-semibold text-slate-500 text-center">
-                    Scan QR code with phone camera to track live delivery on WeSabiHub
+                    Scan QR code with phone camera to track live delivery on OmorfiHub
                   </p>
                 )}
 

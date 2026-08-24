@@ -32,9 +32,9 @@ export const MerchantLayout: React.FC<{ children: React.ReactNode }> = ({ childr
     { icon: ShieldCheck, label: 'Payment Protection', href: '/merchant/payment-protection' },
     { icon: Wallet, label: 'Wallet', href: '/merchant/wallet' },
     { icon: Users, label: 'Customers', href: '/merchant/customers' },
-    { icon: MapPin, label: 'Saved WeSabiHub Points', href: '/merchant/hubs/saved' },
+    { icon: MapPin, label: 'Saved OmorfiHub Points', href: '/merchant/hubs/saved' },
     { icon: BarChart3, label: 'Reports', href: '/merchant/reports' },
-    { icon: Sparkles, label: 'WeSabiChat', href: '/merchant/chat' },
+    { icon: Sparkles, label: 'OmorfiHubChat', href: '/merchant/chat' },
     { icon: LifeBuoy, label: 'Support', href: '/merchant/support' },
     { icon: Settings, label: 'Settings', href: '/merchant/settings' },
   ];

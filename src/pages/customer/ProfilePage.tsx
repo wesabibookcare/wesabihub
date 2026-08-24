@@ -98,7 +98,7 @@ export const ProfilePage = () => {
     setSaving(true);
     try {
       if (!wesabiUsername) {
-        throw new Error('WeSabi Username is required.');
+        throw new Error('OmorfiHub Username is required.');
       }
 
       let formattedUsername = wesabiUsername.trim();
@@ -118,7 +118,7 @@ export const ProfilePage = () => {
       // Query uniqueness
       const existing = await userEngine.getByUsername(formattedUsername);
       if (existing && existing.uid !== user.uid) {
-        throw new Error('This WeSabi Username is already taken.');
+        throw new Error('This OmorfiHub Username is already taken.');
       }
 
        await userEngine.updateProfile(user.uid, {
@@ -244,7 +244,7 @@ export const ProfilePage = () => {
                        <Input value={lastName} onChange={e => setLastName(e.target.value)} prefix={<User size={18} />} />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">WeSabi Username</label>
+                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">OmorfiHub Username</label>
                        <Input
                           value={wesabiUsername}
                           onChange={e => setWesabiUsername(e.target.value)}
@@ -252,7 +252,7 @@ export const ProfilePage = () => {
                           placeholder="WSH_username"
                           className="font-bold text-primary-600 font-mono"
                        />
-                       <p className="text-[10px] text-slate-800">Must start with WSH_ and be unique across WeSabiHub.</p>
+                       <p className="text-[10px] text-slate-800">Must start with WSH_ and be unique across OmorfiHub.</p>
                     </div>
                     <div className="space-y-2">
                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>

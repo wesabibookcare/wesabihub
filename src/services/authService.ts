@@ -411,7 +411,7 @@ class AuthService {
           isSuperAdminBootstrapped: true,
           bootstrapCompletedAt: serverTimestamp(),
           bootstrapCreator: 'System Bootstrap',
-          platformName: 'WeSabiHub',
+          platformName: 'OmorfiHub',
           createdAt: serverTimestamp()
         });
       }

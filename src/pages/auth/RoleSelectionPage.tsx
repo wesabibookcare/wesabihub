@@ -75,10 +75,10 @@ export const RoleSelectionPage: React.FC = () => {
             Step 2: Choose Your Path
           </motion.div>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 font-display tracking-tight">
-            Join the WeSabiHub <span className="text-primary-600">Ecosystem</span>
+            Join the OmorfiHub <span className="text-primary-600">Ecosystem</span>
           </h1>
           <p className="text-slate-800 dark:text-slate-300 max-w-2xl mx-auto">
-            Select the role that best fits your needs. Each role unlocks specialized features and tools within the WeSabiHub platform.
+            Select the role that best fits your needs. Each role unlocks specialized features and tools within the OmorfiHub platform.
           </p>
         </div>
 

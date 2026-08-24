@@ -303,7 +303,7 @@ export const PointOwnerDashboard = () => {
                   <div className="space-y-4">
                      <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1.5">
-                           <Zap size={14} /> WeSabiPoints Progress
+                           <Zap size={14} /> OmorfiHubPoints Progress
                         </span>
                         <span className="text-[10px] font-bold text-slate-800">
                            25% to Gold
@@ -378,7 +378,7 @@ export const PointOwnerDashboard = () => {
                     <BannerPreview
                         centerName={hub?.name}
                         centerLogoUrl={hub?.logoUrl}
-                        platformName={settings?.platformName || 'WeSabiHub'}
+                        platformName={settings?.platformName || 'OmorfiHub'}
                         platformLogoUrl={settings?.branding?.logoUrl}
                     />
                 </div>

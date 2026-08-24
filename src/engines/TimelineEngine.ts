@@ -5,7 +5,7 @@ import { auditEngine } from './AuditEngine';
 import { TrackingEvent, Parcel, ParcelMilestone, ParcelStatus, UserRole } from '../types';
 
 /**
- * WeSabiHub Authoritative Timeline Engine (Step 7.13)
+ * OmorfiHub Authoritative Timeline Engine (Step 7.13)
  * Orchestrates unified, immutable parcel timeline events, custody history,
  * milestone calculation, and RBAC privacy controls.
  */

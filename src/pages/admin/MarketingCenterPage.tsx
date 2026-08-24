@@ -29,7 +29,7 @@ export const MarketingCenterPage = () => {
   const branding = settings?.branding || MOCK_BRAND_ASSETS;
 
   const templates = [
-    { id: 1, type: 'PRINT', category: 'Banner', title: 'WeSabiHub Point Large Banner', size: '200x100cm', icon: ImageIcon, color: 'text-blue-600', bg: 'bg-blue-600/10' },
+    { id: 1, type: 'PRINT', category: 'Banner', title: 'OmorfiHub Point Large Banner', size: '200x100cm', icon: ImageIcon, color: 'text-blue-600', bg: 'bg-blue-600/10' },
     { id: 2, type: 'PRINT', category: 'Sticker', title: 'Standard Door Decal', size: '20x20cm', icon: Sticker, color: 'text-indigo-600', bg: 'bg-indigo-600/10' },
     { id: 3, type: 'DIGITAL', category: 'Certificate', title: 'Verified Merchant Certificate', size: 'A4 Digital', icon: BadgeCheck, color: 'text-emerald-600', bg: 'bg-emerald-600/10' },
     { id: 4, type: 'DIGITAL', category: 'Social', title: 'Partner Announcement Post', size: '1080x1080px', icon: Megaphone, color: 'text-amber-600', bg: 'bg-amber-600/10' },

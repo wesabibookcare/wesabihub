@@ -115,7 +115,7 @@ export const PricingPage = () => {
             <Globe className="w-16 h-16 text-primary-600 mx-auto animate-pulse" />
             <h2 className="text-4xl font-bold font-display dark:text-white">Designed for the World.</h2>
             <p className="text-xl text-slate-800 dark:text-slate-300 leading-relaxed">
-              WeSabiHub is a global infrastructure. While we are active in {countryName}, our currency and pricing engine supports multi-country deployment with local tax configurations.
+              OmorfiHub is a global infrastructure. While we are active in {countryName}, our currency and pricing engine supports multi-country deployment with local tax configurations.
             </p>
           </div>
         </div>

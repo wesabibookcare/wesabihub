@@ -54,7 +54,7 @@ export const LogisticsPartnerPage = () => {
           <SectionHeader
             badge="The Opportunity"
             title="Maximize Your Fleet Efficiency"
-            description="WeSabiHub provides the volume and the route density you need to keep your vehicles moving profitably."
+            description="OmorfiHub provides the volume and the route density you need to keep your vehicles moving profitably."
           />
 
           <div className="grid md:grid-cols-3 gap-8">

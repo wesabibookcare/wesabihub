@@ -191,7 +191,7 @@ export const DispatchDashboard = () => {
 
       setShowConsentModal(false);
       setConsentSignature('');
-      toast.success('WeSabiDispatch Partner Agreement v2.4.0 successfully signed and stored on-chain!');
+      toast.success('OmorfiHubDispatch Partner Agreement v2.4.0 successfully signed and stored on-chain!');
     } catch (e) {
       console.error('Failed to sign agreement:', e);
     }
@@ -334,7 +334,7 @@ export const DispatchDashboard = () => {
             WS
           </div>
           <div>
-            <h1 className="font-black text-lg tracking-tight text-slate-900 dark:text-white">WeSabiDispatch</h1>
+            <h1 className="font-black text-lg tracking-tight text-slate-900 dark:text-white">OmorfiHubDispatch</h1>
             <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Rider Terminal v2.4</p>
           </div>
         </div>
@@ -587,7 +587,7 @@ export const DispatchDashboard = () => {
                   {/* Top header */}
                   <div className="flex justify-between items-start relative z-10">
                     <div>
-                      <h4 className="font-black text-sm uppercase tracking-wider text-slate-800">WeSabiDispatch</h4>
+                      <h4 className="font-black text-sm uppercase tracking-wider text-slate-800">OmorfiHubDispatch</h4>
                       <p className="text-[8px] font-black uppercase text-primary-500 tracking-widest">Digital Credential</p>
                     </div>
                     <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center font-black text-xs">
@@ -625,7 +625,7 @@ export const DispatchDashboard = () => {
                     </div>
                     <div>
                       <p className="text-[8px] font-black uppercase text-slate-900">Security Signature</p>
-                      <p className="text-[10px] italic font-serif text-slate-800">WeSabi Trust</p>
+                      <p className="text-[10px] italic font-serif text-slate-800">OmorfiHub Trust</p>
                     </div>
                   </div>
 
@@ -746,7 +746,7 @@ export const DispatchDashboard = () => {
               <Card className="p-6 space-y-6">
                 <div className="flex items-center justify-between border-b pb-4">
                   <div>
-                    <h3 className="font-black text-xl text-slate-900 dark:text-white">WeSabiDispatch Partner Agreement</h3>
+                    <h3 className="font-black text-xl text-slate-900 dark:text-white">OmorfiHubDispatch Partner Agreement</h3>
                     <p className="text-xs text-slate-900 font-medium">Legal terms, compliance rules, on-chain safety, and audit policies.</p>
                   </div>
                   <Badge className="bg-slate-100 text-slate-800 border-none px-2.5 py-1 font-mono text-[10px] font-bold">
@@ -757,13 +757,13 @@ export const DispatchDashboard = () => {
                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 text-xs text-slate-800 dark:text-slate-300 font-medium leading-relaxed">
                   <p className="font-bold">Last Modified: July 2026</p>
                   <p>
-                    By accepting this Agreement, you enter into a legally binding partnership with WeSabiHub Logistics Platform. You agree to represent the brand professionally, adhere to regional safety protocols, maintain valid license/ID documents, and respect delivery custody mechanisms.
+                    By accepting this Agreement, you enter into a legally binding partnership with OmorfiHub Logistics Platform. You agree to represent the brand professionally, adhere to regional safety protocols, maintain valid license/ID documents, and respect delivery custody mechanisms.
                   </p>
                   <p>
-                    <span className="font-bold">1. Trust Score Policy:</span> WeSabi operates a dynamic trust rating score (0 - 200). Your access to delivery channels is strictly bound to maintaining a Trust Score above 60. Violations such as fraud events, constant delay complaints, or GPS manipulation will trigger instant temporary suspension.
+                    <span className="font-bold">1. Trust Score Policy:</span> OmorfiHub operates a dynamic trust rating score (0 - 200). Your access to delivery channels is strictly bound to maintaining a Trust Score above 60. Violations such as fraud events, constant delay complaints, or GPS manipulation will trigger instant temporary suspension.
                   </p>
                   <p>
-                    <span className="font-bold">2. Financial Payout and Settlements:</span> All payments earned are routed through WeSabi SafePay Wallet. Payouts require successful delivery confirmation. Withdrawals will clear into registered settlement banks. Fees and commissions are applied as per current Trust Tier settings.
+                    <span className="font-bold">2. Financial Payout and Settlements:</span> All payments earned are routed through OmorfiHub SafePay Wallet. Payouts require successful delivery confirmation. Withdrawals will clear into registered settlement banks. Fees and commissions are applied as per current Trust Tier settings.
                   </p>
                   <p>
                     <span className="font-bold">3. Audit and compliance:</span> All application credentials and physical verification status updates are logged securely in audit systems. Any fraud will be reported directly to regulatory authorities.

@@ -65,10 +65,10 @@ export const MerchantSupportPage = () => {
   const [ticketMessage, setTicketMessage] = useState('');
 
   const faqs = [
-    { question: 'How do I release SafePay funds?', answer: 'Funds are automatically released to your wallet 24 hours after the customer confirms receipt of the parcel at a WeSabiHub Point or via home delivery.' },
-    { question: 'What are the merchant fees?', answer: 'WeSabiHub charges a flat 2.5% service fee on every successful transaction. This covers the SafePay service, tracking, and point-to-point logistics.' },
-    { question: 'Can I use my own courier?', answer: 'Currently, all shipments must be dropped off at a WeSabiHub Point to ensure the integrity of our SafePay and tracking system.' },
-    { question: 'How do I handle returns?', answer: 'If a customer requests a return, they must drop the parcel back at a WeSabiHub Point. Once you receive and verify the return, you can initiate a refund via the SafePay dashboard.' },
+    { question: 'How do I release SafePay funds?', answer: 'Funds are automatically released to your wallet 24 hours after the customer confirms receipt of the parcel at a OmorfiHub Point or via home delivery.' },
+    { question: 'What are the merchant fees?', answer: 'OmorfiHub charges a flat 2.5% service fee on every successful transaction. This covers the SafePay service, tracking, and point-to-point logistics.' },
+    { question: 'Can I use my own courier?', answer: 'Currently, all shipments must be dropped off at a OmorfiHub Point to ensure the integrity of our SafePay and tracking system.' },
+    { question: 'How do I handle returns?', answer: 'If a customer requests a return, they must drop the parcel back at a OmorfiHub Point. Once you receive and verify the return, you can initiate a refund via the SafePay dashboard.' },
   ];
 
   const filteredFaqs = faqs.filter(faq =>
@@ -138,10 +138,10 @@ export const MerchantSupportPage = () => {
     {
       icon: Mail,
       title: 'Partnership Email',
-      desc: 'merchants@wesabihub.com',
+      desc: 'merchants@omorfihub.com',
       color: 'bg-blue-600',
       action: 'Send Email',
-      handler: () => window.location.href = 'mailto:merchants@wesabihub.com'
+      handler: () => window.location.href = 'mailto:merchants@omorfihub.com'
     },
   ];
 
@@ -154,7 +154,7 @@ export const MerchantSupportPage = () => {
            </div>
            <div className="space-y-2">
               <h1 className="text-4xl font-bold dark:text-white font-display">Merchant Support Center</h1>
-              <p className="text-slate-800 text-lg">Everything you need to grow your business on WeSabiHub.</p>
+              <p className="text-slate-800 text-lg">Everything you need to grow your business on OmorfiHub.</p>
            </div>
            <div className="max-w-2xl mx-auto relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-900" />
@@ -174,7 +174,7 @@ export const MerchantSupportPage = () => {
              { title: 'Merchant Handbook', desc: 'Step-by-step guides for store owners', icon: BookOpen, color: 'text-primary-600', bg: 'bg-primary-50 dark:bg-primary-900/20', to: '/faq' },
              { title: 'SafePay Guide', desc: 'How protected transactions work', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', to: '/safepay' },
              { title: 'Video Tutorials', desc: 'Watch how to manage your shipments', icon: PlayCircle, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', to: '/how-it-works' },
-             { title: 'Developer API', desc: 'Integrate WeSabiHub into your store', icon: ExternalLink, color: 'text-slate-900', bg: 'bg-slate-100 dark:bg-slate-800', to: '/api' },
+             { title: 'Developer API', desc: 'Integrate OmorfiHub into your store', icon: ExternalLink, color: 'text-slate-900', bg: 'bg-slate-100 dark:bg-slate-800', to: '/api' },
            ].map((cat, i) => (
              <Card key={i} onClick={() => navigate(cat.to)} className="p-6 border-slate-200 dark:border-slate-800 hover:border-primary-500 transition-all cursor-pointer group">
                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110", cat.bg, cat.color)}>

@@ -78,7 +78,7 @@ export const AddPaymentMethodModal: React.FC<AddPaymentMethodModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Payment Method"
-      description="Link a new card or financial account to WeSabiHub."
+      description="Link a new card or financial account to OmorfiHub."
     >
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-3">

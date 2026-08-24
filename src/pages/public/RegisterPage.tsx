@@ -177,7 +177,7 @@ export const RegisterPage: React.FC = () => {
                     Please check your inbox to verify your account.
                   </>
                 ) : (
-                  "Welcome to WeSabiHub! Setting up your workspace..."
+                  "Welcome to OmorfiHub! Setting up your workspace..."
                 )}
               </CardDescription>
               <p className="text-sm text-slate-900 pt-4">
@@ -231,7 +231,7 @@ export const RegisterPage: React.FC = () => {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white font-sans drop-shadow">
-          Join WeSabiHub
+          Join OmorfiHub
         </h2>
         <p className="mt-2 text-center text-sm text-slate-200 drop-shadow">
           The most reliable way to send parcels through local hubs
@@ -431,7 +431,7 @@ export const RegisterPage: React.FC = () => {
                   className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="policyConsent" className="text-xs text-slate-900">
-                  I have read and agree to the <Link to="/terms" title="Terms" className="text-blue-600 hover:underline">Terms of Service</Link>, <Link to="/privacy" title="Privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>, <Link to="/payment-protection" title="Payment Protection" className="text-blue-600 hover:underline">Payment Protection Policy</Link>, <Link to="/returns" title="Returns" className="text-blue-600 hover:underline">Return Policy</Link> and <Link to="/storage" title="Storage" className="text-blue-600 hover:underline">Storage Policy</Link>. I understand these policies may be updated from time to time and that continued use of WeSabiHub means I accept the latest published version.
+                  I have read and agree to the <Link to="/terms" title="Terms" className="text-blue-600 hover:underline">Terms of Service</Link>, <Link to="/privacy" title="Privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>, <Link to="/payment-protection" title="Payment Protection" className="text-blue-600 hover:underline">Payment Protection Policy</Link>, <Link to="/returns" title="Returns" className="text-blue-600 hover:underline">Return Policy</Link> and <Link to="/storage" title="Storage" className="text-blue-600 hover:underline">Storage Policy</Link>. I understand these policies may be updated from time to time and that continued use of OmorfiHub means I accept the latest published version.
                 </label>
               </div>
 

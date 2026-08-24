@@ -1,7 +1,7 @@
 import { User as FirebaseUser } from 'firebase/auth';
 
 /**
- * Calls a WeSabiHub backend API route with the caller's verified Firebase ID
+ * Calls a OmorfiHub backend API route with the caller's verified Firebase ID
  * token attached, the way every Phase A1-hardened /api/* route expects.
  *
  * IMPORTANT: pass `fbUser` (the raw Firebase Auth user from

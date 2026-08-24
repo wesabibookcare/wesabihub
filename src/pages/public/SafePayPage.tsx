@@ -25,13 +25,13 @@ import {
 } from 'lucide-react';
 
 const flowSteps = [
-  { icon: ShoppingBag, title: 'Buyer & seller agree', desc: 'A buyer and seller agree on an item and price, usually right inside WeSabiChat.' },
+  { icon: ShoppingBag, title: 'Buyer & seller agree', desc: 'A buyer and seller agree on an item and price, usually right inside OmorfiHubChat.' },
   { icon: Wallet, title: 'Buyer pays via SafePay', desc: 'The buyer pays through our SafePay checkout, powered by Flutterwave.' },
-  { icon: Lock, title: 'Funds are held by Flutterwave', desc: 'Flutterwave secures the payment. WeSabiHub never touches or holds the money itself.' },
+  { icon: Lock, title: 'Funds are held by Flutterwave', desc: 'Flutterwave secures the payment. OmorfiHub never touches or holds the money itself.' },
   { icon: Video, title: 'Seller records preparation', desc: 'Before packing, the seller records a short in-app video testing and preparing the item.' },
-  { icon: PackageCheck, title: 'Seller packs & dispatches', desc: 'The item is sealed and sent through WeSabiHub — by hub drop-off or direct dispatch.' },
+  { icon: PackageCheck, title: 'Seller packs & dispatches', desc: 'The item is sealed and sent through OmorfiHub — by hub drop-off or direct dispatch.' },
   { icon: Truck, title: 'Parcel is delivered', desc: 'The buyer receives the parcel, fully tracked from pickup to delivery.' },
-  { icon: PackageOpen, title: 'Buyer records unboxing', desc: 'The buyer records themselves unboxing and inspecting the item, right in WeSabiChat.' },
+  { icon: PackageOpen, title: 'Buyer records unboxing', desc: 'The buyer records themselves unboxing and inspecting the item, right in OmorfiHubChat.' },
   { icon: ThumbsUp, title: 'Buyer accepts or disputes', desc: 'If all is well, the buyer releases payment. If there\u2019s a problem, they open a dispute instead.' },
 ];
 
@@ -64,11 +64,11 @@ export const SafePayPage = () => {
           <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
             SafePay is a separate protected transaction service for buyer–seller purchases.
             It helps protect the agreed transaction through payment, evidence, inspection and resolution.
-            SafePay is independent of WeSabiHub logistics and is not WeSabiHub's ordinary payment system.
+            SafePay is independent of OmorfiHub logistics and is not OmorfiHub's ordinary payment system.
           </p>
           {!isSafePayEnabled && (
             <p className="text-amber-400 font-bold mt-6 max-w-xl mx-auto">
-              SafePay isn't active on WeSabiHub just yet — we're putting the finishing touches on it. Here's how it will work once it launches.
+              SafePay isn't active on OmorfiHub just yet — we're putting the finishing touches on it. Here's how it will work once it launches.
             </p>
           )}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
@@ -83,9 +83,9 @@ export const SafePayPage = () => {
         <div className="max-w-4xl mx-auto px-4">
           <Card className="p-8 border-primary-200 dark:border-primary-900/50 bg-primary-50/50 dark:bg-primary-900/10 text-center space-y-3">
             <Lock className="mx-auto text-primary-600" size={32} />
-            <h2 className="text-xl font-bold dark:text-white font-display">WeSabiHub never holds your money</h2>
+            <h2 className="text-xl font-bold dark:text-white font-display">OmorfiHub never holds your money</h2>
             <p className="text-slate-800 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              SafePay payments are processed and held by <strong>Flutterwave</strong>, our licensed payment partner \u2014 not by WeSabiHub. WeSabiHub manages the rules of the transaction: parcel tracking, video evidence, inspection windows, and dispute resolution. The actual movement of funds is always handled by Flutterwave.
+              SafePay payments are processed and held by <strong>Flutterwave</strong>, our licensed payment partner \u2014 not by OmorfiHub. OmorfiHub manages the rules of the transaction: parcel tracking, video evidence, inspection windows, and dispute resolution. The actual movement of funds is always handled by Flutterwave.
             </p>
           </Card>
         </div>
@@ -127,7 +127,7 @@ export const SafePayPage = () => {
               {[
                 'Your payment is held securely by Flutterwave until you confirm the item is right.',
                 'You get a full inspection window after delivery before you have to decide anything.',
-                'Record an unboxing video right in WeSabiChat \u2014 it\u2019s your strongest evidence if something is wrong.',
+                'Record an unboxing video right in OmorfiHubChat \u2014 it\u2019s your strongest evidence if something is wrong.',
                 'If there\u2019s a genuine problem, you can open a dispute instead of releasing payment.',
               ].map(item => (
                 <li key={item} className="flex items-start gap-3 text-sm text-slate-800 dark:text-slate-300">
@@ -165,8 +165,8 @@ export const SafePayPage = () => {
         <div className="max-w-5xl mx-auto px-4">
           <SectionHeader
             badge="Evidence That Protects You"
-            title="Video evidence, right inside WeSabiChat"
-            description="This feature is specific to SafePay transactions and does not apply to ordinary WeSabiHub parcels picked up from a hub."
+            title="Video evidence, right inside OmorfiHubChat"
+            description="This feature is specific to SafePay transactions and does not apply to ordinary OmorfiHub parcels picked up from a hub."
             centered={true}
           />
           <div className="grid md:grid-cols-2 gap-8">
@@ -174,14 +174,14 @@ export const SafePayPage = () => {
               <Badge variant="info" className="mb-4">Seller</Badge>
               <h3 className="font-bold dark:text-white mb-3">Preparation video</h3>
               <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed">
-                Testing/preparation \u2192 packaging \u2192 sealing and dispatch, recorded in one continuous clip inside WeSabiChat.
+                Testing/preparation \u2192 packaging \u2192 sealing and dispatch, recorded in one continuous clip inside OmorfiHubChat.
               </p>
             </Card>
             <Card className="p-8 border-slate-200 dark:border-slate-800">
               <Badge variant="info" className="mb-4">Buyer</Badge>
               <h3 className="font-bold dark:text-white mb-3">Unboxing video</h3>
               <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed">
-                Parcel receipt \u2192 unboxing \u2192 unwrapping \u2192 inspection, recorded in one continuous clip inside WeSabiChat.
+                Parcel receipt \u2192 unboxing \u2192 unwrapping \u2192 inspection, recorded in one continuous clip inside OmorfiHubChat.
               </p>
             </Card>
           </div>
@@ -210,7 +210,7 @@ export const SafePayPage = () => {
               ))}
             </div>
             <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-6">
-              When a dispute is opened, WeSabiHub reviews the evidence \u2014 tracking history, seller preparation video, and buyer inspection video \u2014 to manage the dispute workflow. The applicable settlement or refund is then processed through Flutterwave according to the outcome.
+              When a dispute is opened, OmorfiHub reviews the evidence \u2014 tracking history, seller preparation video, and buyer inspection video \u2014 to manage the dispute workflow. The applicable settlement or refund is then processed through Flutterwave according to the outcome.
             </p>
           </Card>
         </div>
@@ -221,7 +221,7 @@ export const SafePayPage = () => {
         <div className="max-w-5xl mx-auto px-4">
           <SectionHeader
             badge="Important Distinction"
-            title="SafePay vs. ordinary WeSabiHub payments"
+            title="SafePay vs. ordinary OmorfiHub payments"
             description="These are two separate things, and it matters to understand the difference."
             centered={true}
           />
@@ -254,7 +254,7 @@ export const SafePayPage = () => {
             <Button size="lg" variant="outline" className="border-slate-700 text-white hover:bg-slate-900" onClick={() => navigate('/faq')}>Read the FAQ</Button>
           </div>
           <p className="text-xs text-slate-500 mt-8">
-            SafePay is a WeSabiHub protection workflow. Payment processing and funds holding are provided by Flutterwave. See our <Link to="/terms" className="underline hover:text-primary-400">Terms of Service</Link> for full details.
+            SafePay is a OmorfiHub protection workflow. Payment processing and funds holding are provided by Flutterwave. See our <Link to="/terms" className="underline hover:text-primary-400">Terms of Service</Link> for full details.
           </p>
         </div>
       </section>

@@ -147,7 +147,7 @@ export const CustomerDashboard = () => {
                 <p className="text-slate-300 text-lg max-w-xl">
                   {loading ? 'Loading your activity...' : (
                     <>
-                      You have {stats.inTransit} parcels in transit and {stats.awaitingDropoff} waiting for drop-off at a WeSabiHub Point.
+                      You have {stats.inTransit} parcels in transit and {stats.awaitingDropoff} waiting for drop-off at a OmorfiHub Point.
                     </>
                   )}
                 </p>
@@ -267,7 +267,7 @@ export const CustomerDashboard = () => {
                           <MapPin size={32} />
                        </div>
                        <div className="flex-1 space-y-1">
-                          <p className="text-primary-100 text-sm font-semibold uppercase tracking-wider">Your Nearest WeSabiHub Point</p>
+                          <p className="text-primary-100 text-sm font-semibold uppercase tracking-wider">Your Nearest OmorfiHub Point</p>
                           <h3 className="text-2xl font-bold font-display">{nearestHub?.name || 'Find a Hub Point'}</h3>
                           <p className="text-primary-100/80">{nearestHub ? `${nearestHub.address} • Open until ${nearestHub.operatingHours || '6:00 PM'}` : 'Locate centers near you to drop off or receive parcels.'}</p>
                        </div>

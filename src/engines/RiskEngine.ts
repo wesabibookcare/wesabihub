@@ -4,7 +4,7 @@ import { trustService } from '../services/TrustService';
 import { auditEngine } from './AuditEngine';
 
 /**
- * WeSabiHub Trust & Risk Engine
+ * OmorfiHub Trust & Risk Engine
  * Manages fraud detection, trust scores, and compliance monitoring.
  */
 class RiskEngine {

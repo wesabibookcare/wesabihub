@@ -493,7 +493,7 @@ export const InfrastructureCertificationPage = () => {
                             <div className="flex items-start gap-3">
                                <ShieldCheck className="text-indigo-600 shrink-0" size={18} />
                                <p className="text-[10px] text-indigo-700 dark:text-indigo-400 leading-relaxed font-medium">
-                                  Security Protocol: WeSabiHub enforces zero-hardcoding. All keys must be provided via Google Cloud Secret Manager or AI Studio Secure Vault.
+                                  Security Protocol: OmorfiHub enforces zero-hardcoding. All keys must be provided via Google Cloud Secret Manager or AI Studio Secure Vault.
                                </p>
                             </div>
                          </div>
@@ -924,7 +924,7 @@ export const InfrastructureCertificationPage = () => {
                     </div>
                     <div className="p-6 space-y-6">
                       <p className="text-xs font-medium text-slate-500 leading-relaxed">
-                        In accordance with the <strong>WeSabiHub Operational Constitution</strong>, a platform state rollback (reverting dynamic system settings or compliance text) will <strong>never</strong> rollback live financial records. Wallet balances, SafePay statuses, completed platform payments, and parcel tracking history are immutable and shielded against data loss or duplication.
+                        In accordance with the <strong>OmorfiHub Operational Constitution</strong>, a platform state rollback (reverting dynamic system settings or compliance text) will <strong>never</strong> rollback live financial records. Wallet balances, SafePay statuses, completed platform payments, and parcel tracking history are immutable and shielded against data loss or duplication.
                       </p>
 
                       <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/10 border border-rose-100 dark:border-rose-900/50 space-y-2">
@@ -1028,7 +1028,7 @@ export const InfrastructureCertificationPage = () => {
         )}
 
         <div className="flex items-center justify-between text-slate-500 text-[10px] font-bold uppercase tracking-widest px-2">
-           <span>Certification Authority: WeSabiHub Infrastructure Engine</span>
+           <span>Certification Authority: OmorfiHub Infrastructure Engine</span>
            <span>Last Audit: {lastCheck.toLocaleTimeString()}</span>
         </div>
       </div>

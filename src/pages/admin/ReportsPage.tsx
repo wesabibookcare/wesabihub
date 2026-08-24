@@ -69,7 +69,7 @@ export const ReportsPage = () => {
           pickup: s.createdAt ? new Date(s.createdAt).toISOString().split('T')[0] : 'N/A',
           delivery: s.status === 'COLLECTED' || s.status === 'DELIVERED' ? (s.updatedAt ? new Date(s.updatedAt).toISOString().split('T')[0] : 'Completed') : 'Pending',
           hub: s.destinationCenterId || s.originCenterId || 'Hub Center',
-          carrier: (s as any).serviceType || 'WeSabi Logistics',
+          carrier: (s as any).serviceType || 'OmorfiHub Logistics',
           status: s.status || 'AWAITING_DISPATCH'
         }));
         setReportData(mapped);
@@ -232,7 +232,7 @@ export const ReportsPage = () => {
         {/* Print Only Header */}
         <div className="hidden print:block border-b-2 border-slate-900 pb-4">
           <h1 className="text-2xl font-black uppercase tracking-tight">{activeTemplate?.title}</h1>
-          <p className="text-xs text-slate-900 mt-1">WeSabiHub Unified Reporting System — Confidential Audit Record</p>
+          <p className="text-xs text-slate-900 mt-1">OmorfiHub Unified Reporting System — Confidential Audit Record</p>
           <div className="grid grid-cols-4 gap-4 mt-4 text-[10px] font-mono">
             <div><strong>Date Scope:</strong> {dateFrom} to {dateTo}</div>
             <div><strong>Region Filter:</strong> {region}</div>

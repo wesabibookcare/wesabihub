@@ -381,7 +381,7 @@ export const BrandAssetsPage = () => {
                                value={localSettings.branding.watermarks?.text || ''}
                                onChange={(e) => updateWatermarks('text', e.target.value)}
                                className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2 font-bold text-sm"
-                               placeholder="e.g. WeSabiHub Official"
+                               placeholder="e.g. OmorfiHub Official"
                              />
                           </div>
                           <div className="space-y-2">
@@ -391,7 +391,7 @@ export const BrandAssetsPage = () => {
                                value={localSettings.branding.brandGuidelinesUrl || ''}
                                onChange={(e) => updateBranding('brandGuidelinesUrl', e.target.value)}
                                className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-2 font-bold text-sm"
-                               placeholder="https://docs.wesabihub.com/brand"
+                               placeholder="https://docs.omorfihub.com/brand"
                              />
                           </div>
                        </div>

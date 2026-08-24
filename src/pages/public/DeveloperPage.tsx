@@ -349,7 +349,7 @@ export const DeveloperPage = () => {
                   {
                     icon: Shield,
                     title: "SafePay Payment Protection",
-                    desc: "API orders instantly utilize native WeSabiHub payment protections, holding funds until customers verify pickup."
+                    desc: "API orders instantly utilize native OmorfiHub payment protections, holding funds until customers verify pickup."
                   },
                   {
                     icon: Server,
@@ -385,7 +385,7 @@ export const DeveloperPage = () => {
                   <Code className="w-8 h-8" />
                 </div>
                 <h1 className="text-3xl font-bold font-display">Apply for API Access</h1>
-                <p className="text-slate-800 text-sm">Join the private beta program to build integrations with WeSabiHub.</p>
+                <p className="text-slate-800 text-sm">Join the private beta program to build integrations with OmorfiHub.</p>
               </div>
 
               <Card className="p-8 bg-slate-900/50 border-slate-800 backdrop-blur-xl rounded-3xl space-y-6">
@@ -655,7 +655,7 @@ export const DeveloperPage = () => {
                       <Card className="p-8 bg-slate-900/30 border-slate-900 rounded-3xl space-y-6">
                         <div className="space-y-1.5">
                           <h3 className="text-lg font-bold">Webhook Settings</h3>
-                          <p className="text-slate-800 text-xs">Configure where WeSabiHub should post updates for shipment creation, status edits, and collections.</p>
+                          <p className="text-slate-800 text-xs">Configure where OmorfiHub should post updates for shipment creation, status edits, and collections.</p>
                         </div>
 
                         <div className="space-y-4">
@@ -663,7 +663,7 @@ export const DeveloperPage = () => {
                             <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Webhook Payload Destination URL</label>
                             <div className="flex gap-3">
                               <Input
-                                placeholder="https://api.yourbusiness.com/webhooks/wesabihub"
+                                placeholder="https://api.yourbusiness.com/webhooks/omorfihub"
                                 value={webhookUrl}
                                 onChange={(e) => setWebhookUrl(e.target.value)}
                                 className="bg-slate-950 border-slate-800 text-white focus:border-primary-500 flex-1 h-12"
@@ -776,7 +776,7 @@ export const DeveloperPage = () => {
                         <div className="space-y-5">
                           <div className="space-y-1">
                             <h3 className="text-base font-bold flex items-center gap-2"><Play size={16} className="text-primary-500" /> API Sandbox Playground</h3>
-                            <p className="text-slate-900 text-[11px]">Select and configure live HTTP operations to trial the WeSabiHub engine.</p>
+                            <p className="text-slate-900 text-[11px]">Select and configure live HTTP operations to trial the OmorfiHub engine.</p>
                           </div>
 
                           <div className="space-y-2">
@@ -935,7 +935,7 @@ export const DeveloperPage = () => {
                                 <span className="bg-emerald-500/10 text-emerald-400 font-mono font-bold text-[10px] px-2 py-0.5 rounded uppercase">POST</span>
                                 <span className="font-mono text-xs font-bold text-white">/api/v1/shipments</span>
                               </div>
-                              <p className="text-xs text-slate-800">Create and book a new shipment across the WeSabiHub network. Includes secure pickup PIN and tracking generation.</p>
+                              <p className="text-xs text-slate-800">Create and book a new shipment across the OmorfiHub network. Includes secure pickup PIN and tracking generation.</p>
                               <p className="text-[10px] text-slate-900 font-bold uppercase tracking-wider mb-1 pt-2">Payload Body Shape:</p>
                               <pre className="p-3 bg-slate-950 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-300 overflow-x-auto">
 {`{
@@ -983,13 +983,13 @@ export const DeveloperPage = () => {
                               <p className="text-xs text-slate-800">Regenerate and return a new 4-digit secure Pickup PIN. Useful if a customer misplaces their SMS pickup code.</p>
                             </div>
 
-                            {/* WeSabiDispatch Endpoint */}
+                            {/* OmorfiHubDispatch Endpoint */}
                             <div className="space-y-2 bg-slate-950/40 p-5 rounded-2xl border border-slate-900">
                               <div className="flex items-center gap-2">
                                 <span className="bg-emerald-500/10 text-emerald-400 font-mono font-bold text-[10px] px-2 py-0.5 rounded uppercase">POST</span>
                                 <span className="font-mono text-xs font-bold text-white">/api/v1/dispatch/assign</span>
                               </div>
-                              <p className="text-xs text-slate-800">Request active pickup from independent WeSabiDispatch riders. System automatically queries regional riders with premium Trust Scores.</p>
+                              <p className="text-xs text-slate-800">Request active pickup from independent OmorfiHubDispatch riders. System automatically queries regional riders with premium Trust Scores.</p>
                               <p className="text-[10px] text-slate-900 font-bold uppercase tracking-wider mb-1 pt-2">Payload Body Shape:</p>
                               <pre className="p-3 bg-slate-950 rounded-xl border border-slate-900 text-[10px] font-mono text-slate-300 overflow-x-auto">
 {`{

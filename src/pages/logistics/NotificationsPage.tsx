@@ -22,7 +22,7 @@ export const NotificationsPage = () => {
     { id: 1, title: "New Job Assigned", desc: "Job #8812 (Lagos Hub A → Ikeja) is ready for pickup.", type: "JOB", time: "5 mins ago", read: false },
     { id: 2, title: "Payout Processed", desc: "₦1,240,000 has been sent to your registered bank account.", type: "FINANCE", time: "2 hours ago", read: false },
     { id: 3, title: "Vehicle Breakdown Reported", desc: "Driver Abiodun reported a breakdown for VEH-103.", type: "EXCEPTION", time: "4 hours ago", read: true },
-    { id: 4, title: "System Update", desc: "WeSabiHub Rules Engine updated to v2.4.0. See what's new.", type: "SYSTEM", time: "1 day ago", read: true },
+    { id: 4, title: "System Update", desc: "OmorfiHub Rules Engine updated to v2.4.0. See what's new.", type: "SYSTEM", time: "1 day ago", read: true },
   ];
 
   return (

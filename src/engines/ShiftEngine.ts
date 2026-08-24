@@ -4,7 +4,7 @@ import { auditEngine } from './AuditEngine';
 import { orderBy, limit } from 'firebase/firestore';
 
 /**
- * WeSabiHub Shift Engine
+ * OmorfiHub Shift Engine
  * Authoritative lifecycle & audit controller for operational staff shifts across Hubs.
  */
 class ShiftEngine {

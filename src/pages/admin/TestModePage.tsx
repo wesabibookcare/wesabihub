@@ -38,7 +38,7 @@ import { adminEngine } from '../../engines/AdminEngine';
 
 
 // Hardcoded default values for simulation
-const MOCK_SENDER = { uid: "USR-SND-102", name: "WeSabi Merchant Lagos", email: "wesabibookcare@gmail.com", role: "MERCHANT" };
+const MOCK_SENDER = { uid: "USR-SND-102", name: "OmorfiHub Merchant Lagos", email: "wesabibookcare@gmail.com", role: "MERCHANT" };
 const MOCK_RECIPIENT = { name: "Adewale Kolawole", phone: "+234 803 123 4567", email: "adewale@gmail.com" };
 const MOCK_DRIVER = { uid: "USR-DRV-999", name: "Musa Ibrahim", vehicle: "Toyota Hiace (LA-890-IKJ)" };
 const MOCK_ORIGIN = { id: "HUB-LAG-01", name: "Lagos Hub A", address: "10 Herbert Macaulay Way, Yaba", city: "Lagos" };
@@ -96,7 +96,7 @@ interface SimulatedState {
   storageFeePerDay: number;
   storageTotalFee: number;
 
-  // WeSabiChat
+  // OmorfiHubChat
   chatId?: string;
   chatStatus?: 'ACTIVE' | 'CLOSED' | 'DISPUTED';
   chatMessages: Array<{ sender: string; text: string; timestamp: string }>;
@@ -175,7 +175,7 @@ export const TestModePage = () => {
 
   // Set up scenario steps
   const happyPathSteps = [
-    { label: 'Shipment Creation & Merchant Declaration', desc: 'Merchant declares parcel & weight. WeSabiHub secures base fees and commissions.' },
+    { label: 'Shipment Creation & Merchant Declaration', desc: 'Merchant declares parcel & weight. OmorfiHub secures base fees and commissions.' },
     { label: 'Origin Centre Intake & Verification', desc: 'Center staff scan parcel barcode, capture label photo, and check packaging compliance.' },
     { label: 'Pickup & Dispatch', desc: 'Driver custody transition with real-time GPS check and QR validation.' },
     { label: 'In-Transit Logistics', desc: 'Parcel flows between centers. Dynamic audit logging captures custody records.' },
@@ -186,7 +186,7 @@ export const TestModePage = () => {
 
   const disputeSteps = [
     { label: 'Shipment & Payment Protection', desc: 'Buyer pays. Funds held in secure SafePay. Shipment dispatched.' },
-    { label: 'WeSabiChat Initiation', desc: 'Buyer & Seller begin negotiation chat. SafePay Item Information checklist attached.' },
+    { label: 'OmorfiHubChat Initiation', desc: 'Buyer & Seller begin negotiation chat. SafePay Item Information checklist attached.' },
     { label: 'Customer Reports Damage/Dispute', desc: 'Customer flags delivery issues. Payment Protection held; dispute open.' },
     { label: 'Dispute Investigation', desc: 'Dispute admin reviews Chat evidence transcripts, frozen custody history, and uploaded photo proof.' },
     { label: 'Admin Resolves Dispute', desc: 'Admin approves a partial split refund or full refund. Funds disbursed to wallets.' }
@@ -363,14 +363,14 @@ export const TestModePage = () => {
       s.signatureDate = new Date().toISOString();
 
       logSimulationEvent('SAFEPAY_RELEASED', `Secure payments released to merchant. Digital signature stored.`, { amount: s.safePayAmount });
-      logSimulationEvent('POINTS_AWARDED', `Awarded 10 WeSabi loyalty points to Abuja Hub B. Recalculated star rating boost.`, { hubId: MOCK_DEST.id });
+      logSimulationEvent('POINTS_AWARDED', `Awarded 10 OmorfiHub loyalty points to Abuja Hub B. Recalculated star rating boost.`, { hubId: MOCK_DEST.id });
 
       addSimNotification('SafePay Released to Merchant', `Funds released. Transaction completed. Abuja Hub B trust score boosted.`, 'SUCCESS');
     }
   };
 
   const executeDisputeStep = (step: number, s: SimulatedState) => {
-    if (step === 1) { // WeSabiChat Initiation
+    if (step === 1) { // OmorfiHubChat Initiation
       s.chatId = `CHT-${Date.now()}`;
       s.chatStatus = 'ACTIVE';
       s.chatMessages = [
@@ -380,8 +380,8 @@ export const TestModePage = () => {
       s.itemInformationAttached = true;
 
       logSimulationEvent('WESABICHAT_CREATED', `SafePay negotiation conversation initiated. Duplicate checking active: No existing chat found for shipment ${s.shipmentId}.`);
-      logSimulationEvent('SAFEPAY_EVIDENCE_ATTACHED', `Buyer verified declared item list in WeSabiChat. Declared value: ₦${s.pricing.baseFee}.`);
-      addSimNotification('WeSabiChat Active', `Secure buyer-seller chat established. Compliance tracking activated.`, 'INFO');
+      logSimulationEvent('SAFEPAY_EVIDENCE_ATTACHED', `Buyer verified declared item list in OmorfiHubChat. Declared value: ₦${s.pricing.baseFee}.`);
+      addSimNotification('OmorfiHubChat Active', `Secure buyer-seller chat established. Compliance tracking activated.`, 'INFO');
     }
     else if (step === 2) { // Dispute report
       s.status = 'DISPUTED';
@@ -398,7 +398,7 @@ export const TestModePage = () => {
       s.disputeStatus = 'UNDER_REVIEW';
       s.chatMessages.push({ sender: 'DISPUTE_ADMIN', text: 'Audit logs reviewed. Seal was intact at intake but damaged at destination receipt. Reviewing photo proof.', timestamp: '11:15 AM' });
 
-      logSimulationEvent('DISPUTE_EVIDENCE_RECOGNITION', `WeSabiChat transcripts frozen as dynamic evidence snapshot. Digital signature logs and photos verified.`, { disputeId: s.disputeId });
+      logSimulationEvent('DISPUTE_EVIDENCE_RECOGNITION', `OmorfiHubChat transcripts frozen as dynamic evidence snapshot. Digital signature logs and photos verified.`, { disputeId: s.disputeId });
       addSimNotification('Evidence Snapshot Locked', `Immutable evidence snapshot created from chat and custody history.`, 'INFO');
     }
     else if (step === 4) { // Refund resolved
@@ -427,7 +427,7 @@ export const TestModePage = () => {
       s.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RETURN-${s.trackingNumber}`;
 
       logSimulationEvent('RETURN_APPROVED', `Merchant approved return. Secure pre-paid return labels & return QR code compiled.`);
-      addSimNotification('Return Approved', `Return label generated. Please drop off the package at any WeSabiHub center.`, 'SUCCESS');
+      addSimNotification('Return Approved', `Return label generated. Please drop off the package at any OmorfiHub center.`, 'SUCCESS');
     }
     else if (step === 3) { // Intake return
       s.returnStatus = 'RECEIVED_AT_CENTER';
@@ -791,7 +791,7 @@ export const TestModePage = () => {
                 {/* Dispute & chat snapshot */}
                 {simState.disputeStatus && simState.disputeStatus !== 'NONE' && (
                   <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">WeSabiChat SafePay Evidence Log</h4>
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">OmorfiHubChat SafePay Evidence Log</h4>
                     <Card className="p-5 border-slate-200 dark:border-slate-800 space-y-4">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
@@ -905,7 +905,7 @@ export const TestModePage = () => {
             <CheckSquare className="text-success-600" size={24} />
             <div>
               <h3 className="text-xl font-black dark:text-white">Data Relationship Consistency Report</h3>
-              <p className="text-xs text-slate-900">Automated verification audits relationship maps on WeSabiHub collections.</p>
+              <p className="text-xs text-slate-900">Automated verification audits relationship maps on OmorfiHub collections.</p>
             </div>
           </div>
 
@@ -932,7 +932,7 @@ export const TestModePage = () => {
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-2">
               <div className="flex justify-between font-bold dark:text-white">
-                <span>WeSabiChat ↔ Disputes Map</span>
+                <span>OmorfiHubChat ↔ Disputes Map</span>
                 <span className="text-emerald-600">CONSISTENT</span>
               </div>
               <p className="text-[11px] text-slate-900 leading-relaxed">

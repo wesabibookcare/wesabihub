@@ -382,7 +382,7 @@ export const ParcelTimeline: React.FC<ParcelTimelineProps> = ({
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-800 dark:text-slate-200 pt-1 border-t border-slate-200/50 dark:border-slate-800/50">
                     <span className="flex items-center gap-1 font-medium text-slate-800 dark:text-slate-200">
                       <MapPin size={13} className="text-primary-600 shrink-0" />
-                      {evt.locationName || evt.location || 'WeSabiHub Logistics Point'}
+                      {evt.locationName || evt.location || 'OmorfiHub Logistics Point'}
                     </span>
 
                     {evt.actorRole && (

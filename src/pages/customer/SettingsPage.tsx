@@ -70,7 +70,7 @@ export const SettingsPage = () => {
       <div className="max-w-5xl mx-auto space-y-10">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold dark:text-white font-display">Settings</h1>
-          <p className="text-slate-900">Customize your WeSabiHub experience and manage your preferences.</p>
+          <p className="text-slate-900">Customize your OmorfiHub experience and manage your preferences.</p>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-10">
@@ -116,7 +116,7 @@ export const SettingsPage = () => {
                             <div className="space-y-4">
                                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Shipment Updates</h3>
                                {[
-                                 { id: 'parcelArrival', title: 'Parcel Arrival', desc: 'When your parcel reaches a WeSabiHub point.' },
+                                 { id: 'parcelArrival', title: 'Parcel Arrival', desc: 'When your parcel reaches a OmorfiHub point.' },
                                  { id: 'transitUpdates', title: 'In Transit Updates', desc: 'Real-time updates on parcel movement.' },
                                  { id: 'deliveryConfirmation', title: 'Delivery Confirmations', desc: 'When your parcel has been collected.' },
                                ].map((pref, i) => (
@@ -196,7 +196,7 @@ export const SettingsPage = () => {
                       <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
                          <div>
                             <h2 className="text-2xl font-bold dark:text-white font-display">Appearance</h2>
-                            <p className="text-slate-900 text-sm">Customize how WeSabiHub looks on your device.</p>
+                            <p className="text-slate-900 text-sm">Customize how OmorfiHub looks on your device.</p>
                          </div>
 
                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

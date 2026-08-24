@@ -1,4 +1,4 @@
-// WeSabiHub Operating System (WOS) - Core Engines Entry Point
+// OmorfiHub Operating System (WOS) - Core Engines Entry Point
 
 export { workflowEngine } from './WorkflowEngine';
 export { configurationEngine } from './ConfigurationEngine';
