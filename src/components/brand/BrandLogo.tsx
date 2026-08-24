@@ -6,7 +6,7 @@ import { cn } from '@/src/lib/utils';
 // app. An admin can still override this per-environment via Admin > Brand
 // Assets (Primary Logo / Dark Mode Logo) -- that upload always takes priority
 // over this default when set.
-const DEFAULT_LOGO_URL = '/assets/brand/omorfihub-logo.png';
+const DEFAULT_LOGO_URL = '/assets/brand/omorfi-logo.png';
 
 interface BrandLogoProps {
   className?: string;
