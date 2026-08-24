@@ -7,14 +7,18 @@ export const AdBanner = () => {
 
     useEffect(() => {
         const fetch = async () => {
-            const all = await advertisementRepository.getAll();
-            const active = all.find(a =>
-                !a.isDeleted &&
-                a.status === 'PUBLISHED' &&
-                new Date() >= new Date(a.startDate) &&
-                new Date() <= new Date(a.endDate)
-            );
-            if (active) setAd(active as Advertisement);
+            try {
+                const all = await advertisementRepository.getAll();
+                const active = all.find(a =>
+                    !a.isDeleted &&
+                    a.status === 'PUBLISHED' &&
+                    new Date() >= new Date(a.startDate) &&
+                    new Date() <= new Date(a.endDate)
+                );
+                if (active) setAd(active as Advertisement);
+            } catch (err) {
+                console.warn("Failed to load ad banner:", err);
+            }
         };
         fetch();
     }, []);

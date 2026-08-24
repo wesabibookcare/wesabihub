@@ -20,14 +20,14 @@ export const seedInitialSettings = async () => {
       website: 'https://omorfihub.com'
     },
     branding: {
-      logoUrl: '/assets/brand/official-logo.png',
-      logoDarkUrl: '/assets/brand/official-logo-dark.png',
-      logoLightUrl: '/assets/brand/official-logo-light.png',
-      logoWithTaglineUrl: '/assets/brand/logo-tagline.png',
+      logoUrl: '/assets/brand/omorfi-logo.png',
+      logoDarkUrl: '/assets/brand/omorfi-logo.png',
+      logoLightUrl: '/assets/brand/omorfi-logo.png',
+      logoWithTaglineUrl: '/assets/brand/omorfi-logo.png',
       faviconUrl: '/favicon.ico',
-      appIconUrl: '/assets/brand/app-icon.png',
-      emailLogoUrl: '/assets/brand/official-logo.png',
-      documentLogoUrl: '/assets/brand/official-logo.png',
+      appIconUrl: '/assets/brand/omorfi-logo.png',
+      emailLogoUrl: '/assets/brand/omorfi-logo.png',
+      documentLogoUrl: '/assets/brand/omorfi-logo.png',
       primaryColor: '#0F172A',
       secondaryColor: '#3B82F6',
       typography: {

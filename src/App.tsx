@@ -52,12 +52,16 @@ async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
       console.error("Please check your Firebase configuration or network.");
+    } else {
+      console.warn("Firebase connection test failed or skipped:", error);
     }
   }
 }
-testConnection();
+testConnection().catch(err => {
+  console.warn("Unhandled testConnection error:", err);
+});
 
 import { CustomerDashboard } from './pages/customer/Dashboard';
 import { SendParcelPage } from './pages/customer/SendParcelPage';

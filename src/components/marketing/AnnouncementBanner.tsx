@@ -7,14 +7,18 @@ export const AnnouncementBanner = () => {
 
     useEffect(() => {
         const fetch = async () => {
-            const all = await announcementRepository.getAll();
-            const active = all.find(a =>
-                !a.isDeleted &&
-                a.status === 'PUBLISHED' &&
-                new Date() >= new Date(a.startDate) &&
-                new Date() <= new Date(a.endDate)
-            );
-            if (active) setAnnouncement(active as Announcement);
+            try {
+                const all = await announcementRepository.getAll();
+                const active = all.find(a =>
+                    !a.isDeleted &&
+                    a.status === 'PUBLISHED' &&
+                    new Date() >= new Date(a.startDate) &&
+                    new Date() <= new Date(a.endDate)
+                );
+                if (active) setAnnouncement(active as Announcement);
+            } catch (err) {
+                console.warn("Failed to load announcement banner:", err);
+            }
         };
         fetch();
     }, []);

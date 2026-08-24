@@ -168,7 +168,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    refreshBootstrapStatus();
+    refreshBootstrapStatus().catch(err => {
+      console.warn("Error running refreshBootstrapStatus during AuthProvider init:", err);
+      setBootstrapNeeded(false);
+    });
 
     return () => {
       unsubscribeAuth();
