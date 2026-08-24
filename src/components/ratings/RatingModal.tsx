@@ -155,7 +155,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
           <div className="py-8 text-center space-y-3">
             <CheckCircle2 size={48} className="text-emerald-500 mx-auto animate-bounce" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Rating Submitted!</h3>
-            <p className="text-xs text-slate-500">Thank you for helping keep WeSabiHub transparent and reliable.</p>
+            <p className="text-xs text-slate-500">Thank you for helping keep OmorfiHub transparent and reliable.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">

@@ -192,7 +192,7 @@ export const BuyerSellerChat = () => {
       communicationService.logAdminAccess(
         currentUserId,
         activeConv.id,
-        activeConv.isDisputed ? 'Reviewing active WeSabiChat dispute evidence' : 'Audited WeSabiChat Compliance Access'
+        activeConv.isDisputed ? 'Reviewing active OmorfiHubChat dispute evidence' : 'Audited OmorfiHubChat Compliance Access'
       );
     }
 
@@ -317,7 +317,7 @@ export const BuyerSellerChat = () => {
           ) || null;
         }
 
-        if (!targetUser) throw new Error('User or parcel not found. Check the WeSabi username, email, or tracking number and try again.');
+        if (!targetUser) throw new Error('User or parcel not found. Check the OmorfiHub username, email, or tracking number and try again.');
         if (targetUser.uid === currentUserId) throw new Error('You cannot start a conversation with yourself.');
 
         let newConv;
@@ -612,7 +612,7 @@ export const BuyerSellerChat = () => {
             !!matchedShipment.protectionEnabled
           );
           setActiveConv(newConv);
-          toast.success(`Started WeSabiChat for shipment ${matchedShipment.trackingNumber}`);
+          toast.success(`Started OmorfiHubChat for shipment ${matchedShipment.trackingNumber}`);
           return;
         }
 
@@ -639,7 +639,7 @@ export const BuyerSellerChat = () => {
           );
 
           setActiveConv(newConv);
-          toast.success(`Started WeSabiChat with ${targetUser.displayName}`);
+          toast.success(`Started OmorfiHubChat with ${targetUser.displayName}`);
           return;
         }
 
@@ -666,7 +666,7 @@ export const BuyerSellerChat = () => {
           );
 
           setActiveConv(newConv);
-          toast.success(`Started WeSabiChat with ${matchedUser.displayName}`);
+          toast.success(`Started OmorfiHubChat with ${matchedUser.displayName}`);
           return;
         }
 
@@ -742,7 +742,7 @@ export const BuyerSellerChat = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold font-display dark:text-white flex items-center gap-2">
               <Sparkles className="text-primary-600" size={20} />
-              WeSabiChat
+              OmorfiHubChat
             </h2>
             <Button
               variant="outline"
@@ -771,7 +771,7 @@ export const BuyerSellerChat = () => {
         <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 custom-scrollbar">
           {filteredConversations.length === 0 ? (
             <div className="p-6 text-center text-slate-400 text-xs">
-              No conversations found. Start a WeSabiChat related to your protected shipments!
+              No conversations found. Start a OmorfiHubChat related to your protected shipments!
             </div>
           ) : (
             filteredConversations.map((c) => {
@@ -1071,9 +1071,9 @@ export const BuyerSellerChat = () => {
                     <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                       <Sparkles size={24} />
                     </div>
-                    <p className="text-xs font-bold dark:text-white">Premium WeSabiChat Active</p>
+                    <p className="text-xs font-bold dark:text-white">Premium OmorfiHubChat Active</p>
                     <p className="text-[10px] text-slate-500 leading-relaxed">
-                      Communicate inside WeSabiChat to preserve this thread as official protection evidence in case of discrepancies or disputes.
+                      Communicate inside OmorfiHubChat to preserve this thread as official protection evidence in case of discrepancies or disputes.
                     </p>
                   </div>
                 ) : (
@@ -1522,7 +1522,7 @@ export const BuyerSellerChat = () => {
                 <input
                   type="text"
                   disabled={activeConv.isDisputed}
-                  placeholder={activeConv.isDisputed ? "WeSabiChat frozen - read only evidence mode" : "Type your message securely..."}
+                  placeholder={activeConv.isDisputed ? "OmorfiHubChat frozen - read only evidence mode" : "Type your message securely..."}
                   className="flex-1 px-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-100 disabled:opacity-50 font-sans"
                   value={inputText}
                   onChange={handleInputChange}
@@ -1550,13 +1550,13 @@ export const BuyerSellerChat = () => {
               <Sparkles size={32} />
             </div>
             <div className="space-y-1 max-w-sm">
-              <h4 className="font-bold dark:text-white font-display">WeSabiChat Premium Comm Center</h4>
+              <h4 className="font-bold dark:text-white font-display">OmorfiHubChat Premium Comm Center</h4>
               <p className="text-xs text-slate-500 leading-relaxed">
                 Official communication platform for Buyers and Sellers. Discuss products, negotiate, and secure your transactions with immutable evidence logs.
               </p>
             </div>
             <Button onClick={() => setIsNewConvOpen(true)} className="rounded-xl bg-primary-600 hover:bg-primary-700">
-              Start WeSabiChat
+              Start OmorfiHubChat
             </Button>
           </div>
         )}
@@ -1566,8 +1566,8 @@ export const BuyerSellerChat = () => {
       <Modal
         isOpen={isNewConvOpen}
         onClose={() => setIsNewConvOpen(false)}
-        title="Start WeSabiChat Conversation"
-        description="Select a shipment tracking number or search for a WeSabi Username to initialize a secure official dialogue."
+        title="Start OmorfiHubChat Conversation"
+        description="Select a shipment tracking number or search for a OmorfiHub Username to initialize a secure official dialogue."
       >
         <div className="space-y-4">
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
@@ -1590,7 +1590,7 @@ export const BuyerSellerChat = () => {
             <p className="leading-relaxed">
               {newConvMode === 'SHIPMENT'
                 ? 'Shipment conversations are archived as official evidence for payment protection security.'
-                : 'Search by WeSabi username or email address. New conversations require the recipient to accept your chat request to prevent spam.'}
+                : 'Search by OmorfiHub username or email address. New conversations require the recipient to accept your chat request to prevent spam.'}
             </p>
           </div>
 
@@ -1612,7 +1612,7 @@ export const BuyerSellerChat = () => {
             </div>
           ) : (
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500">Search by WeSabi Username, Email, or Tracking Number</label>
+              <label className="text-xs font-bold text-slate-500">Search by OmorfiHub Username, Email, or Tracking Number</label>
               <Input
                 value={usernameSearch}
                 onChange={e => setUsernameSearch(e.target.value)}
@@ -1629,7 +1629,7 @@ export const BuyerSellerChat = () => {
               disabled={(newConvMode === 'SHIPMENT' ? !selectedParcelId : !usernameSearch) || loading}
               className="bg-primary-600 hover:bg-primary-700"
             >
-              {loading ? 'Creating...' : 'Initialize WeSabiChat'}
+              {loading ? 'Creating...' : 'Initialize OmorfiHubChat'}
             </Button>
           </div>
         </div>
@@ -1639,7 +1639,7 @@ export const BuyerSellerChat = () => {
       <Modal
         isOpen={isItemModalOpen}
         onClose={() => setIsItemModalOpen(false)}
-        title="WeSabiChat Item Specification"
+        title="OmorfiHubChat Item Specification"
         description="Attach official title, condition, and details of the item inside this conversation."
       >
         <form onSubmit={handleSaveItemInfo} className="space-y-4">
@@ -1720,8 +1720,8 @@ export const BuyerSellerChat = () => {
       <Modal
         isOpen={isDisputeModalOpen}
         onClose={() => setIsDisputeModalOpen(false)}
-        title="Open WeSabiChat Dispute"
-        description="WARNING: Filing a dispute will immediately freeze this thread as official read-only compliance evidence. WeSabiHub Customer Care team will receive full custody records."
+        title="Open OmorfiHubChat Dispute"
+        description="WARNING: Filing a dispute will immediately freeze this thread as official read-only compliance evidence. OmorfiHub Customer Care team will receive full custody records."
       >
         <form onSubmit={handleSubmitDispute} className="space-y-4">
           <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl flex gap-2.5 items-start text-[10px] text-amber-800 dark:text-amber-300">

@@ -13,7 +13,7 @@ export interface SystemError {
 }
 
 /**
- * WeSabiHub Monitoring Engine
+ * OmorfiHub Monitoring Engine
  * Responsible for authoritative production observability, error tracking, and alerting.
  */
 class MonitoringEngine {
@@ -106,7 +106,7 @@ class MonitoringEngine {
    */
   public async recordMetric(name: string, value: number, metadata: any = {}): Promise<void> {
     // In a real production environment, this might go to Prometheus/Cloud Monitoring
-    // For WeSabiHub, we use AuditEngine for low-volume metric storage
+    // For OmorfiHub, we use AuditEngine for low-volume metric storage
     if (value > 1000) { // Log slow operations (>1s)
       await auditEngine.logEvent({
         userId: 'SYSTEM',

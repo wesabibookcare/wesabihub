@@ -19,7 +19,7 @@ export const RULE_NAV_ITEMS = [
   { id: 'pricing', label: 'Pricing Rules', icon: DollarSign, href: '/admin/business-rules/pricing' },
   { id: 'commissions', label: 'Commission Rules', icon: Percent, href: '/admin/business-rules/commissions' },
   { id: 'payment-protection', label: 'Payment Protection Rules', icon: ShieldCheck, href: '/admin/business-rules/payment-protection' },
-  { id: 'points', label: 'WeSabiPoints Rules', icon: Zap, href: '/admin/business-rules/points' },
+  { id: 'points', label: 'OmorfiHubPoints Rules', icon: Zap, href: '/admin/business-rules/points' },
   { id: 'trust-score', label: 'Trust Score Rules', icon: Scale, href: '/admin/business-rules/trust-score' },
   { id: 'ranking', label: 'Search Ranking Rules', icon: TrendingUp, href: '/admin/business-rules/ranking' },
   { id: 'payouts', label: 'Payout Rules', icon: CreditCard, href: '/admin/business-rules/payouts' },

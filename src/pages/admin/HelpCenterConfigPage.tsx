@@ -29,8 +29,8 @@ interface HelpConfig {
 export const HelpCenterConfigPage = () => {
   const { fbUser } = useAuth();
   const [config, setConfig] = useState<HelpConfig>({
-    welcomeMessage: "Welcome to WeSabiHub.",
-    supportEmail: "support@wesabihub.com",
+    welcomeMessage: "Welcome to OmorfiHub.",
+    supportEmail: "support@omorfihub.com",
     emergencyPhone: "+234 (0) 800 000 0000",
     personaRotation: "Random Rotation",
     initialGreeting: "How can we help you today?",
@@ -126,7 +126,7 @@ export const HelpCenterConfigPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Help Center Management</h1>
-            <p className="text-sm font-medium text-slate-900 mt-1">Configure the customer support experience and live WeSabiAgent Customer Care personas.</p>
+            <p className="text-sm font-medium text-slate-900 mt-1">Configure the customer support experience and live OmorfiHubAgent Customer Care personas.</p>
           </div>
           <Button onClick={fetchData} variant="ghost" className="gap-2 shrink-0">
             <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} /> Refresh
@@ -191,7 +191,7 @@ export const HelpCenterConfigPage = () => {
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-slate-900 dark:text-white">Customer Care Personas</h2>
-                      <p className="text-xs text-slate-900">Manage the WeSabiAgent profiles that handle incoming support chats.</p>
+                      <p className="text-xs text-slate-900">Manage the OmorfiHubAgent profiles that handle incoming support chats.</p>
                     </div>
                   </div>
                   <Button onClick={handleAddNewPersona} size="sm" className="gap-1 rounded-lg">
@@ -322,7 +322,7 @@ export const HelpCenterConfigPage = () => {
                 >
                   <Save size={18} /> Save Configuration
                 </Button>
-                <p className="text-xs text-slate-900 text-center">Changes persist instantly to Firestore and take effect across WeSabiHub instantly.</p>
+                <p className="text-xs text-slate-900 text-center">Changes persist instantly to Firestore and take effect across OmorfiHub instantly.</p>
               </Card>
             </div>
           </div>

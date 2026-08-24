@@ -129,7 +129,7 @@ export const FindHubPointPage = () => {
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold dark:text-white font-display">Find WeSabiHub Point</h1>
+            <h1 className="text-3xl font-bold dark:text-white font-display">Find OmorfiHub Point</h1>
             <p className="text-slate-600 dark:text-slate-300">Locate the nearest verified center to send or receive your parcels.</p>
           </div>
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -322,7 +322,7 @@ export const FindHubPointPage = () => {
                             </div>
 
                             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between mt-6">
-                               <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{(hub as any).totalPoints || 0} WeSabiPoints</span>
+                               <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{(hub as any).totalPoints || 0} OmorfiHubPoints</span>
                                <Button size="sm" className="rounded-xl font-bold bg-primary-600 hover:bg-primary-700 h-9" onClick={() => {
                                   localStorage.setItem('selected_hub', JSON.stringify(hub));
                                   toast.success(`Selected "${hub.name}" as your active hub point!`);

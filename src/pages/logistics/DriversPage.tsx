@@ -438,7 +438,7 @@ export const DriversPage = () => {
                         {user?.companyName || 'Logistics Partner'}
                       </span>
                    </div>
-                   <div className="text-[10px] font-black uppercase tracking-widest text-slate-900">WeSabiHub</div>
+                   <div className="text-[10px] font-black uppercase tracking-widest text-slate-900">OmorfiHub</div>
                 </div>
 
                 <div className="w-32 h-32 rounded-[2rem] border-4 border-white/10 overflow-hidden mb-6 relative z-10 shadow-2xl">

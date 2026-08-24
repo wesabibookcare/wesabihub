@@ -794,7 +794,7 @@ export const SendParcelPage = () => {
              <div className="space-y-4">
                 {[
                   { id: 'BANK', label: 'Bank Transfer', sub: 'Instant bank-to-bank verification via Paystack', active: true },
-                  { id: 'WALLET', label: 'WeSabiHub Wallet', sub: 'Pay directly from your wallet balance', active: true },
+                  { id: 'WALLET', label: 'OmorfiHub Wallet', sub: 'Pay directly from your wallet balance', active: true },
                   { id: 'CARD', label: 'Credit / Debit Card', sub: 'Temporarily disabled for normal platform payments', active: false },
                 ].map((method) => {
                   const isSelected = selectedMethod === method.id;
@@ -903,7 +903,7 @@ export const SendParcelPage = () => {
                   Merchant Account Required to Send Parcels
                 </h2>
                 <p className="text-sm text-amber-800 dark:text-amber-400 leading-relaxed">
-                  Individual Customers on WeSabiHub are restricted from creating or sending shipments directly to ensure legal accountability, parcel safety, and SafePay protection. To send parcels, please apply for a Merchant account and complete identity verification.
+                  Individual Customers on OmorfiHub are restricted from creating or sending shipments directly to ensure legal accountability, parcel safety, and SafePay protection. To send parcels, please apply for a Merchant account and complete identity verification.
                 </p>
                 <div className="pt-2 flex flex-wrap gap-3">
                   <Button asChild className="rounded-xl shadow-md">
@@ -981,7 +981,7 @@ export const SendParcelPage = () => {
           isOpen={isCalendarModalOpen}
           onClose={() => setIsCalendarModalOpen(false)}
           defaultEvent={{
-            summary: `WeSabiHub Parcel Drop-off Reminder: ${formData.trackingNumber || 'Pending'}`,
+            summary: `OmorfiHub Parcel Drop-off Reminder: ${formData.trackingNumber || 'Pending'}`,
             description: `Please take your parcel to ${formData.dropOffHubName || 'selected drop-off hub'} and present reference ${formData.trackingNumber || 'code'}. Recipient: ${formData.recipientName} (${formData.recipientPhone}).`,
             startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
             endTime: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),

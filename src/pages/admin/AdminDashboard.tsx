@@ -182,7 +182,7 @@ export const AdminDashboard = () => {
               Platform Command
             </h1>
             <p className="text-slate-900 font-medium mt-1">
-              Global monitoring and administrative control for WeSabiHub Ecosystem.
+              Global monitoring and administrative control for OmorfiHub Ecosystem.
             </p>
           </div>
 

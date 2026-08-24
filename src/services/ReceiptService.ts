@@ -91,11 +91,11 @@ class ReceiptService {
 
     // Set document properties
     doc.setProperties({
-      title: `WeSabiHub Receipt - ${receipt.receiptId}`,
+      title: `OmorfiHub Receipt - ${receipt.receiptId}`,
       subject: 'Transaction Receipt',
-      author: 'WeSabiHub Platform',
+      author: 'OmorfiHub Platform',
       keywords: 'logistics, SafePay, receipt',
-      creator: 'WeSabiHub System'
+      creator: 'OmorfiHub System'
     });
 
     // 1. Draw Background Watermarks & Header Line
@@ -231,9 +231,9 @@ class ReceiptService {
     doc.setFont('Helvetica', 'normal');
     doc.setTextColor(100, 116, 139);
     const verifyText = [
-      'Each intake or release of a package on WeSabiHub generates an immutable proof of custody.',
+      'Each intake or release of a package on OmorfiHub generates an immutable proof of custody.',
       'Scan the secure QR Code on the right with any smartphone to instantly verify that this receipt is',
-      'authentic and matches our official records stored securely on WeSabiHub\'s Firestore databases.',
+      'authentic and matches our official records stored securely on OmorfiHub\'s Firestore databases.',
       '',
       `Secure Verification Token: ${receipt.verificationToken}`
     ];
@@ -258,9 +258,9 @@ class ReceiptService {
     doc.setFont('Helvetica', 'normal');
     doc.setTextColor(148, 163, 184); // Slate 400
     const disclaimer = [
-      'WeSabiHub Logistics & SafePay Services Co. ensures complete protection for both buyers and sellers.',
+      'OmorfiHub Logistics & SafePay Services Co. ensures complete protection for both buyers and sellers.',
       'This document is computer-generated and electronically certified. No physical signature is required to assert validity.',
-      'For issues or inquiries regarding this shipment, contact WeSabiHub Support or open the Dispute Resolution Desk.'
+      'For issues or inquiries regarding this shipment, contact OmorfiHub Support or open the Dispute Resolution Desk.'
     ];
     doc.text(disclaimer, 15, 262);
 
@@ -269,7 +269,7 @@ class ReceiptService {
     doc.text('WESABIHUB.COM • TRUSTED EVERYWHERE', 15, 282);
 
     // Trigger download
-    doc.save(`WeSabiHub_Receipt_${receipt.receiptId}.pdf`);
+    doc.save(`OmorfiHub_Receipt_${receipt.receiptId}.pdf`);
   }
 }
 

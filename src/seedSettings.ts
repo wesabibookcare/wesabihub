@@ -6,18 +6,18 @@ export const seedInitialSettings = async () => {
   if (existing) return;
 
   const initialSettings: Omit<SystemSettings, 'id'> = {
-    platformName: 'WeSabiHub',
+    platformName: 'OmorfiHub',
     tagline: 'Seamless Logistics for Everyone',
-    supportEmail: 'support@wesabihub.com',
+    supportEmail: 'support@omorfihub.com',
     supportPhone: '+234 123 456 7890',
     socialLinks: {
-      facebook: 'https://facebook.com/wesabihub',
-      twitter: 'https://twitter.com/wesabihub',
-      instagram: 'https://instagram.com/wesabihub',
-      linkedin: 'https://linkedin.com/company/wesabihub',
+      facebook: 'https://facebook.com/omorfihub',
+      twitter: 'https://twitter.com/omorfihub',
+      instagram: 'https://instagram.com/omorfihub',
+      linkedin: 'https://linkedin.com/company/omorfihub',
       whatsapp: 'https://wa.me/2341234567890',
-      telegram: 'https://t.me/wesabihub',
-      website: 'https://wesabihub.com'
+      telegram: 'https://t.me/omorfihub',
+      website: 'https://omorfihub.com'
     },
     branding: {
       logoUrl: '/assets/brand/official-logo.png',
@@ -50,7 +50,7 @@ export const seedInitialSettings = async () => {
         buttonText: 'Join Now',
         buttonLink: '/register'
       },
-      aboutUsText: 'WeSabiHub is the trusted Pick-Up & Drop-Off (PUDO) network, connecting millions through a secure platform of verified neighborhood centers.',
+      aboutUsText: 'OmorfiHub is the trusted Pick-Up & Drop-Off (PUDO) network, connecting millions through a secure platform of verified neighborhood centers.',
       descriptions: {
         networkSummary: 'A nationwide network of local businesses serving as secure parcel hubs.',
         merchantValueProp: 'Expand your reach without increasing your logistics costs.',
@@ -68,12 +68,12 @@ export const seedInitialSettings = async () => {
         { id: '3', label: 'Satisfied Users', value: '500k+', order: 3 }
       ],
       testimonials: [
-        { id: '1', name: 'Chidi O.', role: 'Merchant', content: 'WeSabiHub has transformed how I deliver to my customers.' }
+        { id: '1', name: 'Chidi O.', role: 'Merchant', content: 'OmorfiHub has transformed how I deliver to my customers.' }
       ]
     },
     footer: {
-      aboutText: 'WeSabiHub is the trusted Pick-Up & Drop-Off (PUDO) network.',
-      copyrightNotice: '© 2026 WeSabiHub. All rights reserved.',
+      aboutText: 'OmorfiHub is the trusted Pick-Up & Drop-Off (PUDO) network.',
+      copyrightNotice: '© 2026 OmorfiHub. All rights reserved.',
       links: [
         { id: '1', label: 'About Us', href: '/about', category: 'COMPANY', enabled: true, order: 1 },
         { id: '2', label: 'How It Works', href: '/how-it-works', category: 'COMPANY', enabled: true, order: 2 },
@@ -133,14 +133,14 @@ export const seedInitialSettings = async () => {
       allowedPaymentMethods: ['BANK_TRANSFER', 'WALLET']
     },
     contactInfo: {
-      supportEmail: 'support@wesabihub.com',
+      supportEmail: 'support@omorfihub.com',
       supportPhone: '+234 123 456 7890',
       whatsapp: '+234 123 456 7890',
-      address: 'WeSabiHub HQ, Lagos, Nigeria',
+      address: 'OmorfiHub HQ, Lagos, Nigeria',
       workingHours: 'Mon-Fri 9AM-6PM, Sat 10AM-2PM'
     },
     companyPages: {
-      aboutUs: '# About WeSabiHub\n\nWe are the trusted PUDO network.',
+      aboutUs: '# About OmorfiHub\n\nWe are the trusted PUDO network.',
       howItWorks: '# How It Works\n\nDrop off. Pick up. Simple.',
       solutions: '# Our Solutions\n\nEnd-to-end logistics infrastructure.',
       merchants: '# For Merchants\n\nScale your business.',

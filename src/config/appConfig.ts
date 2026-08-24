@@ -5,7 +5,7 @@
  * and makes it easier to support multi-country deployments.
  */
 export const APP_CONFIG = {
-  NAME: 'WeSabiHub',
+  NAME: 'OmorfiHub',
   VERSION: '1.0.0',
   DEFAULT_COUNTRY: 'Nigeria',
   DEFAULT_CURRENCY: 'NGN',

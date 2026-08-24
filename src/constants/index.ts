@@ -1,6 +1,6 @@
 
 /**
- * Shared constants for the WeSabiHub platform.
+ * Shared constants for the OmorfiHub platform.
  */
 
 export const PARCEL_STATUSES = {

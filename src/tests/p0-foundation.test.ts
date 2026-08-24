@@ -74,12 +74,12 @@ async function runP0Tests() {
   // 3. FINANCIAL DOMAIN SEPARATION & SAFEPAY
   // --------------------------------------------------
   console.log('\n--- 3. FINANCIAL DOMAIN SEPARATION TESTS ---');
-  // SafePay money must never enter internal WeSabiHub wallet balance
+  // SafePay money must never enter internal OmorfiHub wallet balance
   const { paymentProtectionEngine } = await import('../services/PaymentProtectionEngine');
   assert(
     typeof paymentProtectionEngine.securePayment === 'function' &&
     typeof paymentProtectionEngine.releasePayment === 'function',
-    'PaymentProtectionEngine operates without transferring funds into internal WeSabiHub wallets'
+    'PaymentProtectionEngine operates without transferring funds into internal OmorfiHub wallets'
   );
 
   // --------------------------------------------------

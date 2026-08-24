@@ -8,10 +8,10 @@ export const TermsOfServicePage = () => {
   const [loading, setLoading] = useState(true);
 
   const defaultText = `1. Agreement to Terms
-By accessing or using the WeSabiHub platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+By accessing or using the OmorfiHub platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
 
 2. Service Description
-WeSabiHub provides a Pick-Up & Drop-Off network service. We facilitate the movement of parcels between our Hub Partners using Logistics Partners. We are not a direct carrier but an orchestrator of logistics services.
+OmorfiHub provides a Pick-Up & Drop-Off network service. We facilitate the movement of parcels between our Hub Partners using Logistics Partners. We are not a direct carrier but an orchestrator of logistics services.
 
 3. User Obligations
 When using our services, you agree:
@@ -21,10 +21,10 @@ When using our services, you agree:
 - To comply with all applicable laws and regulations
 
 4. Hub and Logistics Partners
-Hub Partners are independent businesses verified by WeSabiHub. Logistics Partners are independent fleet owners. While we verify these partners, WeSabiHub is not responsible for their individual conduct beyond our platform's operating procedures.
+Hub Partners are independent businesses verified by OmorfiHub. Logistics Partners are independent fleet owners. While we verify these partners, OmorfiHub is not responsible for their individual conduct beyond our platform's operating procedures.
 
 5. Liability and Insurance
-WeSabiHub provides limited coverage for lost or damaged parcels as per our Compensation Policy. Users are encouraged to declare the true value of items. Our liability is limited to the extent permitted by Nigerian law.
+OmorfiHub provides limited coverage for lost or damaged parcels as per our Compensation Policy. Users are encouraged to declare the true value of items. Our liability is limited to the extent permitted by Nigerian law.
 
 6. Governing Law
 These terms are governed by and construed in accordance with the laws of the Federal Republic of Nigeria.`;

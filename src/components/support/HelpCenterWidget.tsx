@@ -36,7 +36,7 @@ export const HelpCenterWidget = () => {
   const { settings } = useSettings();
   const brandColor = settings?.branding?.primaryColor || '#2563eb';
   // "Omorfi" (the AI-powered views) are themed with the parent company's
-  // (Omorfi) brand identity, distinct from WeSabiHub's own color elsewhere.
+  // (Omorfi) brand identity, distinct from OmorfiHub's own color elsewhere.
   const OMORFI_COLOR = settings?.aiBranding?.primaryColor || '#c93f25';
   const OMORFI_LOGO_URL = settings?.aiBranding?.logo || settings?.omorfiLogo || '/assets/brand/omorfi-logo.png';
   const AI_NAME = settings?.aiBranding?.name || 'Omorfi';
@@ -73,7 +73,7 @@ export const HelpCenterWidget = () => {
 
   // Dynamic widget configuration loaded from DB
   const [widgetConfig, setWidgetConfig] = useState({
-    welcomeMessage: "Welcome to WeSabiHub.",
+    welcomeMessage: "Welcome to OmorfiHub.",
     initialGreeting: "How can we help you today?",
     retrievalDelayMessage: "Please wait while we check that for you..."
   });
@@ -445,7 +445,7 @@ export const HelpCenterWidget = () => {
                   </div>
                 ) : (
                   <div>
-                    <h3 className="font-bold font-display text-lg">{settings?.platformName || 'WeSabiHub'} Help Center</h3>
+                    <h3 className="font-bold font-display text-lg">{settings?.platformName || 'OmorfiHub'} Help Center</h3>
                     <p className="text-xs text-primary-100">{widgetConfig.welcomeMessage}</p>
                   </div>
                 )}
@@ -884,7 +884,7 @@ export const HelpCenterWidget = () => {
                         <img src={generatedImageUrl} alt="Generated Layout" className="rounded-lg shadow-sm max-w-full mx-auto border" />
                         <a
                           href={generatedImageUrl}
-                          download={`wesabihub-ai-${Date.now()}.png`}
+                          download={`omorfihub-ai-${Date.now()}.png`}
                           className="inline-flex items-center gap-2 text-xs font-bold text-purple-600 hover:underline"
                         >
                           <ArrowDown className="w-4 h-4" /> Download Design
@@ -937,7 +937,7 @@ export const HelpCenterWidget = () => {
               {settings?.branding?.appIconUrl || settings?.branding?.logoUrl ? (
                 <img
                   src={settings.branding.appIconUrl || settings.branding.logoUrl}
-                  alt={settings?.platformName || 'WeSabiHub'}
+                  alt={settings?.platformName || 'OmorfiHub'}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />

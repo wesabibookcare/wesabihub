@@ -4,7 +4,7 @@ import { walletRepository } from '../services/db/FinancialRepository';
 import { userRepository } from '../services/db/UserRepository';
 
 /**
- * WeSabiHub Intelligence Engine
+ * OmorfiHub Intelligence Engine
  * Handles non-blocking event processing for AI, analytics, and fraud detection.
  */
 class IntelligenceEngine {

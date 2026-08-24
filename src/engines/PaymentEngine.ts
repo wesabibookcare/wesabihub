@@ -14,7 +14,7 @@ import { platformPaymentRepository } from '../services/db/PlatformPaymentReposit
 import { paymentMethodRepository } from '../services/db/PaymentMethodRepository';
 
 /**
- * WeSabiHub Payment & Wallet Engine
+ * OmorfiHub Payment & Wallet Engine
  * Authoritative source for payouts, settlements, wallets, and payment protection.
  */
 class PaymentEngine {
@@ -544,7 +544,7 @@ class PaymentEngine {
   }
 
   /**
-   * Refund Logistics Delivery Charge & Reverse WeSabiHub Logistics Margin
+   * Refund Logistics Delivery Charge & Reverse OmorfiHub Logistics Margin
    */
   async refundLogisticsChargeWithMarginReversal(parcelId: string, deliveryCharge: number, wesabiLogisticsMargin: number, userId: string): Promise<any> {
     const providerRefundAmount = Math.max(0, deliveryCharge - wesabiLogisticsMargin);

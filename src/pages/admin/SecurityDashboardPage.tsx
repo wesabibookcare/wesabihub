@@ -481,7 +481,7 @@ export const SecurityDashboardPage = () => {
                   { name: 'Vite Development Server', port: '3000', status: 'Operational', latency: '2ms', health: 100 },
                   { name: 'Firestore Cloud Ingress', port: '443', status: 'Optimal', latency: '42ms', health: 100 },
                   { name: 'Firebase Authentication Router', port: '443', status: 'Optimal', latency: '21ms', health: 100 },
-                  { name: 'WeSabiHub Points Engine', port: 'Internal', status: 'Active', latency: '12ms', health: 100 },
+                  { name: 'OmorfiHub Points Engine', port: 'Internal', status: 'Active', latency: '12ms', health: 100 },
                   { name: 'SafePay Ledger Pipeline', port: 'Internal', status: 'Active', latency: '8ms', health: 100 },
                   { name: 'Audit Logging Microservice', port: 'Internal', status: 'Operational', latency: '1ms', health: 100 },
                   { name: 'Commission Rules Evaluator', port: 'Internal', status: 'Optimal', latency: '3ms', health: 100 },

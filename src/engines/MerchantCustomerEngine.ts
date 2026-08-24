@@ -6,7 +6,7 @@ import { auditEngine } from './AuditEngine';
 import { monitoringEngine } from './MonitoringEngine';
 
 /**
- * WeSabiHub Merchant Customer Engine
+ * OmorfiHub Merchant Customer Engine
  * Aggregates and manages customer relationships for Merchants.
  */
 class MerchantCustomerEngine {
@@ -113,7 +113,7 @@ class MerchantCustomerEngine {
   }
 
   /**
-   * Fetches the actual User object if they are registered on WeSabiHub
+   * Fetches the actual User object if they are registered on OmorfiHub
    */
   async getLinkedUser(phone: string): Promise<User | null> {
     return await userRepository.getByPhone(phone);

@@ -501,7 +501,7 @@ export const CreateShipmentPage = () => {
                       <div className="space-y-3">
                          <h4 className="text-sm font-bold dark:text-white flex items-center gap-2">
                             <Building2 size={16} className="text-primary-600" />
-                            Pickup WeSabiHub Point
+                            Pickup OmorfiHub Point
                          </h4>
                          <div className="relative">
                             <select
@@ -518,13 +518,13 @@ export const CreateShipmentPage = () => {
                                <MapPin size={18} />
                             </div>
                          </div>
-                         <p className="text-[11px] text-slate-500">This is the WeSabiHub Point where you'll drop off the parcel.</p>
+                         <p className="text-[11px] text-slate-500">This is the OmorfiHub Point where you'll drop off the parcel.</p>
                       </div>
 
                       <div className="space-y-3">
                          <h4 className="text-sm font-bold dark:text-white flex items-center gap-2">
                             <MapPin size={16} className="text-indigo-600" />
-                            Destination WeSabiHub Point
+                            Destination OmorfiHub Point
                          </h4>
                          <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-900" size={18} />
@@ -682,7 +682,7 @@ export const CreateShipmentPage = () => {
                       <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800">
                          <AlertCircle className="text-blue-600 shrink-0" size={18} />
                          <p className="text-[10px] text-blue-600 leading-relaxed font-medium">
-                            By clicking "Confirm & Create", you agree to WeSabiHub's Terms of Service and confirm the parcel does not contain prohibited items.
+                            By clicking "Confirm & Create", you agree to OmorfiHub's Terms of Service and confirm the parcel does not contain prohibited items.
                          </p>
                       </div>
                    </div>
@@ -735,7 +735,7 @@ export const CreateShipmentPage = () => {
           isOpen={isCalendarModalOpen}
           onClose={() => setIsCalendarModalOpen(false)}
           defaultEvent={{
-            summary: `WeSabiHub Parcel Dispatch Reminder: ${createdParcel?.trackingNumber || 'Pending'}`,
+            summary: `OmorfiHub Parcel Dispatch Reminder: ${createdParcel?.trackingNumber || 'Pending'}`,
             description: `Dispatch parcel tracking ID: ${createdParcel?.trackingNumber || 'Pending'}. Destination hub: ${hubs.find(h => h.id === createdParcel?.destinationCenterId)?.name || createdParcel?.destinationCenterId || 'Hub'}. Recipient: ${formData.recipientName} (${formData.recipientPhone}).`,
             startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
             endTime: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),

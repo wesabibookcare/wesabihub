@@ -85,7 +85,7 @@ export const SettingsPage = () => {
       title: 'Integration',
       icon: Globe,
       settings: [
-        { title: 'Mobile App', desc: 'Sync with WeSabiHub Go', icon: Smartphone },
+        { title: 'Mobile App', desc: 'Sync with OmorfiHub Go', icon: Smartphone },
         { title: 'Data Export', desc: 'Schedule automated reports', icon: Database },
       ]
     }

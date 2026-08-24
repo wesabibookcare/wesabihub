@@ -11,7 +11,7 @@ import { webhookLogRepository } from '../services/db/WebhookLogRepository';
 import { conversationRepository } from '../services/db/ConversationRepository';
 
 /**
- * WeSabiHub Notification Engine
+ * OmorfiHub Notification Engine
  * Sole entry point for all platform communications.
  * No page should send notifications directly.
  */
@@ -258,7 +258,7 @@ class NotificationEngine {
       title,
       message: body,
       actorId: 'SYSTEM',
-      actorName: 'WeSabiHub Engine',
+      actorName: 'OmorfiHub Engine',
       actorRole: 'SUPER_ADMIN',
       visibleToRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'VERIFICATION_OFFICER']
     });
@@ -293,7 +293,7 @@ class NotificationEngine {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'User-Agent': 'WeSabiHub-Webhook-Bot/1.0'
+                'User-Agent': 'OmorfiHub-Webhook-Bot/1.0'
             },
             body: JSON.stringify(webhookPayload),
             signal: controller.signal as any

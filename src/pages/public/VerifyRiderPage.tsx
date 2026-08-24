@@ -42,7 +42,7 @@ export const VerifyRiderPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
         <Loader2 className="animate-spin text-primary-600 mb-4" size={48} />
-        <p className="font-bold text-slate-800">Retrieving WeSabi Trust Ledger...</p>
+        <p className="font-bold text-slate-800">Retrieving OmorfiHub Trust Ledger...</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const VerifyRiderPage = () => {
           <div className="space-y-2">
             <h3 className="text-2xl font-black text-slate-900">Rider ID Not Found</h3>
             <p className="text-sm text-slate-900 leading-relaxed font-medium">
-              The credentials or scanned QR link do not match an active record on the WeSabiDispatch Trust Network. Do not hand over high-value packages.
+              The credentials or scanned QR link do not match an active record on the OmorfiHubDispatch Trust Network. Do not hand over high-value packages.
             </p>
           </div>
           <Button asChild className="w-full">
@@ -83,7 +83,7 @@ export const VerifyRiderPage = () => {
           <div className="w-12 h-12 bg-primary-600 text-white rounded-2xl flex items-center justify-center font-black text-xl mx-auto mb-3">
             WS
           </div>
-          <h2 className="font-black text-xl text-slate-950 dark:text-white">WeSabi Trust Ledger</h2>
+          <h2 className="font-black text-xl text-slate-950 dark:text-white">OmorfiHub Trust Ledger</h2>
           <p className="text-xs text-slate-800 font-bold uppercase tracking-wider mt-1">Direct Field-Verification Gateway</p>
         </div>
 
@@ -173,7 +173,7 @@ export const VerifyRiderPage = () => {
 
       {/* Footer */}
       <div className="text-center pt-8">
-        <p className="text-xs text-slate-800 font-semibold">© 2026 WeSabiHub Trust Ledger. All rights reserved.</p>
+        <p className="text-xs text-slate-800 font-semibold">© 2026 OmorfiHub Trust Ledger. All rights reserved.</p>
       </div>
 
     </div>

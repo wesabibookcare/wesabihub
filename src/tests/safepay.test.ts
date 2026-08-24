@@ -33,10 +33,10 @@ async function runSafePayTests() {
     assert(false, `Role test failed: ${e.message}`);
   }
 
-  // 2. Logistics Independence Test: SafePay can exist without WeSabiHub logistics
+  // 2. Logistics Independence Test: SafePay can exist without OmorfiHub logistics
   try {
     const logisticsChoices = ['NONE', 'WESABIHUB_HUB', 'WESABIHUB_RIDER', 'EXTERNAL_COURIER', 'SELLER_DELIVERY', 'BUYER_PICKUP'];
-    assert(logisticsChoices.includes('NONE') && logisticsChoices.includes('EXTERNAL_COURIER'), 'SafePay supports independent logistics choices without forcing WeSabiHub logistics');
+    assert(logisticsChoices.includes('NONE') && logisticsChoices.includes('EXTERNAL_COURIER'), 'SafePay supports independent logistics choices without forcing OmorfiHub logistics');
   } catch (e: any) {
     assert(false, `Logistics independence test failed: ${e.message}`);
   }
@@ -68,7 +68,7 @@ async function runSafePayTests() {
         contents: 'Complete package',
         serialImei: 'Not required',
         packaging: 'Seller packaging',
-        delivery: 'WeSabiHub Hub',
+        delivery: 'OmorfiHub Hub',
         inspection: 'Standard SafePay inspection',
         defectDefinition: 'Item does not function as described'
       },
@@ -108,7 +108,7 @@ async function runSafePayTests() {
       await paymentEngine.initiateExternalPayment({
         amount: 50000,
         currency: 'NGN',
-        email: 'test@wesabihub.com',
+        email: 'test@omorfihub.com',
         reference: 'WSH-TX-TEST-001',
         paymentType: 'SAFEPAY'
       });
@@ -138,7 +138,7 @@ async function runSafePayTests() {
   // 6. Zero Wallet Leakage Test: SafePay funds never enter internal wallet balances
   try {
     const mockWallet = { balance: 0, pendingBalance: 0, SafePayBalance: 0 };
-    assert(mockWallet.balance === 0 && mockWallet.pendingBalance === 0, 'SafePay funds do not mutate internal WeSabiHub wallet balances');
+    assert(mockWallet.balance === 0 && mockWallet.pendingBalance === 0, 'SafePay funds do not mutate internal OmorfiHub wallet balances');
   } catch (e: any) {
     assert(false, `Zero wallet leakage test failed: ${e.message}`);
   }

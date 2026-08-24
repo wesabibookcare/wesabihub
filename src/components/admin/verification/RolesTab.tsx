@@ -525,7 +525,7 @@ export const RolesTab: React.FC = () => {
                     />
                     <div>
                       <p className="font-bold text-slate-800">Assign Mandatory Training Course</p>
-                      <p className="text-[9px] text-slate-400">Rider/Driver must pass WeSabiAcademy course before activation.</p>
+                      <p className="text-[9px] text-slate-400">Rider/Driver must pass OmorfiHubAcademy course before activation.</p>
                     </div>
                   </label>
                 </div>

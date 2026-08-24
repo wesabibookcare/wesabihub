@@ -256,7 +256,7 @@ export const PaymentProtectionPage = () => {
                     </div>
                     <div className="flex gap-3">
                        <div className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">4</div>
-                       <p className="text-xs text-slate-800 leading-relaxed">Once the customer accepts, funds are released to your WeSabiHub Wallet.</p>
+                       <p className="text-xs text-slate-800 leading-relaxed">Once the customer accepts, funds are released to your OmorfiHub Wallet.</p>
                     </div>
                  </div>
               </Card>
@@ -286,7 +286,7 @@ export const PaymentProtectionPage = () => {
               {/* Infrastructure Note */}
               <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
                  <p className="text-[10px] text-slate-800 leading-relaxed">
-                    Payment infrastructure provided by verified global partners. WeSabiHub ensures the integrity of the secure payment protection lifecycle for every transaction.
+                    Payment infrastructure provided by verified global partners. OmorfiHub ensures the integrity of the secure payment protection lifecycle for every transaction.
                  </p>
               </div>
            </div>

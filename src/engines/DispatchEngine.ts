@@ -3,7 +3,7 @@ import { userRepository } from '../services/db/UserRepository';
 import { auditEngine, notificationEngine } from './index';
 
 /**
- * WeSabiHub Dispatch Engine
+ * OmorfiHub Dispatch Engine
  * Manages Dispatch Riders, Fleet, and Delivery Assignments.
  */
 class DispatchEngine {

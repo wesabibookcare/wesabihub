@@ -328,7 +328,7 @@ fetchedRules.sort((a, b) => b.version - a.version);
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">WeSabiHub Share %</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">OmorfiHub Share %</label>
                         <input
                           type="number"
                           disabled

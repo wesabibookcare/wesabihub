@@ -65,7 +65,7 @@ export const ProfilePage = () => {
     setIsSaving(true);
     try {
       if (!wesabiUsername) {
-        throw new Error('WeSabi Username is required.');
+        throw new Error('OmorfiHub Username is required.');
       }
 
       let formattedUsername = wesabiUsername.trim().replace(/^@/, '');
@@ -86,7 +86,7 @@ export const ProfilePage = () => {
       // Query uniqueness
       const existing = await userEngine.getByUsername(formattedUsername);
       if (existing && existing.uid !== user.uid) {
-        throw new Error('This WeSabi Username is already taken.');
+        throw new Error('This OmorfiHub Username is already taken.');
       }
 
       // Log the profile audit changes
@@ -237,7 +237,7 @@ export const ProfilePage = () => {
                            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="h-10 text-sm font-black" />
                         </div>
                         <div>
-                           <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">WeSabi Username</label>
+                           <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">OmorfiHub Username</label>
                            <Input
                               value={wesabiUsername}
                               onChange={(e) => setWesabiUsername(e.target.value)}
@@ -276,7 +276,7 @@ export const ProfilePage = () => {
                            </div>
                         </div>
                         <div>
-                           <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">WeSabi Username</label>
+                           <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">OmorfiHub Username</label>
                            <div className="flex items-center gap-3">
                               <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-800">
                                  <AtSign size={18} />

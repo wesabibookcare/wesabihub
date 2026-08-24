@@ -146,7 +146,7 @@ export const PlatformOperationsPage = () => {
   // Pre-fill templates for Dispatch Riders Recruitment
   const applyAnnouncementTemplate = () => {
     setAnnForm({
-      title: "We're Hiring! Become an Independent WeSabiDispatch Rider",
+      title: "We're Hiring! Become an Independent OmorfiHubDispatch Rider",
       body: "Earn over ₦250,000 monthly, operate dynamic inter-hub delivery routes, claim secure SafePay-held payments immediately, and complete academy courses to raise your Trust Score.",
       imageUrl: "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&q=80",
       buttonText: "Apply Now",
@@ -161,7 +161,7 @@ export const PlatformOperationsPage = () => {
 
   const applyAdTemplate = () => {
     setAdForm({
-      headline: "Fulfill Shipments with WeSabiDispatch",
+      headline: "Fulfill Shipments with OmorfiHubDispatch",
       description: "Automate last-mile courier fulfillment with certified, high-trust dispatch riders. Features secure SafePay payments and dynamic scanning verification.",
       imageUrl: "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&q=80",
       destinationUrl: "/merchant-solutions",
@@ -536,7 +536,7 @@ export const PlatformOperationsPage = () => {
         {
           id: 'doc_guarantor',
           name: 'Guarantor Form',
-          description: 'Completed and signed WeSabiHub guarantor attestation letter',
+          description: 'Completed and signed OmorfiHub guarantor attestation letter',
           isRequired: true,
           applicableRoles: ['DISPATCH_RIDER', 'DRIVER'],
           applicableCountries: ['ALL'],

@@ -15,7 +15,7 @@ import {
 } from '../types';
 
 /**
- * WeSabiHub Configuration Engine
+ * OmorfiHub Configuration Engine
  * Authoritative source for platform settings, rules, and localization.
  */
 class ConfigurationEngine {

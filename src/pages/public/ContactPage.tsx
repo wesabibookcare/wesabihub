@@ -13,7 +13,7 @@ export const ContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const countryName = settings?.localization?.countryName || settings?.defaultCountry || 'Nigeria';
-  const email = settings?.contactEmail || 'hello@wesabihub.com';
+  const email = settings?.contactEmail || 'hello@omorfihub.com';
   const phone = settings?.contactPhone || '+234 800 WESABI';
   const address = settings?.contactAddress || 'Victoria Island, Lagos, Nigeria';
 

@@ -73,7 +73,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('wesabihub_sidebar_collapsed');
+      const saved = localStorage.getItem('omorfihub_sidebar_collapsed');
       return saved === 'true';
     }
     return false;
@@ -132,7 +132,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     if (isLaptop) {
       setIsCollapsed(true);
     } else if (isDesktop) {
-      const saved = localStorage.getItem('wesabihub_sidebar_collapsed');
+      const saved = localStorage.getItem('omorfihub_sidebar_collapsed');
       setIsCollapsed(saved === 'true');
     }
   }, [isLaptop, isDesktop]);
@@ -141,7 +141,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     const newValue = !isCollapsed;
     setIsCollapsed(newValue);
     if (isDesktop) {
-      localStorage.setItem('wesabihub_sidebar_collapsed', String(newValue));
+      localStorage.setItem('omorfihub_sidebar_collapsed', String(newValue));
     }
   };
 

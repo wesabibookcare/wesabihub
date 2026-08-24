@@ -19,7 +19,7 @@ Priority: ${priority}
 
 ${message}
 
-_WeSabiHub Operations Centre_
+_OmorfiHub Operations Centre_
       `.trim();
 
       await notificationEngine.sendTelegram('SYSTEM_ALERT', title, telegramMessage, 'SECURITY');

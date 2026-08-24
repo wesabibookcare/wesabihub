@@ -121,7 +121,7 @@ export const LoginPage: React.FC = () => {
           Welcome Back
         </h2>
         <p className="mt-2 text-center text-sm text-slate-200 font-medium drop-shadow">
-          Sign in to your WeSabiHub account
+          Sign in to your OmorfiHub account
         </p>
       </div>
 
@@ -265,7 +265,7 @@ export const LoginPage: React.FC = () => {
                   <div className="w-full border-t border-slate-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-slate-900 font-black uppercase tracking-widest text-[10px]">New to WeSabiHub?</span>
+                  <span className="px-4 bg-white text-slate-900 font-black uppercase tracking-widest text-[10px]">New to OmorfiHub?</span>
                 </div>
               </div>
 

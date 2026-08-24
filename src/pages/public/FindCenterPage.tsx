@@ -91,7 +91,7 @@ export const FindCenterPage = () => {
             <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
               <div className="space-y-4">
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white font-display">Find a Hub</h1>
-                <p className="text-slate-600 dark:text-slate-300">Explore WeSabiHub pre-launch demo centers across the nation.</p>
+                <p className="text-slate-600 dark:text-slate-300">Explore OmorfiHub pre-launch demo centers across the nation.</p>
               </div>
 
               <Card className="p-6 space-y-6 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200/50 dark:border-amber-900/30">
@@ -100,7 +100,7 @@ export const FindCenterPage = () => {
                   <div>
                     <h4 className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">Developer Sandbox Notice</h4>
                     <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
-                      These locations represent development seed centers created for simulation and testing of the WeSabiHub workflow engine.
+                      These locations represent development seed centers created for simulation and testing of the OmorfiHub workflow engine.
                     </p>
                   </div>
                 </div>

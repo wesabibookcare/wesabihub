@@ -24,8 +24,8 @@ import { cn } from '@/src/lib/utils';
 
 export const CommissionPayoutPage = () => {
   const commissions = [
-    { entity: 'Platform (WeSabiHub)', share: '10.0', icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { entity: 'WeSabiHub Point', share: '35.0', icon: MapPin, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { entity: 'Platform (OmorfiHub)', share: '10.0', icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { entity: 'OmorfiHub Point', share: '35.0', icon: MapPin, color: 'text-blue-600', bg: 'bg-blue-50' },
     { entity: 'Logistics Partner', share: '45.0', icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { entity: 'Merchant Retention', share: '10.0', icon: Store, color: 'text-amber-600', bg: 'bg-amber-50' },
   ];

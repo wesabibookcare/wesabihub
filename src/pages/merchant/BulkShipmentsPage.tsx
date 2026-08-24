@@ -69,7 +69,7 @@ export const BulkShipmentsPage = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'WeSabiHub_Bulk_Shipments_Template.csv');
+    link.setAttribute('download', 'OmorfiHub_Bulk_Shipments_Template.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

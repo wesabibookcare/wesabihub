@@ -19,7 +19,7 @@ import {
 } from './index';
 
 /**
- * WeSabiHub Bulk Intake Engine
+ * OmorfiHub Bulk Intake Engine
  * Authoritative engine for orchestrating physical bulk parcel receiving and check-in sessions.
  */
 class BulkIntakeEngine {

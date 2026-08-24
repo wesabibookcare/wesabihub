@@ -115,7 +115,7 @@ export const BootstrapPage: React.FC = () => {
           System Initialization
         </h2>
         <p className="mt-2 text-center text-sm text-slate-800">
-          Create the initial Super Administrator for WeSabiHub
+          Create the initial Super Administrator for OmorfiHub
         </p>
       </div>
 
@@ -175,7 +175,7 @@ export const BootstrapPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 rounded-xl"
-                    placeholder="admin@wesabihub.com"
+                    placeholder="admin@omorfihub.com"
                     disabled={loading}
                   />
                 </div>

@@ -224,7 +224,7 @@ export const ReceiveParcelPage = () => {
                 <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
                    <div className="space-y-4">
                       <h3 className="text-xl font-bold dark:text-white font-display">Scan or Enter Shipment Reference</h3>
-                      <p className="text-sm text-slate-900">Every parcel must have a pre-generated WeSabiHub tracking ID.</p>
+                      <p className="text-sm text-slate-900">Every parcel must have a pre-generated OmorfiHub tracking ID.</p>
                    </div>
 
                    <div className="flex flex-col sm:flex-row gap-4">

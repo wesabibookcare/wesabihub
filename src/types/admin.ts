@@ -81,7 +81,7 @@ import { BRAND_ASSETS } from '../lib/brand';
 // ... (previous lines)
 
 export const MOCK_BRAND_ASSETS: BrandAssets = {
-  name: 'WeSabiHub',
+  name: 'OmorfiHub',
   slogan: 'Seamless Logistics for Everyone',
   primaryColor: BRAND_ASSETS.primaryColor,
   secondaryColor: BRAND_ASSETS.secondaryColor,
@@ -95,7 +95,7 @@ export const MOCK_BRAND_ASSETS: BrandAssets = {
   typography: BRAND_ASSETS.typography,
   companyInfo: {
     address: '123 Logistics Way, Tech City',
-    email: 'admin@wesabihub.com',
+    email: 'admin@omorfihub.com',
     phone: '+1 234 567 890'
   }
 };

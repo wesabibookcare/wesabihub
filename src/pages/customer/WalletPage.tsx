@@ -119,7 +119,7 @@ export const WalletPage = () => {
         method: 'POST',
         body: {
           amount,
-          email: user.email || 'user@wesabihub.com',
+          email: user.email || 'user@omorfihub.com',
           paymentMethod: 'BANK_TRANSFER',
           redirectUrl: `${window.location.origin}/customer/wallet`
         }

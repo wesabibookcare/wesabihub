@@ -24,7 +24,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('wesabihub_theme') as any) || 'system';
+      return (localStorage.getItem('omorfihub_theme') as any) || 'system';
     }
     return 'system';
   });
@@ -40,7 +40,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       root.classList.add(theme);
     }
 
-    localStorage.setItem('wesabihub_theme', theme);
+    localStorage.setItem('omorfihub_theme', theme);
   }, [theme]);
 
   const setTheme = (t: 'light' | 'dark' | 'system') => {

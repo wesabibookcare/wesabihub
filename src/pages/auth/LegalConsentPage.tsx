@@ -85,7 +85,7 @@ export const LegalConsentPage: React.FC = () => {
           Legal Review Required
         </h2>
         <p className="mt-2 text-center text-sm text-slate-800 max-w-xs mx-auto">
-          To continue using WeSabiHub, please review and accept our updated policies.
+          To continue using OmorfiHub, please review and accept our updated policies.
         </p>
       </div>
 
@@ -120,7 +120,7 @@ export const LegalConsentPage: React.FC = () => {
                     />
                     <label htmlFor="agree" className="text-xs text-amber-900 leading-relaxed">
                         I have read and I agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong>.
-                        I understand that these documents govern my use of the WeSabiHub platform.
+                        I understand that these documents govern my use of the OmorfiHub platform.
                     </label>
                 </div>
             </div>

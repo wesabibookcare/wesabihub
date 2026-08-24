@@ -86,7 +86,7 @@ export const PrivacySecurity: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-bold text-sm dark:text-white">Public Profile</p>
-                <p className="text-xs text-slate-500">Allow others to see your WeSabiHub username and ratings.</p>
+                <p className="text-xs text-slate-500">Allow others to see your OmorfiHub username and ratings.</p>
               </div>
               <motion.div whileTap={{ scale: 0.9 }}>
                 <Switch
@@ -99,7 +99,7 @@ export const PrivacySecurity: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-bold text-sm dark:text-white">Activity Status</p>
-                <p className="text-xs text-slate-500">Show when you're online or active on WeSabiChat.</p>
+                <p className="text-xs text-slate-500">Show when you're online or active on OmorfiHubChat.</p>
               </div>
               <motion.div whileTap={{ scale: 0.9 }}>
                 <Switch
