@@ -40,8 +40,21 @@ export class HubRevenueEngine {
   async getRevenueConfig(): Promise<HubRevenueConfig> {
     try {
       const settings = await systemSettingsRepository.getById('global');
-      if (settings && (settings as any).hubRevenueConfig) {
-        return (settings as any).hubRevenueConfig;
+      if (settings) {
+        const rawTiers = (settings as any).hubMonthlyTiers || (settings as any).hubRevenueConfig?.tiers;
+        if (Array.isArray(rawTiers) && rawTiers.length > 0) {
+          const tiers: HubVolumeTier[] = rawTiers.map((t: any) => ({
+            minVolume: t.minParcels ?? t.minVolume ?? 1,
+            maxVolume: t.maxParcels ?? t.maxVolume ?? 999999,
+            hubPercentage: t.hubPercentage,
+            omorfiHubPercentage: t.wesabiPercentage ?? t.omorfiHubPercentage ?? (100 - t.hubPercentage)
+          }));
+          return {
+            effectiveDate: (settings as any).hubRevenueConfig?.effectiveDate || new Date().toISOString(),
+            isActive: true,
+            tiers
+          };
+        }
       }
     } catch {
       // Fallback to default
