@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const SLIDES = [
-  { src: '/assets/hero/hero-0-merchant-packaging.png', caption: 'A merchant prepares and packages an order' },
-  { src: '/assets/hero/hero-1-hub-lagos.png', caption: 'Dropped off at a OmorfiHub Point in Lagos' },
-  { src: '/assets/hero/hero-2-dispatch-rider.png', caption: 'WesabiRide carries it toward its destination' },
-  { src: '/assets/hero/hero-3-pickup-counter.png', caption: 'Arrives safely at a hub in Imo State' },
-  { src: '/assets/hero/hero-4-doorstep-delivery.png', caption: 'Delivered right to the customer' },
+  { src: '/assets/hero/customer.jpg', caption: 'Customers sending & receiving parcels with ease' },
+  { src: '/assets/hero/merchant.jpg', caption: 'Merchants preparing business shipments' },
+  { src: '/assets/hero/hub-owner.jpg', caption: 'Hub owners running secure local parcel points' },
+  { src: '/assets/hero/hub-staff.jpg', caption: 'Hub staff managing drop-offs and pickups' },
+  { src: '/assets/hero/dispatch-rider.jpg', caption: 'Dispatch riders delivering to destinations' },
 ];
 
 interface HeroCarouselProps {
