@@ -1,11 +1,11 @@
-# WeSabiHub
+# OmorfiHub
 
 Nigeria's trusted Pick-Up & Drop-Off (PUDO) network that connects Customers, Merchants, E-commerce Platforms, Logistics Partners, and Verified Neighborhood Centers through one secure platform.
 
 ## User Roles
 1. **Customer**: Sends and receives parcels.
 2. **Merchant**: Small businesses using verified centers as nationwide pickup locations.
-3. **WeSabiHub Center Owner**: Verified neighborhood businesses (Filling stations, Supermarkets, etc.).
+3. **OmorfiHub Center Owner**: Verified neighborhood businesses (Filling stations, Supermarkets, etc.).
 4. **Center Staff**: Staff members handling parcels at the centers.
 5. **Logistics Partner**: Transports parcels between centers.
 6. **Platform Admin**: Platform management and oversight.

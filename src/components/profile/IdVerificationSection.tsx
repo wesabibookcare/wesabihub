@@ -143,7 +143,7 @@ export const IdVerificationSection: React.FC = () => {
     // Header Text
     ctx.fillStyle = '#f8fafc';
     ctx.font = 'bold 20px "Space Grotesk", sans-serif';
-    ctx.fillText('WESABIHUB TRUSTED NETWORK', 40, 50);
+    ctx.fillText('OMORFIHUB TRUSTED NETWORK', 40, 50);
 
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 12px "JetBrains Mono", sans-serif';

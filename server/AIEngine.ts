@@ -36,7 +36,7 @@ export async function runAIChat(params: {
   // Select model and configuration based on mode
   let modelName = "gemini-1.5-flash";
   const options: any = {
-    systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for WeSabiHub, a secure multi-user logistics and escrow platform.",
+    systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics and escrow platform.",
   };
 
   if (mode === 'low-latency') {
@@ -184,7 +184,7 @@ export async function scanIdDocument(params: {
   };
 
   const promptText = `
-    You are WeSabiHub's Secure Identity Verification system. Analyze this identity document (Passport, Driver's License, National ID Card, etc.) and extract the details.
+    You are OmorfiHub's Secure Identity Verification system. Analyze this identity document (Passport, Driver's License, National ID Card, etc.) and extract the details.
     Compare the extracted Full Name with the user's expected profile name: "${expectedName}".
 
     Please return a JSON response with the following keys. Do not include markdown wraps.
@@ -241,7 +241,7 @@ export async function estimateDelivery(params: {
   const { origin, destination, parcelSize, trafficLevel = 'NORMAL' } = params;
 
   const prompt = `
-    As the WeSabiHub Logistics AI, estimate the delivery time for a parcel with the following parameters:
+    As the OmorfiHub Logistics AI, estimate the delivery time for a parcel with the following parameters:
     - Origin Hub: ${origin}
     - Destination Hub: ${destination}
     - Parcel Size: ${parcelSize} (Small, Medium, Large)

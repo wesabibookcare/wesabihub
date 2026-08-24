@@ -106,7 +106,7 @@ class ReceiptService {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
-    doc.text('WESABIHUB LOGISTICS & SAFEPAY NETWORK', 15, 10);
+    doc.text('OMORFIHUB LOGISTICS & SAFEPAY NETWORK', 15, 10);
 
     // 2. Receipt Type Title Banner
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -266,7 +266,7 @@ class ReceiptService {
 
     doc.setFont('Helvetica', 'bold');
     doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-    doc.text('WESABIHUB.COM • TRUSTED EVERYWHERE', 15, 282);
+    doc.text('OMORFIHUB.COM • TRUSTED EVERYWHERE', 15, 282);
 
     // Trigger download
     doc.save(`OmorfiHub_Receipt_${receipt.receiptId}.pdf`);

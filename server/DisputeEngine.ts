@@ -68,7 +68,7 @@ Inspection Expires At: ${protectionRecord.inspectionExpiresAt || 'N/A'}`
     : "No Verified Packing or Unpacking Calls logged.";
 
   const prompt = `
-You are the WeSabiHub AI Compliance Officer, an elite, unbiased, automated payment protection auditor. Your job is to pre-assess dispute case #${disputeId} using all forensic custody data provided.
+You are the OmorfiHub AI Compliance Officer, an elite, unbiased, automated payment protection auditor. Your job is to pre-assess dispute case #${disputeId} using all forensic custody data provided.
 
 The dispute was opened by the ${initiatorRole}.
 Reason Category: ${reason}
