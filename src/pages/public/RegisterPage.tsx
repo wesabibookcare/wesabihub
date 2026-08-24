@@ -28,17 +28,15 @@ import { useAuth } from '../../context/AuthContext';
 import { ROLE_REDIRECTS } from '../../services/authService';
 import { motion, AnimatePresence } from 'motion/react';
 
-// Best-fit background per role from the 6 journey-scene photos we have today.
-// Swap any of these for a dedicated role-portrait image later -- nothing
-// else about this page needs to change.
+// Dedicated role portrait backgrounds for public registration
 const ROLE_BACKGROUNDS: Partial<Record<UserRole, string>> = {
-  CUSTOMER: '/assets/hero/hero-4-doorstep-delivery.png',
-  MERCHANT: '/assets/hero/hero-0-merchant-packaging.png',
-  CENTER_OWNER: '/assets/hero/hero-1-hub-lagos.png',
-  CENTER_STAFF: '/assets/hero/hero-3-pickup-counter.png',
-  DISPATCH_RIDER: '/assets/hero/hero-2-dispatch-rider.png',
-  LOGISTICS_COMPANY: '/assets/hero/hero-2-dispatch-rider.png',
-  DEVELOPER: '/assets/hero/hero-1-hub-lagos.png',
+  CUSTOMER: '/assets/hero/customer.jpg',
+  MERCHANT: '/assets/hero/merchant.jpg',
+  CENTER_OWNER: '/assets/hero/hub-owner.jpg',
+  CENTER_STAFF: '/assets/hero/hub-staff.jpg',
+  DISPATCH_RIDER: '/assets/hero/dispatch-rider.jpg',
+  LOGISTICS_COMPANY: '/assets/hero/dispatch-rider.jpg',
+  DEVELOPER: '/assets/hero/hub-owner.jpg',
 };
 
 // Roles blocked from public self-signup according to P0-2 policy.

@@ -10,6 +10,7 @@ import { ROLE_REDIRECTS } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import { LiveFaceScanModal } from '../../components/common/LiveFaceScanModal';
 import { User } from '../../types';
+import { HeroCarousel } from '../../components/public/HeroCarousel';
 
 export const LoginPage: React.FC = () => {
   const { bootstrapNeeded } = useAuth();
@@ -96,7 +97,7 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-slate-950">
-        <img src="/assets/hero/hero-1-hub-lagos.png" alt="" className="w-full h-full object-cover" />
+        <HeroCarousel showDots={false} />
         <div className="absolute inset-0 bg-slate-950/70" />
       </div>
       <div className="absolute top-4 left-4 sm:top-8 sm:left-8">

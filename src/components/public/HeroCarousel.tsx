@@ -12,9 +12,10 @@ const SLIDES = [
 interface HeroCarouselProps {
   intervalMs?: number;
   className?: string;
+  showDots?: boolean;
 }
 
-export const HeroCarousel: React.FC<HeroCarouselProps> = ({ intervalMs = 4500, className }) => {
+export const HeroCarousel: React.FC<HeroCarouselProps> = ({ intervalMs = 4500, className, showDots = true }) => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -46,16 +47,18 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ intervalMs = 4500, c
       </AnimatePresence>
 
       {/* Progress dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            aria-label={`Show slide ${i + 1}`}
-            className={`h-1.5 rounded-full transition-all ${i === index ? 'w-8 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
-          />
-        ))}
-      </div>
+      {showDots && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              aria-label={`Show slide ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${i === index ? 'w-8 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

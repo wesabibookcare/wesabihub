@@ -5,6 +5,7 @@ import { Card } from '@/src/components/ui/Card';
 import { Badge } from '@/src/components/ui/Badge';
 import { Package, Shield, Globe, Users, Target, Heart } from 'lucide-react';
 import { configurationEngine } from '@/src/engines';
+import { HeroCarousel } from '@/src/components/public/HeroCarousel';
 
 import { useSettings } from '@/src/context/SettingsContext';
 
@@ -94,14 +95,10 @@ export const AboutPage = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square bg-primary-600 rounded-[48px] overflow-hidden rotate-3 shadow-2xl">
-                 <div className="absolute inset-0 bg-slate-900/20" />
-                 {/* This would be an image of a hub or team */}
-                 <div className="absolute inset-0 flex items-center justify-center text-white/20">
-                    <Package size={200} />
-                 </div>
+              <div className="aspect-square bg-primary-600 rounded-[48px] overflow-hidden rotate-3 shadow-2xl relative">
+                <HeroCarousel intervalMs={4000} showDots={true} />
               </div>
-              <Card className="absolute -bottom-10 -left-10 p-8 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xl rounded-3xl max-w-xs -rotate-3">
+              <Card className="absolute -bottom-10 -left-10 p-8 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xl rounded-3xl max-w-xs -rotate-3 z-20">
                  <p className="text-lg font-bold dark:text-white mb-2">{`"Our goal is to be within a 10-minute walk of everyone."`}</p>
                  <p className="text-sm text-primary-600 font-bold">— Founder & CEO</p>
               </Card>
