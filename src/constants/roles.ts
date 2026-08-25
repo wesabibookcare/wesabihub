@@ -30,13 +30,16 @@ export interface RoleInfo {
 }
 
 // ==========================================================
-// PAUSED ROLES (temporarily hidden from public self-signup)
+// VALID PUBLIC ROLES & PAUSED/HIDDEN ROLES
 // ==========================================================
-// To bring any of these back, just remove its id from this array.
-// Nothing else needs to change -- the full role definitions below are
-// untouched, and all existing accounts/routes/dashboards for these roles
-// still work exactly as before. This only affects what NEW users are
-// offered when they register.
+export const VALID_PUBLIC_ROLES: UserRole[] = [
+  'CUSTOMER',
+  'MERCHANT',
+  'CENTER_OWNER',
+  'CENTER_STAFF',
+  'DISPATCH_RIDER'
+];
+
 export const PAUSED_ROLES: string[] = [
   'LOGISTICS_COMPANY',
   'DISPATCH_COMPANY',
@@ -44,15 +47,17 @@ export const PAUSED_ROLES: string[] = [
   'DRIVER',
   'DEVELOPER',
   'API_MERCHANT_PARTNER',
-  // Internal staff/admin roles were never meant to be self-service signups;
-  // hiding them here too so the public registration page only offers roles
-  // an ordinary visitor should actually be choosing from.
   'SUPER_ADMIN',
   'OPERATIONS_MANAGER',
   'SUPPORT_OFFICER',
   'VERIFICATION_OFFICER',
   'FINANCE_OFFICER',
   'DISPUTE_ADMIN',
+  'SUPPORT_ADMIN',
+  'OPERATIONS_ADMIN',
+  'VERIFICATION_ADMIN',
+  'SECURITY_ADMIN',
+  'FINANCE_ADMIN'
 ];
 
 export const ROLES: RoleInfo[] = [
@@ -435,4 +440,4 @@ export const ROLES: RoleInfo[] = [
 // What the public registration page should actually offer today. Paused
 // roles are filtered out here only -- their full definitions above are
 // untouched and instantly available again by editing PAUSED_ROLES.
-export const PUBLIC_SIGNUP_ROLES: RoleInfo[] = ROLES.filter(r => !PAUSED_ROLES.includes(r.id));
+export const PUBLIC_SIGNUP_ROLES: RoleInfo[] = ROLES.filter(r => (VALID_PUBLIC_ROLES as readonly string[]).includes(r.id));

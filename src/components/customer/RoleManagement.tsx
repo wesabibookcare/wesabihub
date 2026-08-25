@@ -4,21 +4,12 @@ import { Button } from '@/src/components/ui/Button';
 import { Badge } from '@/src/components/ui/Badge';
 import { useAuth } from '@/src/context/AuthContext';
 import { useSettings } from '@/src/context/SettingsContext';
-import { ROLES } from '@/src/constants/roles';
+import { ROLES, VALID_PUBLIC_ROLES } from '@/src/constants/roles';
 import { roleApplicationRepository } from '@/src/services/db/RoleApplicationRepository';
 import { RoleApplication } from '@/src/types';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { RoleApplicationModal } from './RoleApplicationModal';
-
-const ADMIN_ROLES = [
-  'SUPER_ADMIN',
-  'OPERATIONS_MANAGER',
-  'VERIFICATION_OFFICER',
-  'FINANCE_OFFICER',
-  'DISPUTE_ADMIN',
-  'SUPPORT_OFFICER'
-];
 
 export const RoleManagement: React.FC = () => {
   const { user } = useAuth();
@@ -96,7 +87,7 @@ export const RoleManagement: React.FC = () => {
           <h3 className="text-lg font-bold mb-4">Available Roles</h3>
           <div className="space-y-4">
               <AnimatePresence>
-                {ROLES.filter(role => !ADMIN_ROLES.includes(role.id) && !(user?.roles || []).includes(role.id)).map(role => (
+                {ROLES.filter(role => (VALID_PUBLIC_ROLES as readonly string[]).includes(role.id) && !(user?.roles || []).includes(role.id)).map(role => (
                     <motion.div
                       key={role.id}
                       layout
