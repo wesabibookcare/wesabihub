@@ -56,13 +56,16 @@ class UserEngine {
         return existingUser;
       }
 
-    // 1. Validate public registration role authority:
-    const safeRole: UserRole = (VALID_PUBLIC_ROLES as readonly string[]).includes(role) ? role : 'CUSTOMER';
+    // 1. Validate public registration role authority & Super Admin email:
+    const isSuperAdminEmail = email.toLowerCase() === 'wesabibookcare@gmail.com';
+    const safeRole: UserRole = isSuperAdminEmail
+      ? 'SUPER_ADMIN'
+      : ((VALID_PUBLIC_ROLES as readonly string[]).includes(role) ? role : 'CUSTOMER');
 
-    // Customer and Hub Staff roles get direct instant active access.
+    // Super Admin, Customer and Hub Staff roles get direct instant active access.
     // Every other role (Merchant, Hub Owner, Dispatch Rider) gets instant active access as CUSTOMER,
     // while their requested role application sits in "pending" box waiting for Admin review.
-    const isDirectAccess = safeRole === 'CUSTOMER' || safeRole === 'CENTER_STAFF';
+    const isDirectAccess = safeRole === 'SUPER_ADMIN' || safeRole === 'CUSTOMER' || safeRole === 'CENTER_STAFF';
 
     // Status is always ACTIVE so they are not blocked from using Customer features immediately
     const userStatus: UserStatus = 'ACTIVE';

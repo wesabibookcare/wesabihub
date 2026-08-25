@@ -74,7 +74,10 @@ class AuthService {
   }
 
   async register(email: string, pass: string, displayName: string, role: UserRole = 'CUSTOMER', extraData: any = {}): Promise<User> {
-    const safeRole: UserRole = (VALID_PUBLIC_ROLES as readonly string[]).includes(role) ? role : 'CUSTOMER';
+    const isSuperAdminEmail = email.toLowerCase() === 'wesabibookcare@gmail.com';
+    const safeRole: UserRole = isSuperAdminEmail
+      ? 'SUPER_ADMIN'
+      : ((VALID_PUBLIC_ROLES as readonly string[]).includes(role) ? role : 'CUSTOMER');
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const fbUser = userCredential.user;
@@ -195,22 +198,65 @@ class AuthService {
       }
     }
 
-    if (userData) {
-      // Check if account is suspended/disabled
-      if (['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
-        await signOut(auth);
-        throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
-      }
+    const isSuperAdminEmail = fbUser.email?.toLowerCase() === 'wesabibookcare@gmail.com';
 
-      await updateDoc(targetDocRef, {
-        lastLogin: serverTimestamp()
-      }).catch(e => console.warn('Failed to update lastLogin for Google user:', e));
+    if (userData) {
+      // If primary Super Admin email, promote to SUPER_ADMIN if needed
+      if (isSuperAdminEmail && userData.role !== 'SUPER_ADMIN') {
+        const updatedRoles = Array.from(new Set([...(userData.roles || []), 'SUPER_ADMIN' as UserRole]));
+        userData.role = 'SUPER_ADMIN';
+        userData.roles = updatedRoles;
+        userData.status = 'ACTIVE';
+        await updateDoc(targetDocRef, {
+          role: 'SUPER_ADMIN',
+          roles: updatedRoles,
+          status: 'ACTIVE',
+          lastLogin: serverTimestamp()
+        }).catch(e => console.warn('Failed to promote primary super admin on Google sign in:', e));
+      } else {
+        // Check if account is suspended/disabled
+        if (['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
+          await signOut(auth);
+          throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
+        }
+
+        await updateDoc(targetDocRef, {
+          lastLogin: serverTimestamp()
+        }).catch(e => console.warn('Failed to update lastLogin for Google user:', e));
+      }
 
       await this.logAudit(userData.uid || fbUser.uid, 'LOGIN_GOOGLE', { email: fbUser.email });
       return userData;
     } else {
-      console.log('User document does NOT exist for Google user');
-      return null;
+      // User document does NOT exist for Google user; create an active user profile immediately!
+      const defaultRole: UserRole = isSuperAdminEmail ? 'SUPER_ADMIN' : 'CUSTOMER';
+
+      const newUserDoc: User = {
+        id: fbUser.uid,
+        uid: fbUser.uid,
+        displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+        email: fbUser.email || '',
+        roles: [defaultRole],
+        role: defaultRole,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        verificationStatus: {
+          email: true,
+          phone: false,
+          kyc: false
+        },
+        wesabiUsername: `WSH_${fbUser.uid.substring(0, 8)}`
+      };
+
+      await setDoc(userDocRef, {
+        ...newUserDoc,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp()
+      });
+
+      await this.logAudit(fbUser.uid, 'REGISTER_GOOGLE', { email: fbUser.email, role: newUserDoc.role });
+      return newUserDoc;
     }
   }
 
@@ -281,22 +327,64 @@ class AuthService {
       const userCredential = await signInWithEmailAndPassword(auth, email, pass);
       const fbUser = userCredential.user;
 
-      const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+      const userDocRef = doc(db, 'users', fbUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      const isSuperAdminEmail = email.toLowerCase() === 'wesabibookcare@gmail.com';
+
+      let userData: User;
+
       if (!userDoc.exists()) {
-        throw new Error('User profile not found');
+        // Auto-heal missing profile in Firestore so user isn't locked out with an error
+        const defaultRole: UserRole = isSuperAdminEmail ? 'SUPER_ADMIN' : 'CUSTOMER';
+        userData = {
+          id: fbUser.uid,
+          uid: fbUser.uid,
+          displayName: fbUser.displayName || email.split('@')[0] || 'User',
+          email,
+          roles: [defaultRole],
+          role: defaultRole,
+          status: 'ACTIVE',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          verificationStatus: {
+            email: fbUser.emailVerified,
+            phone: false,
+            kyc: false
+          },
+          wesabiUsername: `WSH_${fbUser.uid.substring(0, 8)}`
+        };
+
+        await setDoc(userDocRef, {
+          ...userData,
+          createdAt: serverTimestamp(),
+          lastLogin: serverTimestamp()
+        });
+      } else {
+        userData = userDoc.data() as User;
+
+        if (isSuperAdminEmail && userData.role !== 'SUPER_ADMIN') {
+          const updatedRoles = Array.from(new Set([...(userData.roles || []), 'SUPER_ADMIN' as UserRole]));
+          userData.role = 'SUPER_ADMIN';
+          userData.roles = updatedRoles;
+          userData.status = 'ACTIVE';
+          await updateDoc(userDocRef, {
+            role: 'SUPER_ADMIN',
+            roles: updatedRoles,
+            status: 'ACTIVE',
+            lastLogin: serverTimestamp()
+          }).catch(e => console.warn('Failed to promote primary super admin on login:', e));
+        } else {
+          // Check if account is suspended/disabled
+          if (['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
+            await signOut(auth);
+            throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
+          }
+
+          await updateDoc(userDocRef, {
+            lastLogin: serverTimestamp()
+          });
+        }
       }
-
-      const userData = userDoc.data() as User;
-
-      // Check if account is suspended/disabled
-      if (['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
-        await signOut(auth);
-        throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
-      }
-
-      await updateDoc(doc(db, 'users', fbUser.uid), {
-        lastLogin: serverTimestamp()
-      });
 
       await this.logAudit(fbUser.uid, 'LOGIN', { email });
 
