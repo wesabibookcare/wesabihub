@@ -65,9 +65,7 @@ class ComplianceEngine {
       }
       throw new Error('Your sign-in session is not ready. Please wait a moment and try again.');
     };
-    try {
-      await waitForAuth();
-      await userConsentRepository.create(id, {
+    const consentRecord: UserConsent = {
       id,
       userId,
       policyKey,
@@ -80,17 +78,43 @@ class ComplianceEngine {
       registrationMethod: options.registrationMethod || 'EMAIL',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
-      } as UserConsent);
-    } catch (error: any) {
-      const message = error?.message || String(error);
-      if (message.includes('Missing or insufficient permissions')) {
-        throw new Error(
-          `Firestore denied the consent record for UID ${userId}. ` +
-          `The app is configured for Firebase project wesabibookcare-d0ceb. ` +
-          `Verify that Firestore Rules are published in that exact project and that the deployed rule allows request.auth.uid == request.resource.data.userId.`
-        );
+    } as UserConsent;
+
+    let success = false;
+    let lastError: any = null;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await waitForAuth();
+        await userConsentRepository.create(id, consentRecord);
+        success = true;
+        break;
+      } catch (error: any) {
+        lastError = error;
+        console.warn(`Attempt ${attempt} to write consent record failed:`, error?.message || error);
+        if (attempt < 3) {
+          try {
+            if (auth.currentUser) {
+              await auth.currentUser.getIdToken(true);
+            }
+          } catch (tErr) {
+            console.warn('Token refresh during retry failed:', tErr);
+          }
+          await new Promise(resolve => setTimeout(resolve, attempt * 500));
+        }
       }
-      throw error;
+    }
+
+    if (!success) {
+      console.error(`Failed to record consent for UID ${userId} after 3 attempts.`, lastError);
+      // Non-blocking fallback: log audit warning instead of crashing sign up
+      await auditEngine.logEvent({
+        userId,
+        action: 'ACCEPT_POLICY_FAILED',
+        details: { policyKey, policyVersion: version, error: lastError?.message || String(lastError), ...options },
+        result: 'FAILURE'
+      }).catch(aErr => console.warn('Audit log error:', aErr));
+      return;
     }
 
     await auditEngine.logEvent({

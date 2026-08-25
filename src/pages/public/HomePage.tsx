@@ -62,8 +62,8 @@ export const HomePage = () => {
   const hero = settings?.landingPage?.hero || {
     title: "The Nation's Most Reliable Delivery Network",
     subtitle: "We've built Nigeria's largest network of verified neighborhood centers. Ship, pick up, and return parcels with total peace of mind.",
-    ctaText: "Start Shipping",
-    ctaLink: "/ship"
+    ctaText: "Get Started",
+    ctaLink: "/register"
   };
 
   const descriptions = settings?.landingPage?.descriptions || {
@@ -134,8 +134,8 @@ export const HomePage = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Button size="lg" className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl shadow-primary-500/25 group" onClick={() => navigate(hero.ctaLink)}>
-                    {hero.ctaText}
+                  <Button size="lg" className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl shadow-primary-500/25 group" onClick={() => navigate('/register')}>
+                    Get Started
                     <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button size="lg" variant="outline" className="h-14 px-10 rounded-2xl text-base font-bold border-2 border-white/40 text-white hover:bg-white/10" onClick={() => navigate('/how-it-works')}>
