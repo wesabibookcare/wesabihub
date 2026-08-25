@@ -1,324 +1,417 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DollarSign,
   Plus,
   Calculator,
-  Info,
   Save,
   History,
   Globe,
   Truck,
-  Layers,
-  Maximize2,
-  AlertCircle,
   Zap,
   Package,
-  ShieldCheck
+  ShieldCheck,
+  Percent,
+  TrendingUp,
+  Sliders,
+  Check,
+  Trash2
 } from 'lucide-react';
 import { BusinessRulesLayout } from '../../layouts/BusinessRulesLayout';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { cn } from '@/src/lib/utils';
-import { motion } from 'motion/react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/src/lib/firebase';
+import { toast } from 'sonner';
+
+export interface HubVolumeTier {
+  id: string;
+  minParcels: number;
+  maxParcels: number; // e.g. 50, 200, or 999999 for infinity (500+)
+  hubPercentage: number;
+  omorfiPercentage: number;
+}
 
 export const PricingRulesPage = () => {
-  const [activeTab, setActiveTab] = useState<'CONFIG' | 'SIMULATOR'>('CONFIG');
+  const [activeTab, setActiveTab] = useState<'TIERS' | 'LOGISTICS_API' | 'SAFEPAY' | 'BASE_PRICING'>('TIERS');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Hub Revenue Volume Split Tiers
+  const [tiers, setTiers] = useState<HubVolumeTier[]>([
+    { id: '1', minParcels: 1, maxParcels: 50, hubPercentage: 50, omorfiPercentage: 50 },
+    { id: '2', minParcels: 51, maxParcels: 200, hubPercentage: 55, omorfiPercentage: 45 },
+    { id: '3', minParcels: 201, maxParcels: 99999, hubPercentage: 60, omorfiPercentage: 40 },
+  ]);
+
+  // Logistics API Rate Markup
+  const [logisticsMarkup, setLogisticsMarkup] = useState({
+    markupPercentage: 10,
+    enableMarkup: true,
+    minMarkupAmount: 200,
+  });
+
+  // SafePay Charges
+  const [safePayConfig, setSafePayConfig] = useState({
+    buyerFeePercent: 1.5,
+    sellerFeePercent: 1.5,
+    minEscrowFee: 500,
+    maxEscrowFee: 15000,
+  });
+
+  // Base Pricing Configuration
+  const [basePricing, setBasePricing] = useState({
+    minShippingFee: 500,
+    baseWeightKg: 1.0,
+    weightMultiplier: 1.5,
+    oversizedFee: 1000,
+    fragileFee: 500,
+    weekendSurchargePercent: 15,
+  });
+
+  useEffect(() => {
+    const fetchFinancialConfig = async () => {
+      setLoading(true);
+      try {
+        const docRef = doc(db, 'systemSettings', 'financialRules');
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tiers) setTiers(data.tiers);
+          if (data.logisticsMarkup) setLogisticsMarkup(data.logisticsMarkup);
+          if (data.safePayConfig) setSafePayConfig(data.safePayConfig);
+          if (data.basePricing) setBasePricing(data.basePricing);
+        }
+      } catch (err) {
+        console.error('Failed to load financial rules:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFinancialConfig();
+  }, []);
+
+  const handleSaveConfig = async () => {
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'systemSettings', 'financialRules'), {
+        tiers,
+        logisticsMarkup,
+        safePayConfig,
+        basePricing,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+      toast.success('Financial & Pricing rules updated successfully!');
+    } catch (err) {
+      console.error('Failed to save rules:', err);
+      toast.error('Failed to save configuration rules');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddTier = () => {
+    const lastTier = tiers[tiers.length - 1];
+    const newMin = lastTier ? lastTier.maxParcels + 1 : 1;
+    const newTier: HubVolumeTier = {
+      id: Date.now().toString(),
+      minParcels: newMin,
+      maxParcels: newMin + 150,
+      hubPercentage: 65,
+      omorfiPercentage: 35,
+    };
+    setTiers([...tiers, newTier]);
+  };
+
+  const handleRemoveTier = (id: string) => {
+    setTiers(tiers.filter(t => t.id !== id));
+  };
+
+  const handleUpdateTier = (id: string, field: keyof HubVolumeTier, value: number) => {
+    setTiers(tiers.map(t => {
+      if (t.id === id) {
+        const updated = { ...t, [field]: value };
+        if (field === 'hubPercentage') {
+          updated.omorfiPercentage = Math.max(0, 100 - value);
+        } else if (field === 'omorfiPercentage') {
+          updated.hubPercentage = Math.max(0, 100 - value);
+        }
+        return updated;
+      }
+      return t;
+    }));
+  };
 
   return (
     <BusinessRulesLayout>
-      <div className="space-y-10">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mb-2">Platform Control</p>
-            <h1 className="text-4xl font-black tracking-tight text-slate-900">Pricing Configuration</h1>
-            <p className="text-slate-900 font-medium mt-1">Define the core economic rules for all shipping operations.</p>
+            <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mb-2">Money & Financial Management</p>
+            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Financial & Pricing Engine</h1>
+            <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">Configure hub volume revenue splits, logistics API rate markups, SafePay escrow charges, and base parcel pricing.</p>
           </div>
           <div className="flex items-center gap-3">
-             <Button variant="outline" className="rounded-xl border-slate-200 font-bold">
-               <History size={18} className="mr-2" /> Version History
-             </Button>
-             <Button className="rounded-xl font-bold shadow-lg shadow-primary-600/20">
-               <Save size={18} className="mr-2" /> Publish Changes
+             <Button
+               onClick={handleSaveConfig}
+               disabled={saving}
+               className="rounded-xl font-bold shadow-lg shadow-primary-600/20 bg-primary-600 hover:bg-primary-700 text-white"
+             >
+               <Save size={18} className="mr-2" /> {saving ? 'Saving...' : 'Save Financial Rules'}
              </Button>
           </div>
         </div>
 
-        {/* Mode Switcher */}
-        <div className="flex p-1 bg-slate-100 rounded-2xl w-fit">
+        {/* Tab Switcher */}
+        <div className="flex flex-wrap p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit gap-1">
           <button
-            onClick={() => setActiveTab('CONFIG')}
+            onClick={() => setActiveTab('TIERS')}
             className={cn(
-              "px-6 py-2.5 rounded-xl text-sm font-black transition-all",
-              activeTab === 'CONFIG' ? "bg-white text-slate-900 shadow-sm" : "text-slate-900 hover:text-slate-900"
+              "px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2",
+              activeTab === 'TIERS' ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400"
             )}
           >
-            Rule Configuration
+            <TrendingUp size={16} /> Hub Revenue Split Tiers
           </button>
           <button
-            onClick={() => setActiveTab('SIMULATOR')}
+            onClick={() => setActiveTab('LOGISTICS_API')}
             className={cn(
-              "px-6 py-2.5 rounded-xl text-sm font-black transition-all",
-              activeTab === 'SIMULATOR' ? "bg-white text-slate-900 shadow-sm" : "text-slate-900 hover:text-slate-900"
+              "px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2",
+              activeTab === 'LOGISTICS_API' ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400"
             )}
           >
-            Price Simulator
+            <Truck size={16} /> Logistics API Markup
+          </button>
+          <button
+            onClick={() => setActiveTab('SAFEPAY')}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2",
+              activeTab === 'SAFEPAY' ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400"
+            )}
+          >
+            <ShieldCheck size={16} /> SafePay Charges
+          </button>
+          <button
+            onClick={() => setActiveTab('BASE_PRICING')}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2",
+              activeTab === 'BASE_PRICING' ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400"
+            )}
+          >
+            <DollarSign size={16} /> Base Shipping Rates
           </button>
         </div>
 
-        {activeTab === 'CONFIG' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Global Base Rules */}
-            <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-8">
-              <div className="flex items-center gap-3 pb-6 border-b border-slate-100">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-                  <DollarSign size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black tracking-tight text-slate-900">Base Logistics Rules</h3>
-                  <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mt-0.5">Global Default Settings</p>
-                </div>
+        {/* TAB 1: Hub Volume Tiers */}
+        {activeTab === 'TIERS' && (
+          <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-6">
+            <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">Hub Volume Split Tiers</h3>
+                <p className="text-xs font-medium text-slate-500">Set automatic revenue sharing split based on monthly parcel volume processed by hubs.</p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Minimum Shipping Fee</label>
-                  <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-800 font-black">$</span>
-                    <input type="number" defaultValue={5.00} className="bg-transparent border-none focus:outline-none font-bold w-full" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Base Weight (kg)</label>
-                  <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <input type="number" defaultValue={1.0} className="bg-transparent border-none focus:outline-none font-bold w-full" />
-                    <span className="text-slate-800 font-bold text-xs">KG</span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Maximum Weight (kg)</label>
-                  <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <input type="number" defaultValue={50.0} className="bg-transparent border-none focus:outline-none font-bold w-full" />
-                    <span className="text-slate-800 font-bold text-xs">KG</span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Weight Multiplier</label>
-                  <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <input type="number" defaultValue={1.5} className="bg-transparent border-none focus:outline-none font-bold w-full" />
-                    <span className="text-slate-800 font-bold text-xs">x</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Surcharges & Modifiers */}
-            <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-8">
-              <div className="flex items-center gap-3 pb-6 border-b border-slate-100">
-                <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
-                  <Zap size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black tracking-tight text-slate-900">Surcharges & Modifiers</h3>
-                  <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mt-0.5">Special Handling Fees</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                 {[
-                    { label: 'Oversized Parcel Fee', icon: Maximize2, value: '25.00', type: 'FLAT' },
-                    { label: 'Fragile Handling Fee', icon: Package, value: '10.00', type: 'FLAT' },
-                    { label: 'Insurance (per $100)', icon: ShieldCheck, value: '2.50', type: 'FLAT' },
-                    { label: 'Weekend/Holiday Surcharge', icon: Globe, value: '15', type: 'PERCENT' },
-                 ].map(mod => (
-                    <div key={mod.label} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                       <div className="flex items-center gap-3">
-                          <mod.icon size={18} className="text-slate-800" />
-                          <span className="text-sm font-bold text-slate-900">{mod.label}</span>
-                       </div>
-                       <div className="flex items-center gap-2 w-32">
-                          <input
-                            type="text"
-                            defaultValue={mod.value}
-                            className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-right w-full"
-                          />
-                          <span className="text-[10px] font-black text-slate-800">{mod.type === 'FLAT' ? '$' : '%'}</span>
-                       </div>
-                    </div>
-                 ))}
-              </div>
-            </Card>
-
-            {/* Regional Rules */}
-            <Card className="p-8 border-none shadow-xl shadow-slate-200/50 lg:col-span-2 space-y-8">
-               <div className="flex items-center justify-between pb-6 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-                      <Globe size={24} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black tracking-tight text-slate-900">Regional Pricing Overrides</h3>
-                      <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mt-0.5">Country & City Specific Rules</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="rounded-xl border-slate-200 font-bold text-xs h-auto py-2">
-                    <Plus size={16} className="mr-2" /> Add Override
-                  </Button>
-               </div>
-
-               <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                     <thead>
-                        <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">
-                           <th className="pb-4">Region</th>
-                           <th className="pb-4">Service Type</th>
-                           <th className="pb-4">Base Modifier</th>
-                           <th className="pb-4">Status</th>
-                           <th className="pb-4 text-right">Action</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-100">
-                        {[
-                           { region: 'Nigeria / Lagos', service: 'Express', modifier: '+15%', status: 'Active' },
-                           { region: 'Ghana / Accra', service: 'Same Day', modifier: '+$12.00', status: 'Active' },
-                           { region: 'Kenya / Nairobi', service: 'Standard', modifier: '-5%', status: 'Scheduled' },
-                        ].map((row, idx) => (
-                           <tr key={idx} className="group">
-                              <td className="py-4">
-                                 <p className="text-sm font-black text-slate-900">{row.region}</p>
-                              </td>
-                              <td className="py-4">
-                                 <Badge className="bg-slate-100 text-slate-800 border-none px-2 py-0.5 font-bold text-[10px]">{row.service}</Badge>
-                              </td>
-                              <td className="py-4">
-                                 <span className="text-sm font-black text-primary-600">{row.modifier}</span>
-                              </td>
-                              <td className="py-4">
-                                 <Badge className={cn(
-                                    "border-none px-2 py-0.5 font-bold text-[10px]",
-                                    row.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
-                                 )}>{row.status}</Badge>
-                              </td>
-                              <td className="py-4 text-right">
-                                 <Button variant="ghost" className="p-2 h-auto text-slate-800 hover:text-slate-900">
-                                    <Plus size={18} className="rotate-45" />
-                                 </Button>
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                  </table>
-               </div>
-            </Card>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Simulator Inputs */}
-            <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-8 lg:col-span-1">
-               <div className="flex items-center gap-3 pb-6 border-b border-slate-100">
-                <div className="p-3 bg-primary-50 text-primary-600 rounded-2xl">
-                  <Calculator size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black tracking-tight text-slate-900">Pricing Simulator</h3>
-                  <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mt-0.5">Test Rule Logic</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Origin Region</label>
-                    <select className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 font-bold text-sm">
-                       <option>Nigeria / Lagos</option>
-                       <option>Ghana / Accra</option>
-                    </select>
-                 </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Destination Region</label>
-                    <select className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 font-bold text-sm">
-                       <option>Nigeria / Abuja</option>
-                       <option>Nigeria / Port Harcourt</option>
-                    </select>
-                 </div>
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Weight (KG)</label>
-                       <input type="number" defaultValue={2.5} className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 font-bold text-sm" />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-800">Service</label>
-                       <select className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 font-bold text-sm">
-                          <option>Express</option>
-                          <option>Standard</option>
-                       </select>
-                    </div>
-                 </div>
-                 <div className="space-y-4 pt-4 border-t border-slate-100">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                       <input type="checkbox" className="w-5 h-5 rounded-lg border-2 border-slate-200 checked:bg-primary-600 transition-all" />
-                       <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900">Fragile Handling</span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                       <input type="checkbox" className="w-5 h-5 rounded-lg border-2 border-slate-200 checked:bg-primary-600 transition-all" />
-                       <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900">High-Value Insurance</span>
-                    </label>
-                 </div>
-
-                 <Button className="w-full rounded-2xl py-6 font-black tracking-tight shadow-xl shadow-primary-600/20 mt-4">
-                    Calculate Preview Price
-                 </Button>
-              </div>
-            </Card>
-
-            {/* Simulation Results */}
-            <div className="lg:col-span-2 space-y-8">
-               <Card className="p-10 border-none shadow-2xl shadow-slate-200/60 bg-slate-900 text-white overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 rounded-full -mr-32 -mt-32 blur-3xl" />
-                  <div className="relative">
-                     <p className="text-primary-400 font-black uppercase tracking-[0.3em] text-[10px] mb-4">Estimated Shipping Cost</p>
-                     <div className="flex items-end gap-2">
-                        <span className="text-6xl font-black tracking-tighter">$42.50</span>
-                        <span className="text-slate-800 font-bold mb-2 uppercase tracking-widest text-xs">USD</span>
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pt-12 border-t border-white/10">
-                        <div>
-                           <p className="text-slate-800 font-black uppercase tracking-widest text-[9px] mb-2">Base Logistics</p>
-                           <p className="text-xl font-black">$25.00</p>
-                        </div>
-                        <div>
-                           <p className="text-slate-800 font-black uppercase tracking-widest text-[9px] mb-2">Surcharges</p>
-                           <p className="text-xl font-black">$12.50</p>
-                        </div>
-                        <div>
-                           <p className="text-slate-800 font-black uppercase tracking-widest text-[9px] mb-2">Taxes (VAT 5%)</p>
-                           <p className="text-xl font-black">$5.00</p>
-                        </div>
-                     </div>
-                  </div>
-               </Card>
-
-               <Card className="p-8 border-none shadow-xl shadow-slate-200/50">
-                  <h3 className="text-lg font-black text-slate-900 mb-6">Price Calculation Breakdown</h3>
-                  <div className="space-y-4">
-                     {[
-                        { label: 'Minimum Base Fee', value: '$5.00' },
-                        { label: 'Weight Adder (2.5kg @ $1.50/kg)', value: '$3.75' },
-                        { label: 'Express Service Multiplier (1.5x)', value: '$13.12' },
-                        { label: 'Fragile Handling Fixed Surcharge', value: '$10.00' },
-                        { label: 'Insurance (declared $500)', value: '$12.50' },
-                     ].map((item, i) => (
-                        <div key={i} className="flex justify-between items-center py-3 border-b border-slate-50 last:border-none">
-                           <span className="text-sm font-bold text-slate-900">{item.label}</span>
-                           <span className="text-sm font-black text-slate-900">{item.value}</span>
-                        </div>
-                     ))}
-                  </div>
-               </Card>
+              <Button onClick={handleAddTier} variant="outline" className="rounded-xl font-bold text-xs">
+                <Plus size={16} className="mr-1" /> Add Volume Tier
+              </Button>
             </div>
-          </div>
+
+            <div className="space-y-4">
+              {tiers.map((tier, idx) => (
+                <div key={tier.id} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-slate-400">Tier #{idx + 1}</span>
+                    <p className="text-sm font-black text-slate-900 dark:text-white">
+                      {tier.minParcels} – {tier.maxParcels >= 99999 ? '∞ (Unlimited)' : tier.maxParcels} Parcels
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Min Parcels</label>
+                    <input
+                      type="number"
+                      value={tier.minParcels}
+                      onChange={(e) => handleUpdateTier(tier.id, 'minParcels', parseInt(e.target.value) || 0)}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Max Parcels</label>
+                    <input
+                      type="number"
+                      value={tier.maxParcels}
+                      onChange={(e) => handleUpdateTier(tier.id, 'maxParcels', parseInt(e.target.value) || 99999)}
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Hub / Omorfi Split (%)</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={tier.hubPercentage}
+                        onChange={(e) => handleUpdateTier(tier.id, 'hubPercentage', parseFloat(e.target.value) || 0)}
+                        className="w-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-600"
+                      />
+                      <span className="text-xs font-bold text-slate-400">% Hub / {tier.omorfiPercentage}% Omorfi</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={() => handleRemoveTier(tier.id)}
+                      variant="ghost"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* TAB 2: Logistics API Rate Markup */}
+        {activeTab === 'LOGISTICS_API' && (
+          <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-6">
+            <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Logistics API Automatic Rate Markup</h3>
+              <p className="text-xs font-medium text-slate-500">Automatically add your platform profit margin percentage to rates returned by external logistics API providers (e.g. DHL, GIG, Fez) without user notice.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Markup Percentage (%)</label>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <Percent size={18} className="text-slate-400" />
+                  <input
+                    type="number"
+                    value={logisticsMarkup.markupPercentage}
+                    onChange={(e) => setLogisticsMarkup({ ...logisticsMarkup, markupPercentage: parseFloat(e.target.value) || 0 })}
+                    className="bg-transparent border-none font-black text-lg w-full focus:outline-none"
+                  />
+                  <span className="text-xs font-bold text-slate-400">% added to rate</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum Markup Amount (₦)</label>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <span className="font-bold text-slate-400">₦</span>
+                  <input
+                    type="number"
+                    value={logisticsMarkup.minMarkupAmount}
+                    onChange={(e) => setLogisticsMarkup({ ...logisticsMarkup, minMarkupAmount: parseFloat(e.target.value) || 0 })}
+                    className="bg-transparent border-none font-black text-lg w-full focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+              <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                Example Calculation: If an external logistics partner API returns a rate of ₦2,000, with a {logisticsMarkup.markupPercentage}% markup, the final displayed rate to the user will be ₦{(2000 * (1 + logisticsMarkup.markupPercentage / 100)).toLocaleString()}.
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* TAB 3: SafePay Charges */}
+        {activeTab === 'SAFEPAY' && (
+          <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-6">
+            <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">SafePay Escrow Transaction Fees</h3>
+              <p className="text-xs font-medium text-slate-500">Configure fee percentages and limits for SafePay buyer-seller escrow transactions.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Buyer Escrow Fee (%)</label>
+                <input
+                  type="number"
+                  value={safePayConfig.buyerFeePercent}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, buyerFeePercent: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Seller Escrow Fee (%)</label>
+                <input
+                  type="number"
+                  value={safePayConfig.sellerFeePercent}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, sellerFeePercent: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum Escrow Fee (₦)</label>
+                <input
+                  type="number"
+                  value={safePayConfig.minEscrowFee}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, minEscrowFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Maximum Cap Fee (₦)</label>
+                <input
+                  type="number"
+                  value={safePayConfig.maxEscrowFee}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, maxEscrowFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* TAB 4: Base Pricing */}
+        {activeTab === 'BASE_PRICING' && (
+          <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-6">
+            <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Base Parcel Shipping Rates</h3>
+              <p className="text-xs font-medium text-slate-500">Configure global base shipping rates, weight adders, and special parcel surcharges.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum Shipping Fee (₦)</label>
+                <input
+                  type="number"
+                  value={basePricing.minShippingFee}
+                  onChange={(e) => setBasePricing({ ...basePricing, minShippingFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Oversized Parcel Fee (₦)</label>
+                <input
+                  type="number"
+                  value={basePricing.oversizedFee}
+                  onChange={(e) => setBasePricing({ ...basePricing, oversizedFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Fragile Handling Fee (₦)</label>
+                <input
+                  type="number"
+                  value={basePricing.fragileFee}
+                  onChange={(e) => setBasePricing({ ...basePricing, fragileFee: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+              </div>
+            </div>
+          </Card>
         )}
       </div>
     </BusinessRulesLayout>

@@ -1,17 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, ShieldAlert, RefreshCw, ArrowRight, UserCheck } from 'lucide-react';
 import { Avatar } from '@/src/components/ui/Avatar';
 import { NotificationPanel } from './NotificationPanel';
 import { ProfileMenu } from './ProfileMenu';
 import { useAuth } from '@/src/context/AuthContext';
 import { notificationRepository } from '@/src/services/db/NotificationRepository';
-import { Notification } from '@/src/types';
+import { Notification, UserRole } from '@/src/types';
+import { useNavigate } from 'react-router-dom';
+
+const ROLE_DASHBOARDS: Record<string, { label: string; path: string }> = {
+  SUPER_ADMIN: { label: 'Super Admin', path: '/admin/dashboard' },
+  MERCHANT: { label: 'Merchant', path: '/merchant/dashboard' },
+  CENTER_OWNER: { label: 'Hub Owner', path: '/point/dashboard/owner' },
+  CENTER_STAFF: { label: 'Hub Staff', path: '/point/dashboard/staff' },
+  DISPATCH_RIDER: { label: 'Dispatch Rider', path: '/dispatch/dashboard' },
+  LOGISTICS_OWNER: { label: 'Logistics Partner', path: '/logistics/dashboard/owner' },
+  CUSTOMER: { label: 'Customer', path: '/dashboard' },
+};
 
 export const GlobalHeaderRight: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const { user } = useAuth();
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const { user, impersonatedRole, impersonate, stopImpersonating, activeRole, setActiveRole } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const navigate = useNavigate();
+
+  const isSuperAdminUser = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     if (!user) return;
@@ -24,12 +39,90 @@ export const GlobalHeaderRight: React.FC = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const currentRole = impersonatedRole || activeRole || user?.role || 'CUSTOMER';
+
+  const handleSwitchRole = (targetRole: UserRole) => {
+    if (targetRole === 'SUPER_ADMIN') {
+      stopImpersonating();
+      setActiveRole('SUPER_ADMIN');
+    } else {
+      impersonate(targetRole);
+    }
+    setShowRoleMenu(false);
+    const routeInfo = ROLE_DASHBOARDS[targetRole];
+    if (routeInfo) {
+      navigate(routeInfo.path);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+      {/* Role Simulator / Switcher for Super Admin */}
+      {isSuperAdminUser && (
+        <div className="relative">
+          <button
+            onClick={() => { setShowRoleMenu(!showRoleMenu); setShowNotifications(false); setShowProfile(false); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+              impersonatedRole
+                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 animate-pulse'
+                : 'bg-primary-500/10 text-primary-700 dark:text-primary-300 border-primary-500/20 hover:bg-primary-500/20'
+            }`}
+            title="Switch User Role Perspective"
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Role:</span>
+            <span className="uppercase">{ROLE_DASHBOARDS[currentRole]?.label || currentRole}</span>
+            {impersonatedRole && (
+              <span className="ml-1 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full uppercase font-black">
+                Simulated
+              </span>
+            )}
+          </button>
+
+          {showRoleMenu && (
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 p-2 space-y-1">
+              <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                <p className="text-xs font-bold text-slate-800 dark:text-white flex items-center justify-between">
+                  <span>Role Simulator</span>
+                  {impersonatedRole && (
+                    <button
+                      onClick={() => handleSwitchRole('SUPER_ADMIN')}
+                      className="text-[10px] text-red-600 hover:underline font-semibold"
+                    >
+                      Reset to Admin
+                    </button>
+                  )}
+                </p>
+                <p className="text-[11px] text-slate-500">View & experience the app as any user type</p>
+              </div>
+
+              {Object.entries(ROLE_DASHBOARDS).map(([roleKey, info]) => {
+                const isActive = currentRole === roleKey;
+                return (
+                  <button
+                    key={roleKey}
+                    onClick={() => handleSwitchRole(roleKey as UserRole)}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition-colors ${
+                      isActive
+                        ? 'bg-primary-500 text-white font-bold'
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <span>{info.label}</span>
+                    <ArrowRight className={`w-3.5 h-3.5 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Notifications */}
       <div className="relative">
         <button
           className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-          onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}
+          onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); setShowRoleMenu(false); }}
         >
           <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />}
@@ -39,10 +132,11 @@ export const GlobalHeaderRight: React.FC = () => {
 
       <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 shrink-0 hidden sm:block" />
 
+      {/* Profile Menu */}
       <div className="relative">
         <button
           className="flex items-center gap-3 shrink-0"
-          onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); }}
+          onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); setShowRoleMenu(false); }}
         >
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold dark:text-white leading-tight">{user?.name || 'User'}</p>
