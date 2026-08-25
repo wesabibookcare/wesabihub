@@ -55,6 +55,11 @@ export const MerchantSettingsPage = () => {
   const [brandColor, setBrandColor] = useState('#7C3AED');
   const [storeTheme, setStoreTheme] = useState('modern');
 
+  const [allowDelegatedBooking, setAllowDelegatedBooking] = useState<boolean>(
+    user?.allowDelegatedBooking !== false
+  );
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState<boolean>(false);
+
   const [settings, setSettings] = useState<Record<string, boolean>>({
     newOrderReceived: true,
     orderPickedUp: true,
@@ -147,6 +152,10 @@ export const MerchantSettingsPage = () => {
         notificationSettings: settings
       });
 
+      await userEngine.updateProfile(user.uid, {
+        allowDelegatedBooking
+      } as any);
+
       setShowSaved(true);
       toast.success('Settings saved successfully');
       setTimeout(() => setShowSaved(false), 2000);
@@ -158,10 +167,29 @@ export const MerchantSettingsPage = () => {
     }
   };
 
+  const handleToggleDelegatedBooking = (enabled: boolean) => {
+    if (enabled) {
+      setShowDisclaimerModal(true);
+    } else {
+      setAllowDelegatedBooking(false);
+      toast.info('Delegated booking disabled. Other users cannot create parcels on your behalf.');
+    }
+  };
+
+  const confirmDelegatedBookingDisclaimer = async () => {
+    setAllowDelegatedBooking(true);
+    setShowDisclaimerModal(false);
+    if (user) {
+      await userEngine.updateProfile(user.uid, { allowDelegatedBooking: true } as any);
+      toast.success('Delegated booking enabled with legal disclaimer acknowledgement.');
+    }
+  };
+
   const categories = [
     { id: 'profile', label: 'User Profile', icon: User },
     { id: 'business', label: 'Business Profile', icon: Building2 },
     { id: 'branding', label: 'Store Branding', icon: Palette },
+    { id: 'delegated', label: 'Delegated Booking', icon: Smartphone },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Privacy & Security', icon: Shield },
   ];
@@ -315,6 +343,47 @@ export const MerchantSettingsPage = () => {
                    </motion.div>
                  )}
 
+                 {activeCategory === 'delegated' && (
+                   <motion.div
+                     key="delegated"
+                     initial={{ opacity: 0, x: 20 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     exit={{ opacity: 0, x: -20 }}
+                     className="space-y-8"
+                   >
+                      <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
+                         <div>
+                            <h2 className="text-2xl font-bold dark:text-white font-display">Delegated Booking Preferences</h2>
+                            <p className="text-sm text-slate-800">Control whether approved Hub Owners, Staff, or fellow Merchants can assist you with booking parcels on your behalf.</p>
+                         </div>
+
+                         <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-6">
+                            <div className="flex items-center justify-between">
+                               <div>
+                                  <p className="font-bold dark:text-white">Allow Delegated "Help Me" Booking</p>
+                                  <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mt-1">
+                                    Enables authorized helpers to initiate a parcel creation on your behalf by verifying a 6-digit OTP code sent to your phone/email.
+                                  </p>
+                               </div>
+                               <Switch
+                                 checked={allowDelegatedBooking}
+                                 onChange={(e: any) => handleToggleDelegatedBooking(e.target.checked)}
+                               />
+                            </div>
+
+                            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 leading-relaxed space-y-2">
+                               <p className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                                 <Shield size={16} /> Legal Notice & Merchant Responsibility
+                               </p>
+                               <p>
+                                 By enabling this feature, you authorize designated helpers (verified Hub Owners, Hub Staff, or fellow Merchants) to book shipments under your merchant identity upon providing a 6-digit security OTP. OmorfiHub is not liable for unauthorized OTP sharing or carelessness on your part. Never share your OTP code unless you explicitly requested assistance.
+                               </p>
+                            </div>
+                         </div>
+                      </Card>
+                   </motion.div>
+                 )}
+
                  {activeCategory === 'branding' && (
                    <motion.div
                      key="branding"
@@ -442,6 +511,53 @@ export const MerchantSettingsPage = () => {
            </div>
         </div>
       </div>
+
+      {/* Legal Disclaimer Modal */}
+      {showDisclaimerModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-lg w-full space-y-6 border border-slate-200 dark:border-slate-800 shadow-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-600">
+                 <Shield size={28} />
+              </div>
+              <div className="space-y-2">
+                 <h3 className="text-xl font-bold dark:text-white font-display">Delegated Booking Authorization Terms</h3>
+                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                   Please read and acknowledge the following legal disclaimer before activating delegated parcel booking.
+                 </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 space-y-3 leading-relaxed max-h-48 overflow-y-auto">
+                 <p className="font-semibold text-slate-900 dark:text-white">
+                   1. Authorization Consent:
+                 </p>
+                 <p>
+                   You explicitly consent that verified Hub Owners, Hub Staff, or fellow Merchants may initiate shipment creation under your merchant identity only when you provide them with the 6-digit one-time authorization code (OTP) sent to your registered phone or email.
+                 </p>
+                 <p className="font-semibold text-slate-900 dark:text-white">
+                   2. Liability & OTP Safety:
+                 </p>
+                 <p>
+                   OmorfiHub and Omorfi Limited hold zero liability for fraudulent, incorrect, or careless bookings resulting from your voluntary disclosure of the authorization OTP code to unauthorized individuals.
+                 </p>
+                 <p className="font-semibold text-slate-900 dark:text-white">
+                   3. Contraband Responsibility:
+                 </p>
+                 <p>
+                   You remain strictly liable for the contents of any parcel booked on your behalf. Parcels containing illegal or hazardous goods will be confiscated and reported to legal authorities.
+                 </p>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2">
+                 <Button variant="outline" onClick={() => setShowDisclaimerModal(false)} className="rounded-xl h-11">
+                    Cancel
+                 </Button>
+                 <Button onClick={confirmDelegatedBookingDisclaimer} className="rounded-xl h-11 bg-amber-600 hover:bg-amber-700 text-white font-bold">
+                    I Understand & Agree
+                 </Button>
+              </div>
+           </motion.div>
+        </div>
+      )}
     </MerchantLayout>
   );
 };

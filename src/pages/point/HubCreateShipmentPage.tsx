@@ -60,6 +60,13 @@ export const HubCreateShipmentPage: React.FC = () => {
   const [destinationHubId, setDestinationHubId] = useState('');
   const [serviceType, setServiceType] = useState<'STANDARD' | 'EXPRESS'>('STANDARD');
 
+  // Delegated Booking OTP State
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isLegalConfirmed, setIsLegalConfirmed] = useState(false);
+
   // Submit State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdParcel, setCreatedParcel] = useState<Parcel | null>(null);
@@ -351,7 +358,7 @@ export const HubCreateShipmentPage: React.FC = () => {
 
                 {/* Selected Merchant Confirmation Card */}
                 {selectedMerchant ? (
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs space-y-1">
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-emerald-900 text-sm">
                         {selectedMerchant.name || selectedMerchant.displayName}
@@ -359,7 +366,47 @@ export const HubCreateShipmentPage: React.FC = () => {
                       <CheckCircle2 size={16} className="text-emerald-600" />
                     </div>
                     <p className="text-emerald-800 text-[11px]">{selectedMerchant.email}</p>
-                    <p className="text-[10px] text-emerald-700 font-mono mt-1">UID: {selectedMerchant.uid}</p>
+
+                    {/* Delegated "Help Me" OTP Step */}
+                    {!isOtpSent ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (selectedMerchant.allowDelegatedBooking === false) {
+                            toast.error(`${selectedMerchant.name || 'This merchant'} has disabled delegated booking in their settings.`);
+                            return;
+                          }
+                          setIsSendingOtp(true);
+                          const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                          setGeneratedOtp(mockOtp);
+                          setIsOtpSent(true);
+                          setIsSendingOtp(false);
+                          toast.success(`6-digit authorization OTP sent to ${selectedMerchant.email || 'merchant phone/email'}! (Test OTP: ${mockOtp})`);
+                        }}
+                        disabled={isSendingOtp}
+                        className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5"
+                      >
+                        {isSendingOtp ? <RefreshCw className="animate-spin" size={14} /> : null}
+                        Request 6-Digit Authorization OTP
+                      </button>
+                    ) : (
+                      <div className="space-y-2 pt-1 border-t border-emerald-200">
+                        <span className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest block">
+                          Enter Merchant Authorization OTP *
+                        </span>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value)}
+                          placeholder="6-digit OTP code"
+                          className="w-full text-center tracking-widest font-mono text-sm py-2 bg-white border border-emerald-300 rounded-lg text-emerald-950 font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <p className="text-[10px] text-emerald-700">
+                          Ask the merchant for the 6-digit code sent to their registered phone/email.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
@@ -490,11 +537,27 @@ export const HubCreateShipmentPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Legal Warning & Disclaimer Checkbox */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+                   <div className="flex items-start gap-2 text-slate-800">
+                      <input
+                        type="checkbox"
+                        id="legalConfirm"
+                        checked={isLegalConfirmed}
+                        onChange={(e) => setIsLegalConfirmed(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <label htmlFor="legalConfirm" className="font-semibold cursor-pointer text-slate-800 leading-relaxed">
+                        ⚠️ <span className="text-slate-900 font-bold">Helper Legal Disclaimer & Safety Confirmation:</span> I confirm that I am creating this parcel with explicit authorization from the merchant, and I verify that the parcel does not contain illegal, contraband, or dangerous items. OmorfiHub will keep a permanent security audit log of this helper transaction.
+                      </label>
+                   </div>
+                </div>
+
                 {/* Submit Action */}
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
                   <button
                     type="submit"
-                    disabled={isSubmitting || !selectedMerchant || !destinationHubId}
+                    disabled={isSubmitting || !selectedMerchant || !destinationHubId || !isOtpSent || otpCode.length !== 6 || !isLegalConfirmed}
                     className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition disabled:opacity-50"
                   >
                     {isSubmitting ? <RefreshCw className="animate-spin" size={16} /> : <ArrowRight size={16} />}
