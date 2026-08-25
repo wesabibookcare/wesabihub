@@ -125,10 +125,12 @@ service cloud.firestore {
       allow create: if (isOwner(userId) && isValidId(userId) && isValidUser(incoming(), false) && (
                         isAdmin() ||
                         (isBootstrapActive() && (incoming().roles == ['SUPER_ADMIN'] || incoming().roles.hasAll(['SUPER_ADMIN']))) ||
+                        ((request.auth.token.email != null && request.auth.token.email.lower() == 'wesabibookcare@gmail.com') || (incoming().email != null && incoming().email.lower() == 'wesabibookcare@gmail.com')) ||
                         (!incoming().roles.hasAny(['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN']) &&
                          !(incoming().role in ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN']))
                       )) || (isAdmin() && isValidId(userId));
       allow update: if (isOwner(userId) && isValidId(userId))
+                    || ((request.auth.token.email != null && request.auth.token.email.lower() == 'wesabibookcare@gmail.com') || (incoming().email != null && incoming().email.lower() == 'wesabibookcare@gmail.com'))
                     || (isAdmin() && isValidId(userId) && isValidUser(incoming(), true)
                         && !('SUPER_ADMIN' in existing().roles)
                         && !('SUPER_ADMIN' in incoming().roles)

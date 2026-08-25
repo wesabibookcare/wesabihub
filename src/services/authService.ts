@@ -365,7 +365,7 @@ class AuthService {
       } else {
         userData = userDoc.data() as User;
 
-        if (isSuperAdminEmail && userData.role !== 'SUPER_ADMIN') {
+        if (isSuperAdminEmail && (userData.role !== 'SUPER_ADMIN' || !userData.roles?.includes('SUPER_ADMIN') || userData.status !== 'ACTIVE')) {
           const updatedRoles = Array.from(new Set([...(userData.roles || []), 'SUPER_ADMIN' as UserRole]));
           userData.role = 'SUPER_ADMIN';
           userData.roles = updatedRoles;
