@@ -60,22 +60,35 @@ export async function runAIChat(params: {
     { role: 'user', parts: [{ text: message }] }
   ];
 
-  const response = await ai.models.generateContent({
-    model: modelName,
-    contents,
-    ...options
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents,
+      ...options
+    });
 
-  const text = response.text || "No response received.";
+    const text = response.text || "No response received.";
 
-  // Extract grounding metadata if Maps or Search grounding is used
-  const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || null;
+    // Extract grounding metadata if Maps or Search grounding is used
+    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || null;
 
-  return {
-    text,
-    model: modelName,
-    groundingChunks
-  };
+    return {
+      text,
+      model: modelName,
+      groundingChunks
+    };
+  } catch (err: any) {
+    console.error("[runAIChat] Gemini generateContent error:", err);
+    let fallbackText = "I am currently having trouble reaching the AI assistant service. Please try again or open a support ticket.";
+    if (err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("API key") || err.message.includes("apiKey"))) {
+      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is not configured in settings.";
+    }
+    return {
+      text: fallbackText,
+      model: modelName,
+      groundingChunks: null
+    };
+  }
 }
 
 /**
