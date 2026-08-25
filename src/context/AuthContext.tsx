@@ -142,11 +142,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data() || {};
-            const roles = data.roles || (data.role ? [data.role] : []);
+            const isSuperAdminEmail = firebaseUser.email?.toLowerCase() === 'wesabibookcare@gmail.com';
+
+            let roles = data.roles || (data.role ? [data.role] : []);
+            let role = data.role || roles[0] || 'CUSTOMER';
+            let status = data.status || 'ACTIVE';
+
+            if (isSuperAdminEmail) {
+              if (!roles.includes('SUPER_ADMIN')) {
+                roles = Array.from(new Set([...roles, 'SUPER_ADMIN' as UserRole]));
+              }
+              role = 'SUPER_ADMIN';
+              status = 'ACTIVE';
+
+              if (data.role !== 'SUPER_ADMIN' || !data.roles?.includes('SUPER_ADMIN') || data.status !== 'ACTIVE') {
+                updateDoc(userDocRef, {
+                  role: 'SUPER_ADMIN',
+                  roles,
+                  status: 'ACTIVE'
+                }).catch(e => console.warn('Background auto-heal super admin doc failed:', e));
+              }
+            }
+
             const profile = {
               ...data,
               roles,
-              role: data.role || roles[0] || 'CUSTOMER',
+              role,
+              status,
               id: docSnap.id,
               uid: docSnap.id
             } as User;
