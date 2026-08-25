@@ -15,7 +15,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { User, UserRole, UserStatus } from '../types';
 import { VALID_PUBLIC_ROLES } from '../constants/roles';
@@ -178,26 +178,38 @@ class AuthService {
     const userDocRef = doc(db, 'users', fbUser.uid);
     const userDoc = await getDoc(userDocRef);
 
-    if (userDoc.exists()) {
-      console.log('User document exists');
-      const userData = userDoc.data() as User;
+    let userData: User | null = null;
+    let targetDocRef = userDocRef;
 
+    if (userDoc.exists()) {
+      userData = userDoc.data() as User;
+    } else if (fbUser.email) {
+      // Look up existing user profile by email in case of prior email registration or mismatched Auth UID
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', fbUser.email.toLowerCase()));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const foundDoc = snap.docs[0];
+        userData = foundDoc.data() as User;
+        targetDocRef = foundDoc.ref;
+      }
+    }
+
+    if (userData) {
       // Check if account is suspended/disabled
       if (['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
         await signOut(auth);
         throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
       }
 
-      await updateDoc(userDocRef, {
+      await updateDoc(targetDocRef, {
         lastLogin: serverTimestamp()
-      });
+      }).catch(e => console.warn('Failed to update lastLogin for Google user:', e));
 
-      await this.logAudit(fbUser.uid, 'LOGIN_GOOGLE', { email: fbUser.email });
+      await this.logAudit(userData.uid || fbUser.uid, 'LOGIN_GOOGLE', { email: fbUser.email });
       return userData;
     } else {
-      console.log('User document does NOT exist');
-      // First-time sign-up with Google
-      // DO NOT CREATE PROFILE YET. Redirect to role selection.
+      console.log('User document does NOT exist for Google user');
       return null;
     }
   }
