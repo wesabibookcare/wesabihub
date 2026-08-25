@@ -182,7 +182,6 @@ class AuthService {
     const userDoc = await getDoc(userDocRef);
 
     let userData: User | null = null;
-    let targetDocRef = userDocRef;
 
     if (userDoc.exists()) {
       userData = userDoc.data() as User;
@@ -192,49 +191,53 @@ class AuthService {
       const q = query(usersRef, where('email', '==', fbUser.email.toLowerCase()));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        const foundDoc = snap.docs[0];
-        userData = foundDoc.data() as User;
-        targetDocRef = foundDoc.ref;
+        userData = snap.docs[0].data() as User;
       }
     }
 
     const isSuperAdminEmail = fbUser.email?.toLowerCase() === 'wesabibookcare@gmail.com';
 
     if (userData) {
-      // If primary Super Admin email, promote to SUPER_ADMIN if needed
-      if (isSuperAdminEmail && userData.role !== 'SUPER_ADMIN') {
-        const updatedRoles = Array.from(new Set([...(userData.roles || []), 'SUPER_ADMIN' as UserRole]));
-        userData.role = 'SUPER_ADMIN';
-        userData.roles = updatedRoles;
-        userData.status = 'ACTIVE';
-        await updateDoc(targetDocRef, {
-          role: 'SUPER_ADMIN',
-          roles: updatedRoles,
-          status: 'ACTIVE',
-          lastLogin: serverTimestamp()
-        }).catch(e => console.warn('Failed to promote primary super admin on Google sign in:', e));
-      } else {
-        // Check if account is suspended/disabled
-        if (['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
-          await signOut(auth);
-          throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
-        }
-
-        await updateDoc(targetDocRef, {
-          lastLogin: serverTimestamp()
-        }).catch(e => console.warn('Failed to update lastLogin for Google user:', e));
+      // Check if account is suspended/disabled (for non super admin)
+      if (!isSuperAdminEmail && ['SUSPENDED', 'DISABLED', 'BLOCKED', 'REJECTED'].includes(userData.status)) {
+        await signOut(auth);
+        throw new Error(`Your account is ${userData.status.toLowerCase()}. Please contact support.`);
       }
 
-      await this.logAudit(userData.uid || fbUser.uid, 'LOGIN_GOOGLE', { email: fbUser.email });
-      return userData;
+      const updatedRoles = isSuperAdminEmail
+        ? Array.from(new Set([...(userData.roles || []), 'SUPER_ADMIN' as UserRole]))
+        : (userData.roles || [userData.role || 'CUSTOMER']);
+      const updatedRole = isSuperAdminEmail ? 'SUPER_ADMIN' : (userData.role || 'CUSTOMER');
+      const updatedStatus = isSuperAdminEmail ? 'ACTIVE' : userData.status;
+
+      const mergedUser: User = {
+        ...userData,
+        id: fbUser.uid,
+        uid: fbUser.uid,
+        role: updatedRole,
+        roles: updatedRoles,
+        status: updatedStatus,
+        email: fbUser.email || userData.email,
+        displayName: userData.displayName || fbUser.displayName || (isSuperAdminEmail ? 'Super Admin' : 'User')
+      };
+
+      // Always write/merge to doc(db, 'users', fbUser.uid) so AuthProvider listener finds it
+      await setDoc(userDocRef, {
+        ...mergedUser,
+        lastLogin: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      await this.logAudit(fbUser.uid, 'LOGIN_GOOGLE', { email: fbUser.email });
+      return mergedUser;
     } else {
-      // User document does NOT exist for Google user; create an active user profile immediately!
+      // User document does NOT exist for Google user anywhere; create an active user profile immediately!
       const defaultRole: UserRole = isSuperAdminEmail ? 'SUPER_ADMIN' : 'CUSTOMER';
 
       const newUserDoc: User = {
         id: fbUser.uid,
         uid: fbUser.uid,
-        displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+        displayName: fbUser.displayName || fbUser.email?.split('@')[0] || (isSuperAdminEmail ? 'Super Admin' : 'User'),
         email: fbUser.email || '',
         roles: [defaultRole],
         role: defaultRole,
@@ -246,7 +249,7 @@ class AuthService {
           phone: false,
           kyc: false
         },
-        wesabiUsername: `WSH_${fbUser.uid.substring(0, 8)}`
+        wesabiUsername: isSuperAdminEmail ? 'WSH_SUPER_ADMIN' : `WSH_${fbUser.uid.substring(0, 8)}`
       };
 
       await setDoc(userDocRef, {
