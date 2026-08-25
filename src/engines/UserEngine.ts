@@ -7,6 +7,7 @@ import { roleApplicationRepository } from '../services/db/RoleApplicationReposit
 import { monitoringEngine } from './MonitoringEngine';
 import { addressRepository } from '../services/db/AddressRepository';
 import { supportTicketRepository } from '../services/db/SupportTicketRepository';
+import { VALID_PUBLIC_ROLES } from '../constants/roles';
 import {
   storageEngine,
   notificationEngine,
@@ -56,8 +57,7 @@ class UserEngine {
       }
 
     // 1. Validate public registration role authority:
-    const VALID_PUBLIC_ROLES: UserRole[] = ['CUSTOMER', 'MERCHANT', 'CENTER_OWNER', 'CENTER_STAFF', 'DISPATCH_RIDER'];
-    const safeRole: UserRole = VALID_PUBLIC_ROLES.includes(role) ? role : 'CUSTOMER';
+    const safeRole: UserRole = (VALID_PUBLIC_ROLES as readonly string[]).includes(role) ? role : 'CUSTOMER';
 
     // Customer and Hub Staff roles get direct instant active access.
     // Every other role (Merchant, Hub Owner, Dispatch Rider) gets instant active access as CUSTOMER,

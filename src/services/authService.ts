@@ -18,6 +18,7 @@ import {
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { User, UserRole, UserStatus } from '../types';
+import { VALID_PUBLIC_ROLES } from '../constants/roles';
 import { auditEngine } from './AuditEngine';
 
 export const ROLE_REDIRECTS: Record<UserRole, string> = {
@@ -73,8 +74,7 @@ class AuthService {
   }
 
   async register(email: string, pass: string, displayName: string, role: UserRole = 'CUSTOMER', extraData: any = {}): Promise<User> {
-    const VALID_PUBLIC_ROLES: UserRole[] = ['CUSTOMER', 'MERCHANT', 'CENTER_OWNER', 'CENTER_STAFF', 'DISPATCH_RIDER'];
-    const safeRole: UserRole = VALID_PUBLIC_ROLES.includes(role) ? role : 'CUSTOMER';
+    const safeRole: UserRole = (VALID_PUBLIC_ROLES as readonly string[]).includes(role) ? role : 'CUSTOMER';
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const fbUser = userCredential.user;
