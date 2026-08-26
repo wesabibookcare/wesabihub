@@ -3,9 +3,10 @@
   "appId": "1:583397037816:web:a0032d208286b0972c4d0d",
   "apiKey": "AIzaSyAvyYRaHA5GHLMilvFlNfjP8fySONitUV4",
   "authDomain": "wesabibookcare-d0ceb.firebaseapp.com",
+  "databaseURL": "https://wesabibookcare-d0ceb-default-rtdb.firebaseio.com",
   "storageBucket": "wesabibookcare-d0ceb.firebasestorage.app",
   "messagingSenderId": "583397037816",
-  "measurementId": "",
+  "measurementId": "G-65VGE049J1",
   "oAuthClientId": "583397037816-2cg1bg69rrddop4139gqjsa21c8ao1ft.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }
