@@ -68,17 +68,54 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Subscribe to live updates
     const unsubscribe = systemSettingsRepository.subscribeToSettings(
       (data) => {
-        if (data) {
-          setSettings(data);
-        }
+        setSettings(data || {
+          platformName: 'OmorfiHub',
+          tagline: 'Seamless Logistics for Everyone',
+          supportEmail: 'support@omorfihub.com',
+          supportPhone: '+234 123 456 7890',
+          successAnimationStyle: 'confetti',
+          branding: {
+            logoUrl: '/assets/brand/omorfi-logo.png',
+            logoDarkUrl: '/assets/brand/omorfi-logo.png',
+            logoLightUrl: '/assets/brand/omorfi-logo.png',
+            defaultTheme: 'light'
+          },
+          countryConfig: {
+            defaultCountry: 'Nigeria',
+            defaultCurrency: 'Naira',
+            defaultCurrencySymbol: '₦'
+          },
+          featureFlags: {
+            notifications: true,
+            enableSafePay: true
+          }
+        } as any);
         setLoading(false);
       },
       (error) => {
-        // Previously, an error here left `loading` stuck at true forever,
-        // making the whole landing page spin endlessly with no way out.
-        // Now we always stop loading and fall back to safe defaults so the
-        // page renders regardless.
         console.error('Failed to load system settings, using defaults:', error);
+        setSettings({
+          platformName: 'OmorfiHub',
+          tagline: 'Seamless Logistics for Everyone',
+          supportEmail: 'support@omorfihub.com',
+          supportPhone: '+234 123 456 7890',
+          successAnimationStyle: 'confetti',
+          branding: {
+            logoUrl: '/assets/brand/omorfi-logo.png',
+            logoDarkUrl: '/assets/brand/omorfi-logo.png',
+            logoLightUrl: '/assets/brand/omorfi-logo.png',
+            defaultTheme: 'light'
+          },
+          countryConfig: {
+            defaultCountry: 'Nigeria',
+            defaultCurrency: 'Naira',
+            defaultCurrencySymbol: '₦'
+          },
+          featureFlags: {
+            notifications: true,
+            enableSafePay: true
+          }
+        } as any);
         setLoading(false);
       }
     );

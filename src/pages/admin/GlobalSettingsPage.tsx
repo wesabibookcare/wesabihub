@@ -443,15 +443,31 @@ export const GlobalSettingsPage = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-[800px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          {/* Mobile Select Dropdown for Tabs */}
+          <div className="lg:hidden w-full">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value as TabType)}
+              className="w-full h-10 px-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl uppercase tracking-wider dark:text-white"
+            >
+              {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => (
+                <option key={tab} value={tab}>
+                  Tab: {tab.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Desktop Horizontal Scrollable Tab Bar */}
+          <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-[750px] scrollbar-thin">
             {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
                   "px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap",
-                  activeTab === tab ? "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-xs" : "text-slate-900 hover:text-slate-900 dark:hover:text-slate-100"
+                  activeTab === tab ? "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-xs" : "text-slate-600 hover:text-slate-900 dark:hover:text-slate-100"
                 )}
               >
                 {tab.replace('_', ' ')}

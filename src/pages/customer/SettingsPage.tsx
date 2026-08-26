@@ -138,6 +138,24 @@ export const SettingsPage = () => {
                             <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
                             <div className="space-y-4">
+                               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Celebratory Experience</h3>
+                               <div className="flex items-center justify-between">
+                                  <div>
+                                     <p className="font-bold text-sm dark:text-white">Enable Celebratory Success Animations</p>
+                                     <p className="text-xs text-slate-500">Show celebratory success animations (confetti, badges, stars) when completing transactions like parcel booking or payment funding.</p>
+                                  </div>
+                                  <motion.div whileTap={{ scale: 0.9 }}>
+                                    <Switch
+                                      checked={prefs.enableSuccessAnimations !== false}
+                                      onChange={(e) => handlePrefChange('enableSuccessAnimations', e.target.checked)}
+                                    />
+                                  </motion.div>
+                               </div>
+                            </div>
+
+                            <div className="h-px bg-slate-100 dark:bg-slate-800" />
+
+                            <div className="space-y-4">
                                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Delivery Channels</h3>
                                {[
                                  { id: 'push', icon: Smartphone, title: 'Push Notifications' },

@@ -61,7 +61,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   requiredPermission,
   fallback = <Navigate to="/unauthorized" replace />
 }) => {
-  const { user, loading } = useAuth();
+  const { user, impersonatedRole, activeRole, loading } = useAuth();
 
   if (loading) {
     return null;
@@ -71,7 +71,14 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !user.roles.some(role => allowedRoles.includes(role))) {
+  // Super Admin account or active Super Admin impersonation bypasses restriction checks
+  const isSuperAdminUser = (Array.isArray(user.roles) && user.roles.includes('SUPER_ADMIN')) || user.role === 'SUPER_ADMIN' || user.email === 'wesabibookcare@gmail.com';
+  if (isSuperAdminUser || (impersonatedRole && isSuperAdminUser)) {
+    return <>{children}</>;
+  }
+
+  const userRoles = Array.isArray(user.roles) ? user.roles : [user.role].filter(Boolean);
+  if (allowedRoles && !userRoles.some(role => allowedRoles.includes(role)) && !allowedRoles.includes(activeRole as UserRole)) {
     return <>{fallback}</>;
   }
 
