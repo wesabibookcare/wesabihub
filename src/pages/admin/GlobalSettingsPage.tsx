@@ -223,7 +223,70 @@ export const GlobalSettingsPage = () => {
     }
   }, [activeTab]);
 
-  if (loading || !settings) {
+  // Fallback default settings object if settings is null or Firestore is initializing
+  const activeSettings: SystemSettings = settings || (globalSettings ? globalSettings : {
+    platformName: 'OmorfiHub',
+    tagline: 'Smart Hub & Delivery Platform',
+    maintenanceMode: false,
+    supportEmail: 'support@omorfihub.com',
+    supportPhone: '+234 800 000 0000',
+    successAnimationStyle: 'confetti',
+    landingPage: {
+      hero: { title: 'Fast, Safe & Secure Hub Logistics', subtitle: 'Connect with local hubs, riders, and merchants with full payment protection.', backgroundImageUrl: '' },
+      descriptions: { networkSummary: '', merchantValueProp: '', logisticsValueProp: '', centerValueProp: '' },
+      statistics: [
+        { id: '1', label: 'Active Hubs', value: '150+' },
+        { id: '2', label: 'Parcels Delivered', value: '25,000+' }
+      ]
+    },
+    branding: {
+      primaryColor: '#0F172A',
+      secondaryColor: '#3B82F6',
+      typography: { headingFont: 'Inter', bodyFont: 'Inter' }
+    },
+    socialLinks: { facebook: '', instagram: '', linkedin: '', twitter: '', tiktok: '', youtube: '', whatsapp: '', telegram: '', website: '' },
+    countryConfig: {
+      defaultCountry: 'Nigeria',
+      defaultCurrency: 'NGN',
+      defaultCurrencySymbol: '₦',
+      defaultTimezone: 'Africa/Lagos',
+      defaultPhoneCode: '+234',
+      defaultDateFormat: 'DD/MM/YYYY',
+      defaultAddressFormat: 'Standard',
+      taxSettings: { enabled: true, vatRate: 7.5 },
+      consumerProtectionRules: ''
+    },
+    companyPages: { aboutUs: '', howItWorks: '', solutions: '', forMerchants: '', becomeHub: '', pricing: '', contactUs: '' },
+    contactInfo: { supportEmail: 'support@omorfihub.com', supportPhone: '+234 800 000 0000', customerCareEmail: '', officeAddresses: [], businessHours: '' },
+    featureFlags: { paymentProtection: true, weSabiChat: true, qrVerification: true, barcodeVerification: true, storage: true, returns: true, apiPlatform: true, googleMaps: true, aiCustomerCare: true, notifications: true, enableSafePay: true },
+    policies: { privacyPolicy: '', termsOfService: '', paymentProtectionPolicy: '', returnsPolicy: '', merchantPolicy: '', communityGuidelines: '' },
+    footer: { links: [] },
+    telegramConfig: { botToken: '', chatId: '', enabled: false },
+    smsConfig: { provider: 'FALLBACK', apiKey: '', senderId: 'OmorfiHub', enabled: false },
+    emailConfig: { provider: 'FALLBACK', apiKey: '', defaultSender: 'no-reply@omorfihub.com', enabled: false },
+    communicationSettings: { notificationLimits: 50, retryPolicy: { maxAttempts: 3, delaySeconds: 10 }, quietHoursStart: '22:00', quietHoursEnd: '06:00' },
+    notificationTemplates: {
+      received: { title: 'Parcel Received', body: 'We have received your parcel {{trackingNumber}} at our hub center.', enabled: true },
+      approved: { title: 'Account Approved', body: 'Welcome to OmorfiHub!', enabled: true },
+      rejected: { title: 'Application Rejected', body: 'Your registration application was rejected.', enabled: true },
+      reupload: { title: 'Document Action Needed', body: 'Please reupload document due to compliance issues.', enabled: true },
+      suspended: { title: 'Account Suspended', body: 'Your account has been suspended.', enabled: true }
+    },
+    mapsConfig: {
+      mapsProvider: 'GOOGLE', defaultSearchRadiusKm: 10, maxDispatchRadiusKm: 15, defaultCountry: 'Nigeria', distanceUnits: 'km',
+      locationUpdateIntervalMs: 10000, geofenceRadiusMeters: 100, locationAccuracyThresholdMeters: 15, routeDeviationThresholdMeters: 150,
+      enableRouteDeviationDetection: true, enableLiveRiderTracking: true, enableGeofencing: true
+    },
+    paymentConfig: {
+      primaryProvider: 'FLUTTERWAVE', backupProvider: 'PAYSTACK', enabledProviders: ['FLUTTERWAVE', 'PAYSTACK'],
+      primarySafePayProvider: 'FLUTTERWAVE', primaryPlatformProvider: 'PAYSTACK', enableFallback: true,
+      allowedFallbackTypes: ['WALLET_FUNDING', 'REGISTRATION_FEE'], retryLimits: 3, timeoutDuration: 30, paymentMaintenanceMode: false,
+      providerPriority: ['PAYSTACK', 'FLUTTERWAVE'], supportedCurrencies: ['NGN', 'USD'], webhookEndpoint: '/api/payment-protection/webhook',
+      settlementDelays: 86400, refundRules: ['FULL_REFUND'], isFlutterwaveEnabled: true
+    }
+  } as SystemSettings);
+
+  if (loading && !settings && !globalSettings) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <RefreshCcw className="animate-spin text-primary-500" size={32} />
