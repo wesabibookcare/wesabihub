@@ -7,6 +7,8 @@ import { HelpCircle, Save, Users, Plus, X, RefreshCw } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../lib/apiClient';
+import { configurationEngine } from '../../engines/ConfigurationEngine';
+import { toast } from 'sonner';
 
 interface Persona {
   id: string;
