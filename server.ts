@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 declare global {
   namespace Express {
     interface Request {
