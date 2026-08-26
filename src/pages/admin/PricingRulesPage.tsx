@@ -64,6 +64,7 @@ export const PricingRulesPage = () => {
   const [basePricing, setBasePricing] = useState({
     minShippingFee: 500,
     baseWeightKg: 1.0,
+    hubBaseRatePerKg: 300,
     weightMultiplier: 1.5,
     oversizedFee: 1000,
     fragileFee: 500,
@@ -380,7 +381,7 @@ export const PricingRulesPage = () => {
               <p className="text-xs font-medium text-slate-500">Configure global base shipping rates, weight adders, and special parcel surcharges.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum Shipping Fee (₦)</label>
                 <input
@@ -389,6 +390,17 @@ export const PricingRulesPage = () => {
                   onChange={(e) => setBasePricing({ ...basePricing, minShippingFee: parseFloat(e.target.value) || 0 })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-primary-600 dark:text-primary-400 font-bold">Hub Center Rate per Kg (₦/kg)</label>
+                <input
+                  type="number"
+                  value={basePricing.hubBaseRatePerKg || 300}
+                  onChange={(e) => setBasePricing({ ...basePricing, hubBaseRatePerKg: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-primary-500 rounded-xl p-3 font-black text-base text-primary-600"
+                />
+                <p className="text-[10px] text-slate-500">Rate charged per kilogram for parcel processing across Hub Centers.</p>
               </div>
 
               <div className="space-y-2">

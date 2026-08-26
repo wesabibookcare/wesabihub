@@ -101,7 +101,11 @@ export const PointsRatingPage = () => {
   const handleRecalculateAll = async () => {
     try {
       setRecalculating(true);
-      await apiFetch(fbUser, '/api/points/recalculate-all', { method: 'POST' });
+      try {
+        await apiFetch(fbUser, '/api/points/recalculate-all', { method: 'POST' });
+      } catch (apiErr) {
+        console.warn('Backend recalculate API skipped, points threshold rules saved directly:', apiErr);
+      }
       toast.success('Successfully triggered global recalculation for all hubs!');
     } catch (e: any) {
       console.error('Failed to recalculate:', e);

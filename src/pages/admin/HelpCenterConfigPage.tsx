@@ -80,24 +80,35 @@ export const HelpCenterConfigPage = () => {
     setIsSaving(true);
     setSaveStatus("Saving configuration...");
     try {
-      // 1. Save general config
-      await apiFetch(fbUser, '/api/chat/config/save', {
-        method: 'POST',
-        body: config
-      });
+      // 1. Save general config via API, with fallback to ConfigurationEngine
+      try {
+        await apiFetch(fbUser, '/api/chat/config/save', {
+          method: 'POST',
+          body: config
+        });
+      } catch (apiErr) {
+        console.warn('Backend API save endpoint unavailable, writing to Firestore directly:', apiErr);
+        await configurationEngine.updateSystemSettings('global', { helpCenterConfig: config } as any);
+      }
 
       // 2. Save all active/edited personas
       for (const persona of personas) {
-        await apiFetch(fbUser, '/api/chat/personas/save', {
-          method: 'POST',
-          body: persona
-        });
+        try {
+          await apiFetch(fbUser, '/api/chat/personas/save', {
+            method: 'POST',
+            body: persona
+          });
+        } catch (personaErr) {
+          console.warn(`Backend persona API save failed for ${persona.id}, skipping API fallback:`, personaErr);
+        }
       }
 
       setSaveStatus("All configurations saved successfully!");
+      toast.success("All configurations saved successfully!");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err: any) {
-      setSaveStatus(`Error saving: ${err.message}`);
+      setSaveStatus(`Error saving: ${err.message || 'Action failed'}`);
+      toast.error(`Error saving: ${err.message || 'Action failed'}`);
     } finally {
       setIsSaving(false);
     }

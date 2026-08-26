@@ -598,8 +598,12 @@ export const HelpCenterWidget = () => {
                       {messages.map((msg) => (
                         <div key={msg.id} className={cn("flex items-end gap-2", msg.sender === 'user' ? "flex-row-reverse" : "flex-row")}>
                           {msg.sender !== 'user' && (
-                            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-primary-200">
-                              <video src="/assets/brand/omorfi-avatar.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-primary-200 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                              {Array.isArray(personas) && personas.find(p => p.id === selectedPersonaId)?.profilePictureUrl ? (
+                                <img src={personas.find(p => p.id === selectedPersonaId)?.profilePictureUrl} className="w-full h-full object-cover" alt="AI Avatar" />
+                              ) : (
+                                <video src="/assets/brand/omorfi-avatar.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                              )}
                             </div>
                           )}
                           <div
