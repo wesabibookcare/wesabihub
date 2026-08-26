@@ -64,72 +64,76 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const defaultSettings: SystemSettings = {
+    platformName: 'OmorfiHub',
+    tagline: 'Seamless Logistics for Everyone',
+    supportEmail: 'support@omorfihub.com',
+    supportPhone: '+234 123 456 7890',
+    successAnimationStyle: 'confetti',
+    branding: {
+      logoUrl: '/assets/brand/omorfi-logo.png',
+      logoDarkUrl: '/assets/brand/omorfi-logo.png',
+      logoLightUrl: '/assets/brand/omorfi-logo.png',
+      defaultTheme: 'light'
+    },
+    countryConfig: {
+      defaultCountry: 'Nigeria',
+      defaultCurrency: 'Naira',
+      defaultCurrencySymbol: '₦'
+    },
+    featureFlags: {
+      notifications: true,
+      enableSafePay: true
+    }
+  } as any;
+
   useEffect(() => {
+    let resolved = false;
+
+    // Safety timeout: if Firestore takes more than 1.5 seconds, immediately populate safe defaults and set loading to false
+    const fallbackTimer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        setSettings((prev) => prev || defaultSettings);
+        setLoading(false);
+      }
+    }, 1500);
+
     // Subscribe to live updates
     const unsubscribe = systemSettingsRepository.subscribeToSettings(
       (data) => {
-        setSettings(data || {
-          platformName: 'OmorfiHub',
-          tagline: 'Seamless Logistics for Everyone',
-          supportEmail: 'support@omorfihub.com',
-          supportPhone: '+234 123 456 7890',
-          successAnimationStyle: 'confetti',
-          branding: {
-            logoUrl: '/assets/brand/omorfi-logo.png',
-            logoDarkUrl: '/assets/brand/omorfi-logo.png',
-            logoLightUrl: '/assets/brand/omorfi-logo.png',
-            defaultTheme: 'light'
-          },
-          countryConfig: {
-            defaultCountry: 'Nigeria',
-            defaultCurrency: 'Naira',
-            defaultCurrencySymbol: '₦'
-          },
-          featureFlags: {
-            notifications: true,
-            enableSafePay: true
-          }
-        } as any);
+        resolved = true;
+        clearTimeout(fallbackTimer);
+        setSettings(data || defaultSettings);
         setLoading(false);
       },
       (error) => {
+        resolved = true;
+        clearTimeout(fallbackTimer);
         console.error('Failed to load system settings, using defaults:', error);
-        setSettings({
-          platformName: 'OmorfiHub',
-          tagline: 'Seamless Logistics for Everyone',
-          supportEmail: 'support@omorfihub.com',
-          supportPhone: '+234 123 456 7890',
-          successAnimationStyle: 'confetti',
-          branding: {
-            logoUrl: '/assets/brand/omorfi-logo.png',
-            logoDarkUrl: '/assets/brand/omorfi-logo.png',
-            logoLightUrl: '/assets/brand/omorfi-logo.png',
-            defaultTheme: 'light'
-          },
-          countryConfig: {
-            defaultCountry: 'Nigeria',
-            defaultCurrency: 'Naira',
-            defaultCurrencySymbol: '₦'
-          },
-          featureFlags: {
-            notifications: true,
-            enableSafePay: true
-          }
-        } as any);
+        setSettings((prev) => prev || defaultSettings);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      resolved = true;
+      clearTimeout(fallbackTimer);
+      unsubscribe();
+    };
   }, []);
 
   const refreshSettings = async () => {
     setLoading(true);
-    const data = await systemSettingsRepository.getGlobalSettings();
-    if (data) {
-      setSettings(data);
+    try {
+      const data = await systemSettingsRepository.getGlobalSettings();
+      setSettings(data || defaultSettings);
+    } catch (err) {
+      console.error('Failed to refresh global settings:', err);
+      setSettings((prev) => prev || defaultSettings);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

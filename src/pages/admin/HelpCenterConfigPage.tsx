@@ -3,10 +3,14 @@ import { AdminLayout } from '../../layouts/AdminLayout';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { HelpCircle, Save, Users, Plus, X, RefreshCw } from 'lucide-react';
+import { HelpCircle, Save, Users, Plus, X, RefreshCw, Upload, Image as ImageIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../lib/apiClient';
+import { configurationEngine } from '@/src/engines';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/src/lib/firebase';
+import { toast } from 'sonner';
 
 interface Persona {
   id: string;
@@ -76,22 +80,35 @@ export const HelpCenterConfigPage = () => {
     setPersonas(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
+  const handleImageFileUpload = (personaId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        handlePersonaChange(personaId, 'profilePictureUrl', result);
+        toast.success("Profile image updated! Click 'Save Configuration' to persist.");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveAll = async () => {
     setIsSaving(true);
     setSaveStatus("Saving configuration...");
     try {
-      // 1. Save general config via API, with fallback to ConfigurationEngine
+      // 1. Save general config via API, with fallback to ConfigurationEngine & Firestore
       try {
         await apiFetch(fbUser, '/api/chat/config/save', {
           method: 'POST',
           body: config
         });
       } catch (apiErr) {
-        console.warn('Backend API save endpoint unavailable, writing to Firestore directly:', apiErr);
+        console.warn('Backend API save endpoint unavailable or 500 error, writing to Firestore directly:', apiErr);
         await configurationEngine.updateSystemSettings('global', { helpCenterConfig: config } as any);
       }
 
-      // 2. Save all active/edited personas
+      // 2. Save all active/edited personas via API or direct Firestore setDoc
       for (const persona of personas) {
         try {
           await apiFetch(fbUser, '/api/chat/personas/save', {
@@ -99,16 +116,34 @@ export const HelpCenterConfigPage = () => {
             body: persona
           });
         } catch (personaErr) {
-          console.warn(`Backend persona API save failed for ${persona.id}, skipping API fallback:`, personaErr);
+          console.warn(`Backend persona API save failed for ${persona.id}, saving directly to Firestore ai_personas:`, personaErr);
+          await setDoc(doc(db, 'ai_personas', persona.id), {
+            ...persona,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
         }
       }
 
       setSaveStatus("All configurations saved successfully!");
-      toast.success("All configurations saved successfully!");
+      toast.success("All configurations saved successfully to Firestore!");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err: any) {
-      setSaveStatus(`Error saving: ${err.message || 'Action failed'}`);
-      toast.error(`Error saving: ${err.message || 'Action failed'}`);
+      console.error("Error in handleSaveAll:", err);
+      // Fallback: Write both to Firestore directly
+      try {
+        await configurationEngine.updateSystemSettings('global', { helpCenterConfig: config } as any);
+        for (const persona of personas) {
+          await setDoc(doc(db, 'ai_personas', persona.id), {
+            ...persona,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
+        setSaveStatus("Saved settings directly to Firestore!");
+        toast.success("Saved settings directly to Firestore!");
+      } catch (fsErr: any) {
+        setSaveStatus(`Error saving: ${fsErr.message || 'Action failed'}`);
+        toast.error(`Error saving: ${fsErr.message || 'Action failed'}`);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -275,27 +310,40 @@ export const HelpCenterConfigPage = () => {
                         </div>
 
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-slate-800">Profile Picture URL</label>
-                          <Input
-                            value={persona.profilePictureUrl}
-                            onChange={e => handlePersonaChange(persona.id, 'profilePictureUrl', e.target.value)}
-                            className="h-8 text-xs font-mono mt-1"
-                            placeholder="https://example.com/avatar.png"
-                          />
+                          <label className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-200 block mb-1">
+                            Profile Avatar / Image
+                          </label>
+                          <div className="flex items-center gap-2">
+                            {persona.profilePictureUrl && (
+                              <img
+                                src={persona.profilePictureUrl}
+                                alt={persona.name}
+                                className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                              />
+                            )}
+                            <Input
+                              value={persona.profilePictureUrl}
+                              onChange={e => handlePersonaChange(persona.id, 'profilePictureUrl', e.target.value)}
+                              className="h-8 text-xs font-mono flex-1"
+                              placeholder="https://example.com/avatar.png"
+                            />
+                            <label className="cursor-pointer bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                              <Upload size={13} />
+                              <span>Upload</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleImageFileUpload(persona.id, e)}
+                              />
+                            </label>
+                          </div>
                         </div>
+
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-slate-800">Greeting Behavior</label>
-                          <textarea
-                            rows={2}
-                            value={persona.greeting}
-                            onChange={e => handlePersonaChange(persona.id, 'greeting', e.target.value)}
-                            className="w-full text-xs p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-300 outline-none focus:ring-1 focus:ring-primary-500 mt-1"
-                            placeholder="Initial greeting for the customer..."
-                          />
-                        </div>
-[original_content_placeholder]
-                        <div>
-                          <label className="text-[10px] uppercase font-bold text-slate-800">Greeting Behavior</label>
+                          <label className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-200 block mb-1">
+                            Greeting Behavior
+                          </label>
                           <textarea
                             rows={2}
                             value={persona.greeting}

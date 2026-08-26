@@ -94,18 +94,46 @@ export function CustomerCareChat() {
       </div>
       {!selectedPersona ? (
         <div className="p-4">
-            <p className="mb-4">Select an agent:</p>
+            <p className="mb-4 text-sm font-bold text-gray-700">Select an agent:</p>
             {personas.map(p => (
-                <button key={p.id} className="block w-full p-2 mb-2 bg-gray-100 hover:bg-gray-200 rounded" onClick={() => setSelectedPersona(p)}>{p.name}</button>
+                <button
+                  key={p.id}
+                  className="flex items-center gap-3 w-full p-2.5 mb-2 bg-gray-50 hover:bg-indigo-50 border border-gray-200 rounded-xl transition text-left"
+                  onClick={() => setSelectedPersona(p)}
+                >
+                  {p.profilePictureUrl ? (
+                    <img src={p.profilePictureUrl} alt={p.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">
+                      {p.name.charAt(0)}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">{p.name}</p>
+                    <p className="text-[10px] text-gray-500 line-clamp-1">{p.greeting}</p>
+                  </div>
+                </button>
             ))}
         </div>
       ) : (
         <div className="flex flex-col h-96">
-          <div className="flex-1 p-4 overflow-y-auto">
-            {isLoading && <p className="text-gray-500 italic text-sm">Customer Care is typing...</p>}
+          <div className="flex-1 p-4 overflow-y-auto space-y-3">
+            {isLoading && (
+              <div className="flex items-center gap-2 text-gray-400 italic text-xs">
+                {selectedPersona.profilePictureUrl ? (
+                  <img src={selectedPersona.profilePictureUrl} alt={selectedPersona.name} className="w-5 h-5 rounded-full object-cover" />
+                ) : null}
+                <span>{selectedPersona.name} is typing...</span>
+              </div>
+            )}
             {messages.map((m, i) => (
-                <div key={i} className={`mb-2 p-2 rounded ${m.sender === 'user' ? 'bg-indigo-100 self-end' : 'bg-gray-100'}`}>
-                    {m.text}
+                <div key={i} className={`flex items-start gap-2 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {m.sender !== 'user' && selectedPersona.profilePictureUrl && (
+                    <img src={selectedPersona.profilePictureUrl} alt={selectedPersona.name} className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-gray-200" />
+                  )}
+                  <div className={`p-2.5 rounded-2xl text-xs max-w-[80%] ${m.sender === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none'}`}>
+                      {m.text}
+                  </div>
                 </div>
             ))}
           </div>
