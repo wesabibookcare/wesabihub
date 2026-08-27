@@ -76,7 +76,9 @@ export async function runAIChat(params: {
     console.error("[runAIChat] Gemini generateContent error:", err);
     let fallbackText = "I am currently having trouble reaching the AI assistant service. Please try again or open a support ticket.";
     if (err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("API key") || err.message.includes("apiKey"))) {
-      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is not configured in settings.";
+      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is not configured in environment variables.";
+    } else if (err.message && (err.message.includes("503") || err.message.includes("UNAVAILABLE") || err.message.includes("demand"))) {
+      fallbackText = "The AI service is experiencing temporary high demand right now. Please wait a moment and try asking again.";
     }
     return {
       text: fallbackText,

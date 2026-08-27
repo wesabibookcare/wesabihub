@@ -170,7 +170,7 @@ export async function getChatResponse(
 ) {
   // 1. Get persona safely
   let persona = { name: 'Omorfi', greeting: 'Hello, how can I assist you today?' };
-  if (personaId && typeof personaId === 'string' && personaId.trim() !== '') {
+  if (db && personaId && typeof personaId === 'string' && personaId.trim() !== '') {
     try {
       const personaDoc = await db.collection('customerCarePersonas').doc(personaId).get();
       if (personaDoc.exists) {
@@ -181,23 +181,27 @@ export async function getChatResponse(
     }
   }
 
-  // 2. Search knowledge
-  const matches = await searchApprovedKnowledge(db, message);
+  // 2. Search knowledge safely
   let knowledge = "";
-  if (matches.length > 0) {
-      knowledge = matches.map((m: any) => m.data().content).join("\n");
-  } else {
-      // 3. If no matches, or explicitly no feedback, request knowledge review
-      if (feedback === 'no' || matches.length === 0) {
-          await createKnowledgeReviewRequest(db, message, context);
-      }
-
-      const faqsSnap = await db.collection('faqCategories').get();
-      const articlesSnap = await db.collection('knowledgeArticles').get();
-      knowledge = JSON.stringify({
+  if (db) {
+    try {
+      const matches = await searchApprovedKnowledge(db, message);
+      if (matches && matches.length > 0) {
+        knowledge = matches.map((m: any) => m.data().content).join("\n");
+      } else {
+        if (feedback === 'no' || !matches || matches.length === 0) {
+          await createKnowledgeReviewRequest(db, message, context).catch(() => {});
+        }
+        const faqsSnap = await db.collection('faqCategories').get().catch(() => ({ docs: [] }));
+        const articlesSnap = await db.collection('knowledgeArticles').get().catch(() => ({ docs: [] }));
+        knowledge = JSON.stringify({
           faqs: faqsSnap.docs.map((doc: any) => doc.data()),
           articles: articlesSnap.docs.map((doc: any) => doc.data())
-      });
+        });
+      }
+    } catch (kErr) {
+      console.warn("Knowledge base lookup skipped:", kErr);
+    }
   }
 
   // 3. Build prompt -- role-based identity/authorization instruction comes

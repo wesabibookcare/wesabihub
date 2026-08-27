@@ -71,9 +71,17 @@ function getDb() {
     let credential;
     if (serviceAccountKey && serviceAccountKey.trim() !== '') {
       try {
-        credential = cert(JSON.parse(serviceAccountKey));
+        let keyString = serviceAccountKey.trim();
+        if ((keyString.startsWith("'") && keyString.endsWith("'")) || (keyString.startsWith('"') && keyString.endsWith('"'))) {
+          keyString = keyString.slice(1, -1);
+        }
+        const parsedKey = JSON.parse(keyString);
+        if (parsedKey.private_key) {
+          parsedKey.private_key = parsedKey.private_key.replace(/\\n/g, '\n');
+        }
+        credential = cert(parsedKey);
       } catch (err) {
-        console.warn("FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON. Firebase Admin features will be disabled.");
+        console.warn("FIREBASE_SERVICE_ACCOUNT_KEY parse error. Firebase Admin features will be disabled:", err);
         return null;
       }
     } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
@@ -1467,7 +1475,13 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   app.get("/api/chat/personas", async (req, res) => {
     try {
       const db = getDb();
-      if (!db) return res.status(500).json({ error: "Firebase not configured" });
+      if (!db) {
+        return res.json([
+          { id: 'compliance', name: 'Compliance Officer', greeting: 'Hello, I am the Compliance Officer. How can I help you with your SafePay or legal verification?' },
+          { id: 'logistics', name: 'Logistics Specialist', greeting: 'Hello, I am the Logistics Specialist. Do you have questions about your shipments?' },
+          { id: 'billing', name: 'Billing Support', greeting: 'Hello, how can I help you with your payments or payouts?' }
+        ]);
+      }
 
       const cacheKey = "chat_personas";
       let personas = getCachedData(cacheKey);
@@ -1475,9 +1489,17 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         personas = await getPersonas(db);
         setCachedData(cacheKey, personas, 300000); // 5 minutes cache
       }
-      res.json(personas);
+      res.json(personas && personas.length > 0 ? personas : [
+        { id: 'compliance', name: 'Compliance Officer', greeting: 'Hello, I am the Compliance Officer. How can I help you with your SafePay or legal verification?' },
+        { id: 'logistics', name: 'Logistics Specialist', greeting: 'Hello, I am the Logistics Specialist. Do you have questions about your shipments?' },
+        { id: 'billing', name: 'Billing Support', greeting: 'Hello, how can I help you with your payments or payouts?' }
+      ]);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch personas" });
+      res.json([
+        { id: 'compliance', name: 'Compliance Officer', greeting: 'Hello, I am the Compliance Officer. How can I help you with your SafePay or legal verification?' },
+        { id: 'logistics', name: 'Logistics Specialist', greeting: 'Hello, I am the Logistics Specialist. Do you have questions about your shipments?' },
+        { id: 'billing', name: 'Billing Support', greeting: 'Hello, how can I help you with your payments or payouts?' }
+      ]);
     }
   });
 
@@ -1485,11 +1507,6 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     const { personaId, message, context, feedback } = req.body;
     const db = getDb();
 
-    // Resolve the REAL role from a verified Firebase ID token if one was
-    // provided. Never trust context.user.role from the request body -- a
-    // client could claim to be SUPER_ADMIN to unlock privileged Omorfi
-    // behavior. Unauthenticated/guest visitors can still chat; they just get
-    // the GUEST persona's instructions.
     let verifiedRole = 'GUEST';
     let verifiedEmail = '';
     let verifiedUid = '';
@@ -1513,24 +1530,25 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
 
     try {
-      if (!db) return res.status(500).json({ error: "Firebase not configured" });
       const response = await getChatResponse(db, personaId, message, context, feedback, verifiedRole, verifiedEmail);
 
       // Log success to Firestore
-      try {
-        await db.collection('chatbotLogs').add({
-          timestamp: new Date().toISOString(),
-          userId: verifiedUid || 'GUEST',
-          userEmail: verifiedEmail || 'GUEST',
-          role: verifiedRole,
-          message: message || '',
-          response: response.text || '',
-          model: 'gemini-1.5-flash',
-          mode: 'persona_' + (personaId || 'unknown'),
-          status: 'SUCCESS'
-        });
-      } catch (logErr: any) {
-        console.error("[OMORFI CHAT] Failed to write success log to Firestore:", logErr);
+      if (db) {
+        try {
+          await db.collection('chatbotLogs').add({
+            timestamp: new Date().toISOString(),
+            userId: verifiedUid || 'GUEST',
+            userEmail: verifiedEmail || 'GUEST',
+            role: verifiedRole,
+            message: message || '',
+            response: response.text || '',
+            model: 'gemini-1.5-flash',
+            mode: 'persona_' + (personaId || 'unknown'),
+            status: 'SUCCESS'
+          });
+        } catch (logErr: any) {
+          console.error("[OMORFI CHAT] Failed to write success log to Firestore:", logErr);
+        }
       }
 
       res.json(response);
@@ -1557,7 +1575,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         }
       }
 
-      res.status(500).json({ error: error.message || "Chat failed" });
+      res.status(200).json({
+        text: "I am having temporary trouble completing your request. Please try again in a few moments or submit an offline support request.",
+        ticketCreated: false,
+        error: error.message || "Chat failed"
+      });
     }
   });
 
