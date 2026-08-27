@@ -161,16 +161,25 @@ export async function createSupportTicket(db: any, userId: string, message: stri
 
 export async function getChatResponse(
   db: any,
-  personaId: string,
+  personaId: string | undefined,
   message: string,
   context: any,
   feedback?: 'yes' | 'no' | 'still-unsolved',
   verifiedRole: string = 'GUEST',
   verifiedEmail: string = ''
 ) {
-  // 1. Get persona
-  const personaDoc = await db.collection('customerCarePersonas').doc(personaId).get();
-  const persona = personaDoc.data() || { name: 'Omorfi', greeting: 'Hello, how can I assist you today?' };
+  // 1. Get persona safely
+  let persona = { name: 'Omorfi', greeting: 'Hello, how can I assist you today?' };
+  if (personaId && typeof personaId === 'string' && personaId.trim() !== '') {
+    try {
+      const personaDoc = await db.collection('customerCarePersonas').doc(personaId).get();
+      if (personaDoc.exists) {
+        persona = personaDoc.data() || persona;
+      }
+    } catch (e) {
+      console.warn("Could not fetch persona:", e);
+    }
+  }
 
   // 2. Search knowledge
   const matches = await searchApprovedKnowledge(db, message);

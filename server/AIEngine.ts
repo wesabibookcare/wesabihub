@@ -26,12 +26,12 @@ function getAi() {
  */
 export async function runAIChat(params: {
   message: string;
-  history: any[];
-  mode: 'general' | 'low-latency' | 'thinking' | 'maps';
+  history?: any[];
+  mode?: 'general' | 'low-latency' | 'thinking' | 'maps';
   systemInstruction?: string;
 }) {
   const ai = getAi();
-  const { message, history, mode, systemInstruction } = params;
+  const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
   let modelName = "gemini-1.5-flash";
@@ -40,23 +40,18 @@ export async function runAIChat(params: {
   };
 
   if (mode === 'low-latency') {
-    modelName = "gemini-1.5-flash-8b";
+    modelName = "gemini-1.5-flash";
   } else if (mode === 'thinking') {
-    modelName = "gemini-2.0-flash";
-    options.thinkingConfig = {
-      thinkingLevel: ThinkingLevel.LOW
-    };
-    // Do NOT set maxOutputTokens for thinking mode as per instructions
+    modelName = "gemini-1.5-pro";
   } else if (mode === 'maps') {
     modelName = "gemini-1.5-flash";
-    options.tools = [{ googleSearch: {} }, { googleMaps: {} }];
-    options.toolConfig = { includeServerSideToolInvocations: true };
+    options.tools = [{ googleSearch: {} }];
   }
 
   // Build full message contents representing the chat history + current message
-  // History is expected as an array of: { role: 'user' | 'model', parts: [{ text: string }] }
+  const safeHistory = Array.isArray(history) ? history : [];
   const contents = [
-    ...history,
+    ...safeHistory,
     { role: 'user', parts: [{ text: message }] }
   ];
 

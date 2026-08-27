@@ -187,12 +187,18 @@ export const HelpCenterWidget = () => {
         headers,
         body: JSON.stringify({
           message: currentMessage,
-          personaId: selectedPersonaId, // Use the selected personaId
+          personaId: selectedPersonaId || undefined,
           context: {
             user: fbUser ? { uid: fbUser.uid, email: fbUser.email, role: role } : undefined
           }
         })
       });
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const textErr = await res.text();
+        throw new Error(textErr || `Server returned non-JSON response (${res.status})`);
+      }
 
       const data = await res.json();
 
