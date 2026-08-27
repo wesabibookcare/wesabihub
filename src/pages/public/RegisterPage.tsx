@@ -58,7 +58,7 @@ const roles = [
   { id: 'MERCHANT' as UserRole, label: 'Merchant', desc: 'Send business shipments', icon: ShoppingBag },
   { id: 'CENTER_OWNER' as UserRole, label: 'Hub Owner', desc: 'Host a local parcel point', icon: MapPin },
   { id: 'CENTER_STAFF' as UserRole, label: 'Hub Staff', desc: 'Work at a local point', icon: Users },
-  { id: 'DISPATCH_RIDER' as UserRole, label: 'Dispatch Rider', desc: 'Deliver as neighborhood hero', icon: Package },
+  { id: 'DISPATCH_RIDER' as UserRole, label: 'SendOmorfi', desc: 'Deliver on foot, bicycle or vehicle', icon: Package },
 ];
 
 export const RegisterPage: React.FC = () => {

@@ -320,19 +320,31 @@ export const ProfileCompletionPage: React.FC = () => {
           { name: 'officeAddress', label: 'Head Office Address', type: 'text', required: true },
           { name: 'fleetSize', label: 'Initial Fleet Size', type: 'number', required: true },
         ];
-      case 'DISPATCH_RIDER':
-        return [
+      case 'DISPATCH_RIDER': {
+        const transitMode = profileData.sendOmorfiTransitMode || 'On foot';
+        const isOtherVehicles = transitMode === 'Other Vehicles';
+
+        const baseFields: ApplicationFieldConfig[] = [
           { name: 'fullName', label: 'Full Name', type: 'text', required: true },
           { name: 'phone', label: 'Phone Number', type: 'text', required: true },
           { name: 'dob', label: 'Date of Birth', type: 'date', required: true },
           { name: 'gender', label: 'Gender', type: 'select', required: true, options: ['Male', 'Female', 'Other'] },
           { name: 'address', label: 'Residential Address', type: 'text', required: true },
-          { name: 'vehicleType', label: 'Vehicle Type', type: 'select', required: true, options: ['Motorcycle', 'Bicycle', 'Car', 'Van'] },
-          { name: 'vehicleBrand', label: 'Vehicle Brand/Model', type: 'text', required: false },
-          { name: 'vehicleReg', label: 'Reg. Number (Plate)', type: 'text', required: true },
-          { name: 'vehicleColor', label: 'Vehicle Color', type: 'text', required: false },
+          { name: 'sendOmorfiTransitMode', label: 'SendOmorfi Delivery Mode', type: 'select', required: true, options: ['On foot', 'Bicycle', 'Other Vehicles'] },
+        ];
+
+        if (isOtherVehicles) {
+          baseFields.push(
+            { name: 'vehicleType', label: 'Vehicle Category', type: 'select', required: true, options: ['Motorcycle', 'Car', 'Van'] },
+            { name: 'vehicleBrand', label: 'Vehicle Brand/Model', type: 'text', required: false },
+            { name: 'vehicleReg', label: 'Reg. Number (Plate)', type: 'text', required: true },
+            { name: 'vehicleColor', label: 'Vehicle Color', type: 'text', required: false },
+            { name: 'driverLicense', label: 'Driver License No.', type: 'text', required: true }
+          );
+        }
+
+        baseFields.push(
           { name: 'nin', label: 'NIN (National ID No.)', type: 'text', required: true },
-          { name: 'driverLicense', label: 'Driver License No.', type: 'text', required: false },
           { name: 'guarantor1Name', label: 'Primary Guarantor Full Name', type: 'text', required: true },
           { name: 'guarantor1Phone', label: 'Primary Guarantor Phone Number', type: 'text', required: true },
           { name: 'guarantor1Relation', label: 'Primary Guarantor Relationship', type: 'text', required: false },
@@ -340,8 +352,11 @@ export const ProfileCompletionPage: React.FC = () => {
           { name: 'guarantor2Phone', label: 'Secondary Guarantor Phone Number', type: 'text', required: false },
           { name: 'bankName', label: 'Bank Name', type: 'text', required: true },
           { name: 'bankAccountNo', label: 'Account Number', type: 'text', required: true },
-          { name: 'bankAccountName', label: 'Account Name', type: 'text', required: true },
-        ];
+          { name: 'bankAccountName', label: 'Account Name', type: 'text', required: true }
+        );
+
+        return baseFields;
+      }
       default:
         return [];
     }

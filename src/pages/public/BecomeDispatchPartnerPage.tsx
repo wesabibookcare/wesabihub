@@ -51,20 +51,20 @@ export const BecomeDispatchPartnerPage = () => {
           <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
             <div className="max-w-4xl mx-auto space-y-8">
               <Badge className="bg-primary-500/10 text-primary-400 border border-primary-500/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
-                🚀 Now Recruiting Dispatch Partners
+                🚀 Now Recruiting SendOmorfi Partners
               </Badge>
               <h1 className="text-5xl md:text-7xl font-black text-white font-display tracking-tight leading-[1.1] uppercase italic">
-                Ride with Trust. <br />
-                <span className="text-primary-500">Earn on Your Own Terms.</span>
+                Deliver On Foot, Bicycle or Vehicle. <br />
+                <span className="text-primary-500">Earn on Your Own Terms with SendOmorfi.</span>
               </h1>
               <p className="text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto">
-                Join OmorfiHubDispatch—{countryName}'s first decentralized, trust-ledger based logistics partner network. Deliver parcel shipments between verified hubs and customers.
+                Join SendOmorfi—{countryName}'s flexible courier network. Deliver parcel shipments between verified hubs and customers using your preferred mode of transit.
               </p>
 
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                 <Button size="lg" className="h-16 px-10 rounded-2xl text-lg font-bold shadow-xl shadow-primary-500/20 group" asChild>
                   <Link to="/register">
-                    Apply as Rider <ChevronRight size={20} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                    Apply as SendOmorfi Partner <ChevronRight size={20} className="ml-1 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
                 <Button variant="outline" size="lg" className="h-16 px-10 rounded-2xl text-lg border-slate-800 text-slate-300 hover:bg-slate-900" onClick={() => navigate('/faq')}>

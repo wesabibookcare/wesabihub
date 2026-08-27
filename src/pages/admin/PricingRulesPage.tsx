@@ -34,7 +34,7 @@ export interface HubVolumeTier {
 }
 
 export const PricingRulesPage = () => {
-  const [activeTab, setActiveTab] = useState<'TIERS' | 'LOGISTICS_API' | 'SAFEPAY' | 'BASE_PRICING'>('TIERS');
+  const [activeTab, setActiveTab] = useState<'TIERS' | 'LOGISTICS_API' | 'SAFEPAY' | 'BASE_PRICING' | 'SEND_OMORFI'>('TIERS');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -60,6 +60,13 @@ export const PricingRulesPage = () => {
     maxEscrowFee: 15000,
   });
 
+  // SendOmorfi Payout Multipliers
+  const [sendOmorfiRates, setSendOmorfiRates] = useState({
+    onFootMultiplier: 1.0,
+    bicycleMultiplier: 1.25,
+    otherVehiclesMultiplier: 1.6,
+  });
+
   // Base Pricing Configuration
   const [basePricing, setBasePricing] = useState({
     minShippingFee: 500,
@@ -83,6 +90,7 @@ export const PricingRulesPage = () => {
           if (data.logisticsMarkup) setLogisticsMarkup(data.logisticsMarkup);
           if (data.safePayConfig) setSafePayConfig(data.safePayConfig);
           if (data.basePricing) setBasePricing(data.basePricing);
+          if (data.sendOmorfiRates) setSendOmorfiRates(data.sendOmorfiRates);
         }
       } catch (err) {
         console.error('Failed to load financial rules:', err);
@@ -101,6 +109,7 @@ export const PricingRulesPage = () => {
         logisticsMarkup,
         safePayConfig,
         basePricing,
+        sendOmorfiRates,
         updatedAt: new Date().toISOString(),
       }, { merge: true });
       toast.success('Financial & Pricing rules updated successfully!');
@@ -202,6 +211,15 @@ export const PricingRulesPage = () => {
             )}
           >
             <DollarSign size={16} /> Base Shipping Rates
+          </button>
+          <button
+            onClick={() => setActiveTab('SEND_OMORFI')}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2",
+              activeTab === 'SEND_OMORFI' ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-600 dark:text-slate-400"
+            )}
+          >
+            <Package size={16} /> SendOmorfi Payouts
           </button>
         </div>
 
@@ -421,6 +439,54 @@ export const PricingRulesPage = () => {
                   onChange={(e) => setBasePricing({ ...basePricing, fragileFee: parseFloat(e.target.value) || 0 })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* TAB 5: SendOmorfi Payout Multipliers */}
+        {activeTab === 'SEND_OMORFI' && (
+          <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-6">
+            <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">SendOmorfi Transit Mode Payout Rules</h3>
+              <p className="text-xs font-medium text-slate-500">Set payout rates and multipliers for SendOmorfi delivery partners based on transit mode ("Other Vehicles" gets higher pay than "Bicycle" and "On foot").</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2 bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">On Foot Multiplier</label>
+                <input
+                  type="number"
+                  step="0.05"
+                  value={sendOmorfiRates.onFootMultiplier}
+                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, onFootMultiplier: parseFloat(e.target.value) || 1.0 })}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+                <p className="text-[10px] text-slate-500">Base rate payout multiplier for walking deliveries.</p>
+              </div>
+
+              <div className="space-y-2 bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Bicycle Multiplier</label>
+                <input
+                  type="number"
+                  step="0.05"
+                  value={sendOmorfiRates.bicycleMultiplier}
+                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, bicycleMultiplier: parseFloat(e.target.value) || 1.0 })}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
+                />
+                <p className="text-[10px] text-slate-500">Rate multiplier for cycling deliveries.</p>
+              </div>
+
+              <div className="space-y-2 bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-300 dark:border-emerald-800">
+                <label className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase">Other Vehicles Multiplier (Higher Pay)</label>
+                <input
+                  type="number"
+                  step="0.05"
+                  value={sendOmorfiRates.otherVehiclesMultiplier}
+                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, otherVehiclesMultiplier: parseFloat(e.target.value) || 1.0 })}
+                  className="w-full bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 rounded-xl p-3 font-black text-base text-emerald-600"
+                />
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400">Higher pay rate for motorcycle, car, and van couriers.</p>
               </div>
             </div>
           </Card>
