@@ -89,12 +89,16 @@ function getDb() {
         credential: credential,
         projectId: firestoreProjectId
       });
+    const dbInst = firestoreDatabaseId
+      ? getFirestore(adminApp, firestoreDatabaseId)
+      : getFirestore(adminApp);
+    dbInst.settings({ ignoreUndefinedProperties: true });
     } catch (err) {
       console.warn("Failed to initialize Firebase Admin:", err);
       return null;
     }
   }
-  return firestoreDatabaseId
+return firestoreDatabaseId
     ? getFirestore(adminApp, firestoreDatabaseId)
     : getFirestore(adminApp);
 }
@@ -1519,8 +1523,8 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
           userId: verifiedUid || 'GUEST',
           userEmail: verifiedEmail || 'GUEST',
           role: verifiedRole,
-          message: message,
-          response: response.text,
+          message: message || '',
+          response: response.text || '',
           model: 'gemini-1.5-flash',
           mode: 'persona_' + (personaId || 'unknown'),
           status: 'SUCCESS'
@@ -1847,7 +1851,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: actualRole,
             message: req.body.message || '',
             response: null,
-            model: 'gemini-3.5-flash',
+            model: 'gemini-1.5-flash',
             mode: req.body.mode || 'general',
             status: 'ERROR',
             errorMessage: error.message || String(error)

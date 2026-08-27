@@ -34,17 +34,17 @@ export async function runAIChat(params: {
   const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
-  let modelName = "gemini-3.5-flash";
+  let modelName = "gemini-1.5-flash";
   const options: any = {
     systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics and escrow platform.",
   };
 
   if (mode === 'low-latency') {
-    modelName = "gemini-3.5-flash";
+    modelName = "gemini-1.5-flash";
   } else if (mode === 'thinking') {
-    modelName = "gemini-3.1-pro-preview";
+    modelName = "gemini-1.5-pro";
   } else if (mode === 'maps') {
-    modelName = "gemini-3.5-flash";
+    modelName = "gemini-1.5-flash";
     options.tools = [{ googleSearch: {} }];
   }
 
@@ -109,7 +109,7 @@ export async function analyzeMedia(params: {
   };
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
+    model: "gemini-1.5-flash",
     contents: {
       parts: [mediaPart, textPart]
     }
@@ -131,7 +131,7 @@ export async function generateAIImage(params: {
   const ai = getAi();
   const { prompt, aspectRatio, quality } = params;
 
-  const modelName = quality === 'studio' ? 'gemini-3.1-pro-preview' : 'gemini-3.5-flash';
+  const modelName = quality === 'studio' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
 
   // Supported ratios in config: "1:1", "3:4", "4:3", "9:16", "16:9", etc.
   const response = await ai.models.generateContent({
@@ -209,7 +209,7 @@ export async function scanIdDocument(params: {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
+    model: "gemini-1.5-flash",
     contents: {
       parts: [mediaPart, { text: promptText }]
     },
@@ -269,7 +269,7 @@ export async function estimateDelivery(params: {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
+    model: "gemini-1.5-flash",
     contents: {
       parts: [{ text: prompt }]
     },
