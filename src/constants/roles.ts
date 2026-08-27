@@ -173,23 +173,24 @@ export const ROLES: RoleInfo[] = [
   },
   {
     id: 'DISPATCH_RIDER',
-    title: 'Dispatch Rider',
-    description: 'Onboard as an independent dispatch rider to deliver packages and build your Trust Score.',
+    title: 'SendOmorfi',
+    description: 'Onboard as an independent SendOmorfi partner to deliver packages on foot, bicycle, or other vehicles and build your Trust Score.',
     icon: Truck,
     approvalStatus: 'APPLICATION',
     responsibilities: [
-      'Transporting parcels between hubs and customers',
+      'Transporting parcels between hubs and customers on foot, bicycle, or other vehicles',
       'Confirming pickups and drop-offs via secure QR verification',
       'Maintaining high ratings, training status, and safety practices'
     ],
     benefits: [
+      'Flexible transit options (On foot, Bicycle, or Other Vehicles)',
       'Access to consistent parcel volume across hubs',
       'Digital ID Card with custom QR verification code',
       'Transparent earnings wallet with payout settlement flexibility'
     ],
     learnMore: {
       capabilities: ['Manage individual delivery routes', 'Request wallet settlement payouts', 'Complete training courses'],
-      process: 'Submit identity KYC, guarantor detail forms, vehicle registration, and driver credentials for manual operations review.',
+      process: 'Submit live face scan, guarantor detail forms, and vehicle registration (if using other vehicles) for operations review.',
       features: ['Digital ID card generator', 'Withdrawals portal', 'Trust Tier tracking']
     }
   },

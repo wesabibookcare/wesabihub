@@ -334,8 +334,8 @@ export const DispatchDashboard = () => {
             WS
           </div>
           <div>
-            <h1 className="font-black text-lg tracking-tight text-slate-900 dark:text-white">OmorfiHubDispatch</h1>
-            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Rider Terminal v2.4</p>
+            <h1 className="font-black text-lg tracking-tight text-slate-900 dark:text-white">SendOmorfi Terminal</h1>
+            <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Courier Partner Dashboard v2.4</p>
           </div>
         </div>
 
@@ -602,8 +602,9 @@ export const DispatchDashboard = () => {
                     </div>
                     <div className="space-y-1">
                       <h3 className="font-black text-lg text-white leading-none">{riderProfile?.displayName || user?.displayName}</h3>
-                      <p className="text-xs font-bold text-slate-800 uppercase">Dispatch Rider</p>
-                      <Badge className={cn("text-[9px] font-black uppercase px-2 py-0.5 rounded-full", riderProfile?.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
+                      <p className="text-xs font-bold text-slate-800 uppercase">SendOmorfi Partner</p>
+                      <p className="text-[10px] font-bold text-primary-400 uppercase">Mode: {riderProfile?.sendOmorfiTransitMode || 'On foot'}</p>
+                      <Badge className={cn("text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-1", riderProfile?.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
                         {riderProfile?.status}
                       </Badge>
                     </div>

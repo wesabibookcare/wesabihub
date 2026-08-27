@@ -13,7 +13,7 @@ const ROLE_DASHBOARDS: Record<string, { label: string; path: string }> = {
   MERCHANT: { label: 'Merchant', path: '/merchant/dashboard' },
   CENTER_OWNER: { label: 'Hub Owner', path: '/point/dashboard/owner' },
   CENTER_STAFF: { label: 'Hub Staff', path: '/point/dashboard/staff' },
-  DISPATCH_RIDER: { label: 'Dispatch Rider', path: '/dispatch/dashboard' },
+  DISPATCH_RIDER: { label: 'SendOmorfi', path: '/dispatch/dashboard' },
   LOGISTICS_OWNER: { label: 'Logistics Partner', path: '/logistics/dashboard/owner' },
   CUSTOMER: { label: 'Customer', path: '/dashboard' },
 };
