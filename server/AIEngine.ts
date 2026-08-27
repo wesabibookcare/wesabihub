@@ -26,37 +26,32 @@ function getAi() {
  */
 export async function runAIChat(params: {
   message: string;
-  history: any[];
-  mode: 'general' | 'low-latency' | 'thinking' | 'maps';
+  history?: any[];
+  mode?: 'general' | 'low-latency' | 'thinking' | 'maps';
   systemInstruction?: string;
 }) {
   const ai = getAi();
-  const { message, history, mode, systemInstruction } = params;
+  const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
-  let modelName = "gemini-1.5-flash";
+  let modelName = "gemini-3.5-flash";
   const options: any = {
     systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics and escrow platform.",
   };
 
   if (mode === 'low-latency') {
-    modelName = "gemini-1.5-flash-8b";
+    modelName = "gemini-3.5-flash";
   } else if (mode === 'thinking') {
-    modelName = "gemini-2.0-flash";
-    options.thinkingConfig = {
-      thinkingLevel: ThinkingLevel.LOW
-    };
-    // Do NOT set maxOutputTokens for thinking mode as per instructions
+    modelName = "gemini-3.1-pro-preview";
   } else if (mode === 'maps') {
-    modelName = "gemini-1.5-flash";
-    options.tools = [{ googleSearch: {} }, { googleMaps: {} }];
-    options.toolConfig = { includeServerSideToolInvocations: true };
+    modelName = "gemini-3.5-flash";
+    options.tools = [{ googleSearch: {} }];
   }
 
   // Build full message contents representing the chat history + current message
-  // History is expected as an array of: { role: 'user' | 'model', parts: [{ text: string }] }
+  const safeHistory = Array.isArray(history) ? history : [];
   const contents = [
-    ...history,
+    ...safeHistory,
     { role: 'user', parts: [{ text: message }] }
   ];
 
@@ -114,7 +109,7 @@ export async function analyzeMedia(params: {
   };
 
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-3.5-flash",
     contents: {
       parts: [mediaPart, textPart]
     }
@@ -136,7 +131,7 @@ export async function generateAIImage(params: {
   const ai = getAi();
   const { prompt, aspectRatio, quality } = params;
 
-  const modelName = quality === 'studio' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+  const modelName = quality === 'studio' ? 'gemini-3.1-pro-preview' : 'gemini-3.5-flash';
 
   // Supported ratios in config: "1:1", "3:4", "4:3", "9:16", "16:9", etc.
   const response = await ai.models.generateContent({
@@ -214,7 +209,7 @@ export async function scanIdDocument(params: {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-3.5-flash",
     contents: {
       parts: [mediaPart, { text: promptText }]
     },
@@ -274,7 +269,7 @@ export async function estimateDelivery(params: {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-3.5-flash",
     contents: {
       parts: [{ text: prompt }]
     },
