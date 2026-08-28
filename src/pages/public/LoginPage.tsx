@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Package, Mail, Lock, ArrowRight, Loader2, AlertCircle, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { Package, Mail, Lock, ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
@@ -12,8 +12,37 @@ import { LiveFaceScanModal } from '../../components/common/LiveFaceScanModal';
 import { User } from '../../types';
 import { HeroCarousel } from '../../components/public/HeroCarousel';
 
+const formatAuthError = (err: any): string => {
+  if (!err) return 'An unexpected error occurred. Please try again.';
+  const message = err.message || String(err);
+  const code = err.code || '';
+
+  if (code === 'auth/email-already-in-use' || message.includes('email-already-in-use')) {
+    return 'An account with this email address already exists. Please sign in instead.';
+  }
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found' || message.includes('invalid-credential') || message.includes('user-not-found')) {
+    return 'Incorrect email address or password. Please check your details and try again.';
+  }
+  if (code === 'auth/weak-password' || message.includes('weak-password')) {
+    return 'Password is too weak. Please use at least 6 characters.';
+  }
+  if (code === 'auth/invalid-email' || message.includes('invalid-email')) {
+    return 'Please enter a valid email address.';
+  }
+  if (code === 'auth/too-many-requests' || message.includes('too-many-requests')) {
+    return 'Too many failed login attempts. Please wait a moment before trying again.';
+  }
+  if (code === 'auth/network-request-failed' || message.includes('network-request-failed')) {
+    return 'Network connection issue. Please check your internet connection and try again.';
+  }
+  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+    return 'Google sign-in was cancelled. Please try again.';
+  }
+
+  return message.replace(/^Firebase:\s*/, '').replace(/\(auth\/[^)]+\)\.?/, '').trim();
+};
+
 export const LoginPage: React.FC = () => {
-  const { bootstrapNeeded } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +95,7 @@ export const LoginPage: React.FC = () => {
       const redirectPath = from || ROLE_REDIRECTS[user.role] || '/dashboard';
       await processPostLogin(user, redirectPath);
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -84,11 +113,7 @@ export const LoginPage: React.FC = () => {
         navigate('/role-selection');
       }
     } catch (err: any) {
-      if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
-        setError('Google sign-in was cancelled. Please try again.');
-      } else {
-        setError(err.message || 'Google sign-in failed. Please try again.');
-      }
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -128,27 +153,6 @@ export const LoginPage: React.FC = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Card className="shadow-xl rounded-3xl border-slate-200">
           <CardContent className="pt-6">
-            {bootstrapNeeded && (
-              <Alert className="border-red-100 bg-red-50/50 text-red-950 rounded-xl mb-6">
-                <div className="flex items-start gap-3">
-                  <ShieldAlert className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-bold text-sm text-red-950 uppercase tracking-tight">Initialization Required</h4>
-                    <p className="text-xs text-red-900 mt-0.5 font-medium">
-                      No Super Administrator has been registered yet. The platform must be initialized before use.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/admin/bootstrap')}
-                      className="mt-2 text-xs font-bold text-red-600 hover:text-red-800 underline focus:outline-none block"
-                    >
-                      Create Initial Super Administrator &rarr;
-                    </button>
-                  </div>
-                </div>
-              </Alert>
-            )}
-
             <form className="space-y-6" onSubmit={handleLogin}>
               {error && (
                 <Alert variant="error">
