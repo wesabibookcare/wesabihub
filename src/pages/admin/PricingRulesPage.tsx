@@ -161,7 +161,7 @@ export const PricingRulesPage = () => {
           <div>
             <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mb-2">Money & Financial Management</p>
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Financial & Pricing Engine</h1>
-            <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">Configure hub volume revenue splits, logistics API rate markups, SafePay escrow charges, and base parcel pricing.</p>
+            <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">Configure hub volume revenue splits, logistics API rate markups, SafePay charges, and base parcel pricing.</p>
           </div>
           <div className="flex items-center gap-3">
              <Button
@@ -343,13 +343,13 @@ export const PricingRulesPage = () => {
         {activeTab === 'SAFEPAY' && (
           <Card className="p-8 border-none shadow-xl shadow-slate-200/50 space-y-6">
             <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="text-xl font-black text-slate-900 dark:text-white">SafePay Escrow Transaction Fees</h3>
-              <p className="text-xs font-medium text-slate-500">Configure fee percentages and limits for SafePay buyer-seller escrow transactions.</p>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">SafePay Transaction Fees</h3>
+              <p className="text-xs font-medium text-slate-500">Configure fee percentages and limits for SafePay buyer-seller transactions.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Buyer Escrow Fee (%)</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Buyer SafePay Fee (%)</label>
                 <input
                   type="number"
                   value={safePayConfig.buyerFeePercent}
@@ -359,7 +359,7 @@ export const PricingRulesPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Seller Escrow Fee (%)</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Seller SafePay Fee (%)</label>
                 <input
                   type="number"
                   value={safePayConfig.sellerFeePercent}
@@ -369,7 +369,7 @@ export const PricingRulesPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum Escrow Fee (₦)</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum SafePay Fee (₦)</label>
                 <input
                   type="number"
                   value={safePayConfig.minEscrowFee}

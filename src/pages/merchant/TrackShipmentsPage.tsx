@@ -85,7 +85,7 @@ export const TrackShipmentsPage = () => {
     }
   };
 
-  const handleOmorfiHubChat = async () => {
+  const handleOmorfiChat = async () => {
     if (!user || !shipment) return;
 
     if (conversationExists) {
@@ -106,7 +106,7 @@ export const TrackShipmentsPage = () => {
       }
 
       if (!recipientUser) {
-        toast.error("This customer doesn't have a OmorfiHub account yet, so OmorfiHubChat isn't available for this shipment.");
+        toast.error("This customer doesn't have a OmorfiHub account yet, so Omorfi Chat isn't available for this shipment.");
         return;
       }
 
@@ -123,7 +123,7 @@ export const TrackShipmentsPage = () => {
       navigate('/merchant/chat');
     } catch (error) {
       console.error(error);
-      toast.error('Failed to initialize OmorfiHubChat');
+      toast.error('Failed to initialize Omorfi Chat');
     } finally {
       setIsCreatingChat(false);
     }
@@ -226,7 +226,7 @@ export const TrackShipmentsPage = () => {
                  </div>
               </Card>
 
-              {/* OmorfiHubChat Card */}
+              {/* Omorfi Chat Card */}
               <Card className="p-6 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex flex-col items-center text-center space-y-4">
                  <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600">
                     <MessageSquare size={24} />
@@ -238,10 +238,10 @@ export const TrackShipmentsPage = () => {
                  <Button
                     variant="default"
                     className="w-full h-10 rounded-xl bg-primary-600 hover:bg-primary-700"
-                    onClick={handleOmorfiHubChat}
+                    onClick={handleOmorfiChat}
                     disabled={isCreatingChat}
                  >
-                    {isCreatingChat ? 'Please wait...' : (conversationExists ? 'Open OmorfiHubChat' : 'Start OmorfiHubChat')}
+                    {isCreatingChat ? 'Please wait...' : (conversationExists ? 'Open Omorfi Chat' : 'Start Omorfi Chat')}
                  </Button>
               </Card>
 

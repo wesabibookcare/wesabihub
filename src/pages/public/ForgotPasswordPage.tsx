@@ -35,11 +35,11 @@ export const ForgotPasswordPage: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 rounded-xl text-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-800"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back
+          Back to Home
         </Button>
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">

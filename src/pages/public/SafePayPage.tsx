@@ -6,6 +6,7 @@ import { Badge } from '@/src/components/ui/Badge';
 import { Button } from '@/src/components/ui/Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSettings } from '@/src/context/SettingsContext';
+import { useAuth } from '@/src/context/AuthContext';
 import {
   ShieldCheck,
   Video,
@@ -25,14 +26,14 @@ import {
 } from 'lucide-react';
 
 const flowSteps = [
-  { icon: ShoppingBag, title: 'Buyer & seller agree', desc: 'A buyer and seller agree on an item and price, usually right inside OmorfiHubChat.' },
+  { icon: ShoppingBag, title: 'Buyer & seller agree', desc: 'A buyer and seller agree on an item and price, usually right inside Omorfi Chat.' },
   { icon: Wallet, title: 'Buyer pays via SafePay', desc: 'The buyer pays through our SafePay checkout, powered by Flutterwave.' },
   { icon: Lock, title: 'Funds are held by Flutterwave', desc: 'Flutterwave secures the payment. OmorfiHub never touches or holds the money itself.' },
   { icon: Video, title: 'Seller records preparation', desc: 'Before packing, the seller records a short in-app video testing and preparing the item.' },
   { icon: PackageCheck, title: 'Seller packs & dispatches', desc: 'The item is sealed and sent through OmorfiHub — by hub drop-off or direct dispatch.' },
   { icon: Truck, title: 'Parcel is delivered', desc: 'The buyer receives the parcel, fully tracked from pickup to delivery.' },
-  { icon: PackageOpen, title: 'Buyer records unboxing', desc: 'The buyer records themselves unboxing and inspecting the item, right in OmorfiHubChat.' },
-  { icon: ThumbsUp, title: 'Buyer accepts or disputes', desc: 'If all is well, the buyer releases payment. If there\u2019s a problem, they open a dispute instead.' },
+  { icon: PackageOpen, title: 'Buyer records unboxing', desc: 'The buyer records themselves unboxing and inspecting the item, right in Omorfi Chat.' },
+  { icon: ThumbsUp, title: 'Buyer accepts or disputes', desc: 'If all is well, the buyer releases payment. If there’s a problem, they open a dispute instead.' },
 ];
 
 const disputeReasons = [
@@ -47,7 +48,20 @@ const disputeReasons = [
 export const SafePayPage = () => {
   const navigate = useNavigate();
   const { settings } = useSettings();
+  const { user, activeRole } = useAuth();
   const isSafePayEnabled = settings?.featureFlags?.enableSafePay !== false;
+
+  const handleGetStarted = () => {
+    if (user) {
+      if (activeRole === 'MERCHANT') {
+        navigate('/merchant/chat');
+      } else {
+        navigate('/customer/chat');
+      }
+    } else {
+      navigate('/register');
+    }
+  };
 
   return (
     <PublicLayout>
@@ -72,8 +86,7 @@ export const SafePayPage = () => {
             </p>
           )}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-            <Button size="lg" onClick={() => navigate('/register')}>Get Started <ArrowRight size={18} className="ml-2" /></Button>
-            <Button size="lg" variant="outline" className="border-slate-700 text-white hover:bg-slate-900" onClick={() => navigate('/how-it-works')}>See Full Ecosystem</Button>
+            <Button size="lg" onClick={handleGetStarted}>Get Started <ArrowRight size={18} className="ml-2" /></Button>
           </div>
         </div>
       </section>
@@ -85,7 +98,7 @@ export const SafePayPage = () => {
             <Lock className="mx-auto text-primary-600" size={32} />
             <h2 className="text-xl font-bold dark:text-white font-display">OmorfiHub never holds your money</h2>
             <p className="text-slate-800 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              SafePay payments are processed and held by <strong>Flutterwave</strong>, our licensed payment partner \u2014 not by OmorfiHub. OmorfiHub manages the rules of the transaction: parcel tracking, video evidence, inspection windows, and dispute resolution. The actual movement of funds is always handled by Flutterwave.
+              SafePay payments are processed and held by <strong>Flutterwave</strong>, our licensed payment partner — not by OmorfiHub. OmorfiHub manages the rules of the transaction: parcel tracking, video evidence, inspection windows, and dispute resolution. The actual movement of funds is always handled by Flutterwave.
             </p>
           </Card>
         </div>
@@ -127,8 +140,8 @@ export const SafePayPage = () => {
               {[
                 'Your payment is held securely by Flutterwave until you confirm the item is right.',
                 'You get a full inspection window after delivery before you have to decide anything.',
-                'Record an unboxing video right in OmorfiHubChat \u2014 it\u2019s your strongest evidence if something is wrong.',
-                'If there\u2019s a genuine problem, you can open a dispute instead of releasing payment.',
+                'Record an unboxing video right in Omorfi Chat — it’s your strongest evidence if something is wrong.',
+                'If there’s a genuine problem, you can open a dispute instead of releasing payment.',
               ].map(item => (
                 <li key={item} className="flex items-start gap-3 text-sm text-slate-800 dark:text-slate-300">
                   <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
@@ -165,7 +178,7 @@ export const SafePayPage = () => {
         <div className="max-w-5xl mx-auto px-4">
           <SectionHeader
             badge="Evidence That Protects You"
-            title="Video evidence, right inside OmorfiHubChat"
+            title="Video evidence, right inside Omorfi Chat"
             description="This feature is specific to SafePay transactions and does not apply to ordinary OmorfiHub parcels picked up from a hub."
             centered={true}
           />
@@ -174,14 +187,14 @@ export const SafePayPage = () => {
               <Badge variant="info" className="mb-4">Seller</Badge>
               <h3 className="font-bold dark:text-white mb-3">Preparation video</h3>
               <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed">
-                Testing/preparation \u2192 packaging \u2192 sealing and dispatch, recorded in one continuous clip inside OmorfiHubChat.
+                Testing/preparation → packaging → sealing and dispatch, recorded in one continuous clip inside Omorfi Chat.
               </p>
             </Card>
             <Card className="p-8 border-slate-200 dark:border-slate-800">
               <Badge variant="info" className="mb-4">Buyer</Badge>
               <h3 className="font-bold dark:text-white mb-3">Unboxing video</h3>
               <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed">
-                Parcel receipt \u2192 unboxing \u2192 unwrapping \u2192 inspection, recorded in one continuous clip inside OmorfiHubChat.
+                Parcel receipt → unboxing → unwrapping → inspection, recorded in one continuous clip inside Omorfi Chat.
               </p>
             </Card>
           </div>
@@ -210,7 +223,7 @@ export const SafePayPage = () => {
               ))}
             </div>
             <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-6">
-              When a dispute is opened, OmorfiHub reviews the evidence \u2014 tracking history, seller preparation video, and buyer inspection video \u2014 to manage the dispute workflow. The applicable settlement or refund is then processed through Flutterwave according to the outcome.
+              When a dispute is opened, OmorfiHub reviews the evidence — tracking history, seller preparation video, and buyer inspection video — to manage the dispute workflow. The applicable settlement or refund is then processed through Flutterwave according to the outcome.
             </p>
           </Card>
         </div>
@@ -241,21 +254,6 @@ export const SafePayPage = () => {
               </p>
             </Card>
           </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 bg-slate-950 text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-white font-display mb-4">Ready to trade with confidence?</h2>
-          <p className="text-slate-300 mb-8">Whether you're buying or selling, SafePay gives both sides real protection.</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" onClick={() => navigate('/register')}>Create a Free Account</Button>
-            <Button size="lg" variant="outline" className="border-slate-700 text-white hover:bg-slate-900" onClick={() => navigate('/faq')}>Read the FAQ</Button>
-          </div>
-          <p className="text-xs text-slate-500 mt-8">
-            SafePay is a OmorfiHub protection workflow. Payment processing and funds holding are provided by Flutterwave. See our <Link to="/terms" className="underline hover:text-primary-400">Terms of Service</Link> for full details.
-          </p>
         </div>
       </section>
     </PublicLayout>

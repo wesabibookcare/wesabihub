@@ -315,10 +315,10 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    // Custom back logic: If history is empty or previous is landing, go to dashboard
                     if (window.history.length <= 2) {
                       navigate(getDashboardPath());
                     } else {
+                      // Navigate back, but fallback to active user dashboard if browser history lands on /login or /register
                       navigate(-1);
                     }
                   }}

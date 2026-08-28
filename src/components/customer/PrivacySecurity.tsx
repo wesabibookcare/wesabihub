@@ -99,7 +99,7 @@ export const PrivacySecurity: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-bold text-sm dark:text-white">Activity Status</p>
-                <p className="text-xs text-slate-500">Show when you're online or active on OmorfiHubChat.</p>
+                <p className="text-xs text-slate-500">Show when you're online or active on Omorfi Chat.</p>
               </div>
               <motion.div whileTap={{ scale: 0.9 }}>
                 <Switch
