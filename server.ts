@@ -4695,7 +4695,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
     try {
       const snapshot = await db.collection('apiApplications')
-        .where('userId', '==', req.user.uid)
+        .where('userId', '==', req.authUser!.uid)
         .get();
 
       const apps = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
@@ -4725,7 +4725,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       const appId = 'app_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
       const appData = {
         id: appId,
-        userId: req.user.uid,
+        userId: req.authUser!.uid,
         appName,
         companyName,
         environment: env,
@@ -4745,7 +4745,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       await db.collection('apiApplications').doc(appId).set(appData);
 
       await auditEngine.logEvent({
-        userId: req.user.uid,
+        userId: req.authUser!.uid,
         action: 'DEVELOPER_APPLICATION_CREATED',
         details: { appId, appName, environment: env },
         result: 'SUCCESS'
@@ -4773,7 +4773,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       }
 
       const app = appDoc.data();
-      if (app.userId !== req.user.uid) {
+      if (app.userId !== req.authUser!.uid) {
         return res.status(403).json({ error: "Forbidden: Not application owner" });
       }
 
@@ -4812,7 +4812,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       }
 
       const app = appDoc.data();
-      if (app.userId !== req.user.uid) {
+      if (app.userId !== req.authUser!.uid) {
         return res.status(403).json({ error: "Forbidden: Not application owner" });
       }
 
@@ -4822,7 +4822,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       });
 
       await auditEngine.logEvent({
-        userId: req.user.uid,
+        userId: req.authUser!.uid,
         action: 'DEVELOPER_PRODUCTION_ACCESS_REQUESTED',
         details: { appId: id },
         result: 'SUCCESS'
@@ -4852,7 +4852,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       }
 
       const app = appDoc.data();
-      if (app.userId !== req.user.uid) {
+      if (app.userId !== req.authUser!.uid) {
         return res.status(403).json({ error: "Forbidden: Not application owner" });
       }
 
