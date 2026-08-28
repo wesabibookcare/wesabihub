@@ -33,6 +33,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { useSettings } from '@/src/context/SettingsContext';
 import { parcelEngine } from '@/src/services/ParcelEngine';
 import { pricingEngine } from '@/src/services/PricingEngine';
+import { communicationService } from '@/src/services/CommunicationService';
 import { centreEngine, merchantEngine, workflowEngine } from '@/src/engines';
 import { labelService } from '@/src/services/LabelService';
 import { HubCenter, Parcel, MerchantBusiness } from '@/src/types';
@@ -210,6 +211,27 @@ export const CreateShipmentPage = () => {
 
       if (response.success && response.data) {
         setCreatedParcel(response.data);
+
+        // If SafePay is enabled, automatically initialize Omorfi Chat thread for merchant and recipient
+        if (formData.protectionEnabled) {
+          try {
+            await communicationService.createShipmentConversation(
+              formData.recipientEmail || 'CUSTOMER_UID',
+              formData.recipientName,
+              user.uid,
+              user.displayName || 'Merchant',
+              response.data.shipmentId,
+              response.data.id,
+              response.data.trackingNumber,
+              true,
+              'CUSTOMER',
+              'MERCHANT'
+            );
+          } catch (chatErr) {
+            console.warn('Auto-creating chat for SafePay shipment:', chatErr);
+          }
+        }
+
         toast.success('Shipment created successfully');
       } else {
         setError(response.message || 'Failed to create shipment.');
