@@ -60,8 +60,8 @@ export const HomePage = () => {
   }
 
   const hero = settings?.landingPage?.hero || {
-    title: "The Nation's Most Reliable Delivery Network",
-    subtitle: "We've built Nigeria's largest network of verified neighborhood centers. Ship, pick up, and return parcels with total peace of mind.",
+    title: "Trusted & Reliable Pick & Drop-Off Centre",
+    subtitle: "Connecting you closer to your parcels. We've built Nigeria's largest network of verified neighborhood centers. Ship, pick up, and return parcels with total peace of mind.",
     ctaText: "Get Started",
     ctaLink: "/register"
   };
