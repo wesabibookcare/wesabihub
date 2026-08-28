@@ -79,7 +79,7 @@ export const NotificationPanel: React.FC<{ onClose: () => void }> = ({ onClose }
         </div>
         <select aria-label="Filter notifications by category" className="w-full text-xs p-1 border rounded" value={filter} onChange={e => setFilter(e.target.value as any)}>
             <option value="ALL">All Categories</option>
-            {['WESABICHAT', 'SHIPMENT', 'PAYMENT', 'RETURN', 'STORAGE', 'COMPLAINT', 'DISPUTE', 'ANNOUNCEMENT', 'APPROVAL', 'INVITATION', 'API', 'PLATFORM', 'SECURITY', 'SYSTEM'].map(c => <option key={c} value={c}>{c === 'WESABICHAT' ? 'OmorfiHubChat' : c}</option>)}
+            {['WESABICHAT', 'SHIPMENT', 'PAYMENT', 'RETURN', 'STORAGE', 'COMPLAINT', 'DISPUTE', 'ANNOUNCEMENT', 'APPROVAL', 'INVITATION', 'API', 'PLATFORM', 'SECURITY', 'SYSTEM'].map(c => <option key={c} value={c}>{c === 'WESABICHAT' ? 'Omorfi Chat' : c}</option>)}
         </select>
       </div>
       <div className="flex-1 overflow-y-auto">

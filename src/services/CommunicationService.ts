@@ -13,7 +13,7 @@ import { db } from '../lib/firebase';
 
 class CommunicationService {
   /**
-   * Create a secure OmorfiHubChat conversation for a Shipment
+   * Create a secure Omorfi Chat conversation for a Shipment
    */
   async createShipmentConversation(
     buyerId: string,
@@ -56,7 +56,7 @@ class CommunicationService {
       initiatorId: buyerId,
       protectionEnabled,
       isDisputed: false,
-      lastMessageText: 'OmorfiHubChat started',
+      lastMessageText: 'Omorfi Chat started',
       lastMessageAt: new Date().toISOString(),
       lastMessageStatus: 'SENT',
       typingStatus: {},
@@ -80,7 +80,7 @@ class CommunicationService {
   }
 
   /**
-   * Create a OmorfiHubChat via Username (Chat Request)
+   * Create a Omorfi Chat via Username (Chat Request)
    */
   async createUsernameConversation(
     initiatorId: string,
@@ -198,7 +198,7 @@ class CommunicationService {
   }
 
   /**
-   * Send a text message, image, video, file, or voice message inside OmorfiHubChat
+   * Send a text message, image, video, file, or voice message inside Omorfi Chat
    */
   async sendMessage(
     conversationId: string,
@@ -279,7 +279,7 @@ class CommunicationService {
     if (recipientId) {
       await notificationService.send(
         recipientId,
-        `OmorfiHubChat: Message from ${senderName}`,
+        `Omorfi Chat: Message from ${senderName}`,
         text || `Sent an attachment: ${media?.fileName || media?.type}`,
         'INFO',
         `/conversations/${conversationId}`
@@ -674,7 +674,7 @@ class CommunicationService {
   }
 
   /**
-   * Log Customer Care access to a OmorfiHubChat conversation for privacy compliance
+   * Log Customer Care access to a Omorfi Chat conversation for privacy compliance
    */
   async logAdminAccess(adminId: string, conversationId: string, reason: string): Promise<void> {
     await auditRepository.logAction(adminId, 'WESABICHAT_ADMIN_ACCESS', {

@@ -188,7 +188,7 @@ const PERMISSION_GROUPS = [
     ]
   },
   {
-    category: 'OmorfiHubChat & Evidence',
+    category: 'Omorfi Chat & Evidence',
     permissions: [
       { key: 'CHAT_VIEW_AUTHORIZED', name: 'View Authorized Chats', desc: 'Read ongoing buyer-merchant disputed chats' },
       { key: 'CHAT_ACCESS_EVIDENCE', name: 'Access Media Evidence', desc: 'Examine image and PDF upload evidence' },

@@ -45,7 +45,7 @@ class PaymentEngine {
     }
 
     // Payment Method Enforcement for normal platform payments
-    const isSafePay = paymentType === 'SAFEPAY' || paymentType === 'ESCROW';
+    const isSafePay = paymentType === 'SAFEPAY';
     const requestedMethod = data.paymentMethod || data.metadata?.paymentMethod || data.metadata?.method;
 
     if (!isSafePay) {

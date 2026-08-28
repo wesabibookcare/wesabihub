@@ -217,11 +217,11 @@ export const RegisterPage: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 rounded-xl text-white border-white/30 hover:bg-white/10"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back
+          Back to Home
         </Button>
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md pt-8">

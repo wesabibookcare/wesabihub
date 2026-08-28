@@ -86,7 +86,7 @@ export const ROLES: RoleInfo[] = [
   {
     id: 'MERCHANT',
     title: 'Merchant',
-    description: 'Sell products, manage shipments and communicate with customers through OmorfiHubChat.',
+    description: 'Sell products, manage shipments and communicate with customers through Omorfi Chat.',
     icon: ShoppingBag,
     approvalStatus: 'REQUIRED',
     responsibilities: [

@@ -96,7 +96,7 @@ interface SimulatedState {
   storageFeePerDay: number;
   storageTotalFee: number;
 
-  // OmorfiHubChat
+  // Omorfi Chat
   chatId?: string;
   chatStatus?: 'ACTIVE' | 'CLOSED' | 'DISPUTED';
   chatMessages: Array<{ sender: string; text: string; timestamp: string }>;
@@ -186,7 +186,7 @@ export const TestModePage = () => {
 
   const disputeSteps = [
     { label: 'Shipment & Payment Protection', desc: 'Buyer pays. Funds held in secure SafePay. Shipment dispatched.' },
-    { label: 'OmorfiHubChat Initiation', desc: 'Buyer & Seller begin negotiation chat. SafePay Item Information checklist attached.' },
+    { label: 'Omorfi Chat Initiation', desc: 'Buyer & Seller begin negotiation chat. SafePay Item Information checklist attached.' },
     { label: 'Customer Reports Damage/Dispute', desc: 'Customer flags delivery issues. Payment Protection held; dispute open.' },
     { label: 'Dispute Investigation', desc: 'Dispute admin reviews Chat evidence transcripts, frozen custody history, and uploaded photo proof.' },
     { label: 'Admin Resolves Dispute', desc: 'Admin approves a partial split refund or full refund. Funds disbursed to wallets.' }
@@ -370,7 +370,7 @@ export const TestModePage = () => {
   };
 
   const executeDisputeStep = (step: number, s: SimulatedState) => {
-    if (step === 1) { // OmorfiHubChat Initiation
+    if (step === 1) { // Omorfi Chat Initiation
       s.chatId = `CHT-${Date.now()}`;
       s.chatStatus = 'ACTIVE';
       s.chatMessages = [
@@ -380,8 +380,8 @@ export const TestModePage = () => {
       s.itemInformationAttached = true;
 
       logSimulationEvent('WESABICHAT_CREATED', `SafePay negotiation conversation initiated. Duplicate checking active: No existing chat found for shipment ${s.shipmentId}.`);
-      logSimulationEvent('SAFEPAY_EVIDENCE_ATTACHED', `Buyer verified declared item list in OmorfiHubChat. Declared value: ₦${s.pricing.baseFee}.`);
-      addSimNotification('OmorfiHubChat Active', `Secure buyer-seller chat established. Compliance tracking activated.`, 'INFO');
+      logSimulationEvent('SAFEPAY_EVIDENCE_ATTACHED', `Buyer verified declared item list in Omorfi Chat. Declared value: ₦${s.pricing.baseFee}.`);
+      addSimNotification('Omorfi Chat Active', `Secure buyer-seller chat established. Compliance tracking activated.`, 'INFO');
     }
     else if (step === 2) { // Dispute report
       s.status = 'DISPUTED';
@@ -398,7 +398,7 @@ export const TestModePage = () => {
       s.disputeStatus = 'UNDER_REVIEW';
       s.chatMessages.push({ sender: 'DISPUTE_ADMIN', text: 'Audit logs reviewed. Seal was intact at intake but damaged at destination receipt. Reviewing photo proof.', timestamp: '11:15 AM' });
 
-      logSimulationEvent('DISPUTE_EVIDENCE_RECOGNITION', `OmorfiHubChat transcripts frozen as dynamic evidence snapshot. Digital signature logs and photos verified.`, { disputeId: s.disputeId });
+      logSimulationEvent('DISPUTE_EVIDENCE_RECOGNITION', `Omorfi Chat transcripts frozen as dynamic evidence snapshot. Digital signature logs and photos verified.`, { disputeId: s.disputeId });
       addSimNotification('Evidence Snapshot Locked', `Immutable evidence snapshot created from chat and custody history.`, 'INFO');
     }
     else if (step === 4) { // Refund resolved
@@ -791,7 +791,7 @@ export const TestModePage = () => {
                 {/* Dispute & chat snapshot */}
                 {simState.disputeStatus && simState.disputeStatus !== 'NONE' && (
                   <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">OmorfiHubChat SafePay Evidence Log</h4>
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Omorfi Chat SafePay Evidence Log</h4>
                     <Card className="p-5 border-slate-200 dark:border-slate-800 space-y-4">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
@@ -932,7 +932,7 @@ export const TestModePage = () => {
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-2">
               <div className="flex justify-between font-bold dark:text-white">
-                <span>OmorfiHubChat ↔ Disputes Map</span>
+                <span>Omorfi Chat ↔ Disputes Map</span>
                 <span className="text-emerald-600">CONSISTENT</span>
               </div>
               <p className="text-[11px] text-slate-900 leading-relaxed">

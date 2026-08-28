@@ -48,6 +48,30 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   return <>{children}</>;
 };
 
+export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, activeRole, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  if (user) {
+    const redirectPath =
+      activeRole === 'SUPER_ADMIN' || activeRole === 'OPERATIONS_MANAGER' ? '/admin' :
+      activeRole === 'MERCHANT' ? '/merchant/dashboard' :
+      activeRole === 'CENTER_OWNER' || activeRole === 'CENTER_STAFF' ? '/point/dashboard/owner' :
+      activeRole === 'LOGISTICS_OWNER' || activeRole === 'LOGISTICS_COMPANY' || activeRole === 'DRIVER' ? '/logistics/dashboard/owner' :
+      '/dashboard';
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  return <>{children}</>;
+};
+
 interface RoleGuardProps {
   children: React.ReactNode;
   allowedRoles?: UserRole[];

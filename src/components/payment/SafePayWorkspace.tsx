@@ -560,7 +560,7 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
               </div>
 
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-500">Escrow Gateway:</span>
+                <span className="text-slate-500">SafePay Gateway:</span>
                 <span className="font-mono font-bold text-indigo-600">Flutterwave</span>
               </div>
             </div>

@@ -41,7 +41,7 @@ import { ProfileCompletionPage } from './pages/auth/ProfileCompletionPage';
 import { LegalConsentPage } from './pages/auth/LegalConsentPage';
 
 import { Toaster } from 'sonner';
-import { ProtectedRoute, RoleGuard } from './components/auth/RouteGuard';
+import { ProtectedRoute, RoleGuard, PublicOnlyRoute } from './components/auth/RouteGuard';
 import { AuthProvider } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { doc, getDocFromServer } from 'firebase/firestore';
@@ -211,9 +211,9 @@ export default function App() {
           <Route path="/developer/webhooks" element={<ProtectedRoute><RoleGuard allowedRoles={['DEVELOPER', 'SUPER_ADMIN']}><DeveloperWebhooksPage /></RoleGuard></ProtectedRoute>} />
 
           {/* Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+          <Route path="/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
+          <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
           <Route path="/admin/bootstrap" element={<BootstrapPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route path="/account-restricted" element={<AccountRestrictedPage />} />

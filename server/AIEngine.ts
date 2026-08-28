@@ -30,7 +30,7 @@ export async function runAIChat(params: {
   // Select model and configuration based on mode
   let modelName = "gemini-1.5-flash";
   const options: any = {
-    systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics and escrow platform.",
+    systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics platform.",
   };
 
   if (mode === 'low-latency') {
