@@ -98,7 +98,7 @@ class UserEngine {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       verificationStatus: { email: !!options.sendVerification, phone: false, kyc: false },
-      wesabiUsername: (finalProfileData as any).wesabiUsername || `WSH_${uid.substring(0, 8)}`,
+      wesabiUsername: (finalProfileData as any).wesabiUsername || (displayName ? displayName.toLowerCase().replace(/[^a-z0-9_]/g, '') : `user_${uid.substring(0, 6)}`),
       requestedRole: isDirectAccess ? undefined : safeRole,
       pendingRoleApplication: !isDirectAccess,
       ...finalProfileData,

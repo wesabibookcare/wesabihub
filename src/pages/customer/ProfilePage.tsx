@@ -68,9 +68,9 @@ export const ProfilePage = () => {
         setWesabiUsername(user.wesabiUsername);
       } else {
         const names = (user.displayName || 'User').split(' ');
-        const nameToUse = (names[0] || names[1] || 'User').replace(/[^a-zA-Z0-9]/g, '');
+        const nameToUse = (names[0] || names[1] || 'User').toLowerCase().replace(/[^a-z0-9_]/g, '');
         const randomNum = Math.floor(100 + Math.random() * 900); // 3 digit number
-        setWesabiUsername(`WSH_${nameToUse}${randomNum}`);
+        setWesabiUsername(`${nameToUse}${randomNum}`);
       }
 
       if (user.preferences) {
@@ -101,18 +101,12 @@ export const ProfilePage = () => {
         throw new Error('OmorfiHub Username is required.');
       }
 
-      let formattedUsername = wesabiUsername.trim();
-      if (!formattedUsername.toUpperCase().startsWith('WSH_') && !formattedUsername.toUpperCase().startsWith('WSH')) {
-        const cleanVal = formattedUsername.replace(/^@/, '');
-        formattedUsername = `WSH_${cleanVal}`;
-      } else if (formattedUsername.toUpperCase().startsWith('WSH') && !formattedUsername.toUpperCase().startsWith('WSH_')) {
-        formattedUsername = `WSH_${formattedUsername.substring(3)}`;
-      }
+      let formattedUsername = wesabiUsername.trim().replace(/^@/, '');
 
       // Check format
-      const usernameRegex = /^WSH_[a-zA-Z0-9_]{2,20}$/i;
+      const usernameRegex = /^[a-zA-Z0-9_]{2,20}$/i;
       if (!usernameRegex.test(formattedUsername)) {
-        throw new Error('Username must start with WSH_ followed by 2-20 alphanumeric characters or underscores.');
+        throw new Error('Username must be 2-20 alphanumeric characters or underscores.');
       }
 
       // Query uniqueness
@@ -249,10 +243,10 @@ export const ProfilePage = () => {
                           value={wesabiUsername}
                           onChange={e => setWesabiUsername(e.target.value)}
                           prefix={<AtSign size={18} className="text-primary-500" />}
-                          placeholder="WSH_username"
+                          placeholder="username"
                           className="font-bold text-primary-600 font-mono"
                        />
-                       <p className="text-[10px] text-slate-800">Must start with WSH_ and be unique across OmorfiHub.</p>
+                       <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique across OmorfiHub.</p>
                     </div>
                     <div className="space-y-2">
                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>

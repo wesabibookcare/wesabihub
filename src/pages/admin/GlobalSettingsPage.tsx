@@ -704,21 +704,30 @@ export const GlobalSettingsPage = () => {
                   </label>
                 </div>
 
-                <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest block">
                     Default System Success Animation Style
                   </label>
-                  <select
-                    value={settings.successAnimationStyle || 'confetti'}
-                    onChange={(e) => setSettings({ ...settings, successAnimationStyle: e.target.value as any })}
-                    className="w-full h-10 px-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-bold font-sans"
-                  >
-                    {ALL_SUCCESS_ANIMATION_STYLES.map((st) => (
-                      <option key={st.id} value={st.id}>
-                        {st.label} — ({st.description})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex gap-2">
+                    <select
+                      value={settings.successAnimationStyle || 'confetti'}
+                      onChange={(e) => setSettings({ ...settings, successAnimationStyle: e.target.value as any })}
+                      className="flex-1 h-10 px-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-bold font-sans"
+                    >
+                      {ALL_SUCCESS_ANIMATION_STYLES.map((st) => (
+                        <option key={st.id} value={st.id}>
+                          {st.label} — ({st.description})
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      type="button"
+                      onClick={() => setPreviewAnimation(settings.successAnimationStyle || 'confetti')}
+                      className="h-10 px-4 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white shrink-0 flex items-center gap-1.5"
+                    >
+                      <Sparkles size={14} /> Test Selected Style
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -732,24 +741,38 @@ export const GlobalSettingsPage = () => {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {ALL_SUCCESS_ANIMATION_STYLES.map((st, idx) => (
-                    <button
+                    <div
                       key={st.id}
-                      type="button"
-                      onClick={() => setPreviewAnimation(st.id)}
                       className={cn(
-                        "p-3 rounded-xl border text-left transition-all hover:scale-105 active:scale-95 group",
+                        "p-3 rounded-xl border text-left flex flex-col justify-between transition-all group",
                         settings.successAnimationStyle === st.id
                           ? "bg-primary-50 dark:bg-primary-950/30 border-primary-500 shadow-sm"
                           : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-400"
                       )}
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono text-slate-400">#{idx + 1}</span>
-                        <Eye size={12} className="text-slate-400 group-hover:text-primary-600" />
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-mono text-slate-400">#{idx + 1}</span>
+                          {settings.successAnimationStyle === st.id && (
+                            <Badge variant="success" className="text-[8px] py-0 px-1.5 h-3.5 uppercase font-bold">
+                              Active Default
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs font-bold dark:text-white truncate">{st.label}</p>
+                        <p className="text-[9px] text-slate-500 line-clamp-1 mt-0.5 mb-3">{st.description}</p>
                       </div>
-                      <p className="text-xs font-bold dark:text-white truncate">{st.label}</p>
-                      <p className="text-[9px] text-slate-500 line-clamp-1 mt-0.5">{st.description}</p>
-                    </button>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={settings.successAnimationStyle === st.id ? "primary" : "outline"}
+                        onClick={() => setPreviewAnimation(st.id)}
+                        className="w-full h-7 text-[10px] font-bold rounded-lg flex items-center justify-center gap-1 mt-1"
+                      >
+                        <Sparkles size={11} /> Test Animation
+                      </Button>
+                    </div>
                   ))}
                 </div>
               </div>

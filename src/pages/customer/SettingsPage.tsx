@@ -70,7 +70,7 @@ export const SettingsPage = () => {
       <div className="max-w-5xl mx-auto space-y-10">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold dark:text-white font-display">Settings</h1>
-          <p className="text-slate-900">Customize your OmorfiHub experience and manage your preferences.</p>
+          <p className="text-slate-600 dark:text-slate-400">Customize your OmorfiHub experience and manage your preferences.</p>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-10">
@@ -85,7 +85,7 @@ export const SettingsPage = () => {
                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                        activeCategory === cat.id
                         ? "bg-primary-600 text-white shadow-lg shadow-primary-500/20"
-                        : "text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                      )}
                    >
                       <cat.icon size={20} />
@@ -109,12 +109,12 @@ export const SettingsPage = () => {
                       <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
                          <div>
                             <h2 className="text-2xl font-bold dark:text-white font-display">Notification Preferences</h2>
-                            <p className="text-slate-900 text-sm">Choose how and when you want to be notified.</p>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm">Choose how and when you want to be notified.</p>
                          </div>
 
                          <div className="space-y-8">
                             <div className="space-y-4">
-                               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Shipment Updates</h3>
+                               <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Shipment Updates</h3>
                                {[
                                  { id: 'parcelArrival', title: 'Parcel Arrival', desc: 'When your parcel reaches a OmorfiHub point.' },
                                  { id: 'transitUpdates', title: 'In Transit Updates', desc: 'Real-time updates on parcel movement.' },
@@ -123,7 +123,7 @@ export const SettingsPage = () => {
                                  <div key={i} className="flex items-center justify-between">
                                     <div>
                                        <p className="font-bold text-sm dark:text-white">{pref.title}</p>
-                                       <p className="text-xs text-slate-900">{pref.desc}</p>
+                                       <p className="text-xs text-slate-600 dark:text-slate-400">{pref.desc}</p>
                                     </div>
                                     <motion.div whileTap={{ scale: 0.9 }}>
                                       <Switch
@@ -138,11 +138,11 @@ export const SettingsPage = () => {
                             <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
                             <div className="space-y-4">
-                               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Celebratory Experience</h3>
+                               <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Celebratory Experience</h3>
                                <div className="flex items-center justify-between">
                                   <div>
                                      <p className="font-bold text-sm dark:text-white">Enable Celebratory Success Animations</p>
-                                     <p className="text-xs text-slate-500">Show celebratory success animations (confetti, badges, stars) when completing transactions like parcel booking or payment funding.</p>
+                                     <p className="text-xs text-slate-600 dark:text-slate-400">Show celebratory success animations (confetti, badges, stars) when completing transactions like parcel booking or payment funding.</p>
                                   </div>
                                   <motion.div whileTap={{ scale: 0.9 }}>
                                     <Switch
@@ -156,7 +156,7 @@ export const SettingsPage = () => {
                             <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
                             <div className="space-y-4">
-                               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Delivery Channels</h3>
+                               <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Delivery Channels</h3>
                                {[
                                  { id: 'push', icon: Smartphone, title: 'Push Notifications' },
                                  { id: 'email', icon: Bell, title: 'In-App Notifications' },
@@ -164,7 +164,7 @@ export const SettingsPage = () => {
                                ].map((pref, i) => (
                                  <div key={i} className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                       <pref.icon size={18} className="text-slate-800" />
+                                       <pref.icon size={18} className="text-slate-600 dark:text-slate-400" />
                                        <p className="font-bold text-sm dark:text-white">{pref.title}</p>
                                     </div>
                                     <motion.div whileTap={{ scale: 0.9 }}>
@@ -214,7 +214,7 @@ export const SettingsPage = () => {
                       <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
                          <div>
                             <h2 className="text-2xl font-bold dark:text-white font-display">Appearance</h2>
-                            <p className="text-slate-900 text-sm">Customize how OmorfiHub looks on your device.</p>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm">Customize how OmorfiHub looks on your device.</p>
                          </div>
 
                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
