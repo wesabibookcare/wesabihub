@@ -230,12 +230,15 @@ export const HelpCenterWidget = () => {
       console.error("[HelpCenterWidget] AI Chat failed:", err);
       let errorText = "Sorry, I am having connection difficulties. Let me know if you would like me to create an offline Support Ticket for our operations team.";
 
-      if (err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("api key") || err.message.includes("API key"))) {
-        errorText = "The Omorfi chatbot is currently offline because the Gemini API Key is not configured. Please add your GEMINI_API_KEY in the Settings Secrets tab of the AI Studio workspace to activate intelligent assistance.";
-      } else if (err.message && err.message.includes("Firebase not configured")) {
-        errorText = "The AI Chatbot requires a Firebase Service Account to read persona configurations. Please add your FIREBASE_SERVICE_ACCOUNT_KEY in the Settings Secrets tab to activate the chatbot backend.";
-      } else if (err.message) {
-        errorText = `Error processing request: ${err.message}. Please try again later or open an offline support ticket.`;
+      const rawMsg = err.message || '';
+      if (rawMsg.includes("FUNCTION_INVOCATION_FAILED") || rawMsg.includes("non-JSON response") || rawMsg.includes("500") || rawMsg.includes("502") || rawMsg.includes("504")) {
+        errorText = "Omorfi is currently offline due to a temporary server connection issue. Please try again in a few moments or open a support ticket if you need immediate assistance.";
+      } else if (rawMsg.includes("GEMINI_API_KEY") || rawMsg.includes("api key") || rawMsg.includes("API key")) {
+        errorText = "The Omorfi chatbot is currently offline because the Gemini API Key is not configured. Please add your GEMINI_API_KEY in the Settings tab to activate intelligent assistance.";
+      } else if (rawMsg.includes("Firebase not configured")) {
+        errorText = "The AI Chatbot requires a Firebase Service Account to read persona configurations. Please add your FIREBASE_SERVICE_ACCOUNT_KEY in the Settings Secrets tab to activate full assistance.";
+      } else if (rawMsg.trim() !== '') {
+        errorText = "Omorfi is currently unavailable. Please try again later or open a support ticket.";
       }
 
       setMessages(prev => [...prev, {

@@ -1,23 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-
-let aiInstance: GoogleGenAI | null = null;
-function getAi() {
-  if (!aiInstance) {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      throw new Error("GEMINI_API_KEY environment variable is missing. Please configure it in your Settings.");
-    }
-    aiInstance = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-  return aiInstance;
-}
+import { getAiInstance } from "./ChatEngine.js";
 
 export interface DisputePreAssessmentInput {
   disputeId: string;
@@ -30,7 +12,7 @@ export interface DisputePreAssessmentInput {
   protectionRecord?: any;
 }
 
-export async function generateDisputePreAssessment(input: DisputePreAssessmentInput): Promise<string> {
+export async function generateDisputePreAssessment(input: DisputePreAssessmentInput, db?: any): Promise<string> {
   const {
     disputeId,
     reason,
@@ -104,7 +86,11 @@ Use clear formatting with headers and bullet points. Do not include any promotio
 `;
 
   try {
-    const response = await getAi().models.generateContent({
+    const ai = await getAiInstance(db);
+    if (!ai) {
+      return "Compliance AI Pre-assessment offline: GEMINI_API_KEY is not configured in settings.";
+    }
+    const response = await ai.models.generateContent({
       model: "gemini-1.5-flash",
       contents: prompt,
     });

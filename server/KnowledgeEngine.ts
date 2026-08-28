@@ -1,20 +1,29 @@
 import { getFirestore } from 'firebase-admin/firestore';
 
 export async function createKnowledgeReviewRequest(db: any, question: string, context: any) {
-  const requestId = `KRR-${Date.now()}`;
-  await db.collection('knowledgeReviewRequests').doc(requestId).set({
-      id: requestId,
-      question,
-      context,
-      createdAt: new Date().toISOString(),
-      status: 'PENDING',
-      frequency: 1
-  });
+  if (!db) return;
+  try {
+    const requestId = `KRR-${Date.now()}`;
+    await db.collection('knowledgeReviewRequests').doc(requestId).set({
+        id: requestId,
+        question,
+        context,
+        createdAt: new Date().toISOString(),
+        status: 'PENDING',
+        frequency: 1
+    });
+  } catch (err) {
+    console.warn("[KNOWLEDGE ENGINE] Could not save review request:", err);
+  }
 }
 
 export async function searchApprovedKnowledge(db: any, query: string) {
-  // Simple search logic - for production, use Algolia/Elasticsearch
-  const articlesSnap = await db.collection('knowledgeArticles').where('approved', '==', true).get();
-  // Simplified matching
-  return articlesSnap.docs.filter((doc: any) => doc.data().content.toLowerCase().includes(query.toLowerCase()));
+  if (!db) return [];
+  try {
+    const articlesSnap = await db.collection('knowledgeArticles').where('approved', '==', true).get();
+    return articlesSnap.docs.filter((doc: any) => doc.data().content?.toLowerCase().includes(query.toLowerCase()));
+  } catch (err) {
+    console.warn("[KNOWLEDGE ENGINE] Search failed:", err);
+    return [];
+  }
 }

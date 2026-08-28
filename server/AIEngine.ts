@@ -1,23 +1,8 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { getAiInstance } from "./ChatEngine.js";
 
-let aiInstance: GoogleGenAI | null = null;
-
-function getAi() {
-  if (!aiInstance) {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      throw new Error("GEMINI_API_KEY is not configured in your Settings secrets.");
-    }
-    aiInstance = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-  return aiInstance;
+async function getAi(db?: any) {
+  return await getAiInstance(db);
 }
 
 /**
@@ -29,8 +14,17 @@ export async function runAIChat(params: {
   history?: any[];
   mode?: 'general' | 'low-latency' | 'thinking' | 'maps';
   systemInstruction?: string;
+  db?: any;
 }) {
-  const ai = getAi();
+  const { db } = params;
+  const ai = await getAi(db);
+  if (!ai) {
+    return {
+      text: "The Omorfi AI assistant is currently offline because the Gemini API key is not configured in environment variables or Settings.",
+      model: "gemini-1.5-flash",
+      groundingChunks: null
+    };
+  }
   const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
@@ -93,8 +87,13 @@ export async function analyzeMedia(params: {
   mediaBase64: string;
   mimeType: string;
   prompt: string;
+  db?: any;
 }) {
-  const ai = getAi();
+  const { db } = params;
+  const ai = await getAi(db);
+  if (!ai) {
+    return { text: "AI media analysis is offline because GEMINI_API_KEY is not configured in settings." };
+  }
   const { mediaBase64, mimeType, prompt } = params;
 
   const mediaPart = {
@@ -127,8 +126,13 @@ export async function generateAIImage(params: {
   prompt: string;
   aspectRatio: string;
   quality: 'general' | 'studio';
+  db?: any;
 }) {
-  const ai = getAi();
+  const { db } = params;
+  const ai = await getAi(db);
+  if (!ai) {
+    throw new Error("AI image generation is offline because GEMINI_API_KEY is not configured in settings.");
+  }
   const { prompt, aspectRatio, quality } = params;
 
   const modelName = quality === 'studio' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
@@ -174,8 +178,22 @@ export async function scanIdDocument(params: {
   mediaBase64: string;
   mimeType: string;
   expectedName: string;
+  db?: any;
 }) {
-  const ai = getAi();
+  const { db } = params;
+  const ai = await getAi(db);
+  if (!ai) {
+    return {
+      documentType: "OTHER",
+      fullName: expectedName || "Unknown",
+      docNumber: "Unknown",
+      expiryDate: "N/A",
+      dob: "N/A",
+      confidence: 50,
+      verified: false,
+      message: "AI document scanning requires GEMINI_API_KEY to be configured in settings."
+    };
+  }
   const { mediaBase64, mimeType, expectedName } = params;
 
   // Clean base64 data to remove any data URL prefixes
@@ -244,8 +262,19 @@ export async function estimateDelivery(params: {
   destination: string;
   parcelSize: 'SMALL' | 'MEDIUM' | 'LARGE';
   trafficLevel?: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+  db?: any;
 }) {
-  const ai = getAi();
+  const { db } = params;
+  const ai = await getAi(db);
+  if (!ai) {
+    return {
+      estimatedDays: 3,
+      estimatedArrivalDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      reasoning: "Standard estimated delivery timeframe.",
+      confidence: 70,
+      riskLevel: "LOW"
+    };
+  }
   const { origin, destination, parcelSize, trafficLevel = 'NORMAL' } = params;
 
   const prompt = `
