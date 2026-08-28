@@ -69,18 +69,11 @@ export const ProfilePage = () => {
       }
 
       let formattedUsername = wesabiUsername.trim().replace(/^@/, '');
-      if (!formattedUsername.toUpperCase().startsWith('WSH_')) {
-        if (formattedUsername.toUpperCase().startsWith('WSH')) {
-          formattedUsername = `WSH_${formattedUsername.substring(3)}`;
-        } else {
-          formattedUsername = `WSH_${formattedUsername}`;
-        }
-      }
 
       // Check format
-      const usernameRegex = /^WSH_[a-zA-Z0-9_]{2,20}$/i;
+      const usernameRegex = /^[a-zA-Z0-9_]{2,20}$/i;
       if (!usernameRegex.test(formattedUsername)) {
-        throw new Error('Username must start with WSH_ followed by 2-20 alphanumeric characters or underscores.');
+        throw new Error('Username must be 2-20 alphanumeric characters or underscores.');
       }
 
       // Query uniqueness

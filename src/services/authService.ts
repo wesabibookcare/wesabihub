@@ -249,7 +249,7 @@ class AuthService {
           phone: false,
           kyc: false
         },
-        wesabiUsername: isSuperAdminEmail ? 'WSH_SUPER_ADMIN' : `WSH_${fbUser.uid.substring(0, 8)}`
+        wesabiUsername: isSuperAdminEmail ? 'super_admin' : (fbUser.displayName?.toLowerCase().replace(/[^a-z0-9_]/g, '') || `user_${fbUser.uid.substring(0, 6)}`)
       };
 
       await setDoc(userDocRef, {
@@ -354,7 +354,7 @@ class AuthService {
             phone: false,
             kyc: false
           },
-          wesabiUsername: `WSH_${fbUser.uid.substring(0, 8)}`
+          wesabiUsername: fbUser.displayName?.toLowerCase().replace(/[^a-z0-9_]/g, '') || `user_${fbUser.uid.substring(0, 6)}`
         };
 
         await setDoc(userDocRef, {

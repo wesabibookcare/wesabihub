@@ -180,7 +180,7 @@ export async function scanIdDocument(params: {
   expectedName: string;
   db?: any;
 }) {
-  const { db } = params;
+  const { mediaBase64, mimeType, expectedName, db } = params;
   const ai = await getAi(db);
   if (!ai) {
     return {
@@ -194,7 +194,6 @@ export async function scanIdDocument(params: {
       message: "AI document scanning requires GEMINI_API_KEY to be configured in settings."
     };
   }
-  const { mediaBase64, mimeType, expectedName } = params;
 
   // Clean base64 data to remove any data URL prefixes
   let cleanBase64 = mediaBase64;

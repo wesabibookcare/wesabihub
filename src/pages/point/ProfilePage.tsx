@@ -153,18 +153,11 @@ export const ProfilePage = () => {
       }
 
       let formattedUsername = wesabiUsername.trim().replace(/^@/, '');
-      if (!formattedUsername.toUpperCase().startsWith('WSH_')) {
-        if (formattedUsername.toUpperCase().startsWith('WSH')) {
-          formattedUsername = `WSH_${formattedUsername.substring(3)}`;
-        } else {
-          formattedUsername = `WSH_${formattedUsername}`;
-        }
-      }
 
       // Check format
-      const usernameRegex = /^WSH_[a-zA-Z0-9_]{2,20}$/i;
+      const usernameRegex = /^[a-zA-Z0-9_]{2,20}$/i;
       if (!usernameRegex.test(formattedUsername)) {
-        throw new Error('Username must start with WSH_ followed by 2-20 alphanumeric characters or underscores.');
+        throw new Error('Username must be 2-20 alphanumeric characters or underscores.');
       }
 
       // Query uniqueness
@@ -355,7 +348,7 @@ export const ProfilePage = () => {
                              placeholder="WSH_point"
                              className="font-bold text-primary-600 font-mono"
                           />
-                          <p className="text-[10px] text-slate-800">Must start with WSH_ and be unique across the platform. Others will use this exact text to find and chat with you.</p>
+                          <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique across the platform. Others will use this exact text to find and chat with you.</p>
                        </div>
                        <div className="space-y-2">
                           <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Contact Phone</label>

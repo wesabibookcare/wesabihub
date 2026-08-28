@@ -616,14 +616,9 @@ export const BuyerSellerChat = () => {
           return;
         }
 
-        // Check if it's a username format or plain name
-        let formattedUsername = term;
-        if (!formattedUsername.toUpperCase().startsWith('WSH_')) {
-          const cleanVal = formattedUsername.replace(/^@/, '');
-          formattedUsername = `WSH_${cleanVal}`;
-        }
-
-        const targetUser = await userRepository.getByUsername(formattedUsername);
+        // Search by username (with or without @ prefix) or raw search input
+        const cleanUsername = term.replace(/^@/, '');
+        let targetUser = await userRepository.getByUsername(cleanUsername) || await userRepository.getByUsername(term);
         if (targetUser) {
           if (targetUser.uid === currentUserId) {
             throw new Error('You cannot start a conversation with yourself.');
@@ -1616,7 +1611,7 @@ export const BuyerSellerChat = () => {
               <Input
                 value={usernameSearch}
                 onChange={e => setUsernameSearch(e.target.value)}
-                placeholder="e.g. WSH_John, john@email.com, or WSH-TRK-..."
+                placeholder="e.g. john_doe, john@email.com, or TRK-..."
                 prefix={<Search size={16} />}
               />
             </div>

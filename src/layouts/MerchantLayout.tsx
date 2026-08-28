@@ -29,7 +29,7 @@ export const MerchantLayout: React.FC<{ children: React.ReactNode }> = ({ childr
     { icon: Search, label: 'Track Shipments', href: '/merchant/shipments/track' },
     { icon: History, label: 'Shipment History', href: '/merchant/shipments/history' },
     { icon: FileText, label: 'Parcel Flyers Studio', href: '/merchant/flyer' },
-    { icon: ShieldCheck, label: 'Payment Protection', href: '/merchant/payment-protection' },
+    { icon: ShieldCheck, label: 'SafePay Escrow', href: '/safepay' },
     { icon: Wallet, label: 'Wallet', href: '/merchant/wallet' },
     { icon: Users, label: 'Customers', href: '/merchant/customers' },
     { icon: MapPin, label: 'Saved OmorfiHub Points', href: '/merchant/hubs/saved' },
