@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
 import { permissionService, Permission } from '../../services/permissionService';
@@ -49,7 +50,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 };
 
 export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, activeRole, loading } = useAuth();
+  const { fbUser, user, activeRole, loading, profileMissing } = useAuth();
 
   if (loading) {
     return (
@@ -59,12 +60,16 @@ export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }
 
-  if (user) {
+  if (fbUser || user) {
+    if (profileMissing) {
+      return <Navigate to="/role-selection" replace />;
+    }
     const redirectPath =
       activeRole === 'SUPER_ADMIN' || activeRole === 'OPERATIONS_MANAGER' ? '/admin' :
       activeRole === 'MERCHANT' ? '/merchant/dashboard' :
       activeRole === 'CENTER_OWNER' || activeRole === 'CENTER_STAFF' ? '/point/dashboard/owner' :
       activeRole === 'LOGISTICS_OWNER' || activeRole === 'LOGISTICS_COMPANY' || activeRole === 'DRIVER' ? '/logistics/dashboard/owner' :
+      activeRole === 'DISPATCH_RIDER' ? '/dispatch/dashboard' :
       '/dashboard';
     return <Navigate to={redirectPath} replace />;
   }
