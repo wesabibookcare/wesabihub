@@ -39,8 +39,8 @@ export const seedInitialSettings = async () => {
     },
     landingPage: {
       hero: {
-        title: 'Nationwide Pick-Up & Drop-Off Hub Network.',
-        subtitle: 'Connect with customers, merchants, and logistics partners through a secure network of verified neighborhood businesses.',
+        title: 'Trusted & Reliable Pick & Drop-Off Centre',
+        subtitle: 'Connecting you closer to your parcels. We\'ve built Nigeria\'s largest network of verified neighborhood centers. Ship, pick up, and return parcels with total peace of mind.',
         ctaText: 'Get Started',
         ctaLink: '/register'
       },
