@@ -14,15 +14,20 @@ import { SafePayTransaction, SafePayAgreementTerms, SafePayFeePayer } from '@/sr
 import { useNavigate, useParams } from 'react-router-dom';
 
 const DEFAULT_TERMS: SafePayAgreementTerms = {
+  itemName: '',
+  productCategory: 'Electronics',
   itemCondition: 'New',
   testing: 'Testing allowed',
+  testingDescription: '',
   warranty: 'No warranty',
   returnPolicy: 'Return only for defect',
   authenticity: 'Original',
   contents: 'Complete package',
   serialImei: 'Not required',
+  serialImeiValue: '',
   packaging: 'Seller packaging',
   delivery: 'OmorfiHub Hub',
+  deliveryMethod: 'OmorfiHub Hub',
   inspection: 'Standard SafePay inspection',
   defectDefinition: 'Item does not function as described',
   specialInstructions: ''
@@ -239,6 +244,35 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
             {/* Dropdown Options */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
+                <label className="font-bold text-slate-600 dark:text-slate-400 block mb-1">Product / Item Name</label>
+                <Input
+                  disabled={isAgreed}
+                  value={terms.itemName || ''}
+                  onChange={e => setTerms({ ...terms, itemName: e.target.value })}
+                  placeholder="e.g. iPhone 15 Pro Max 256GB"
+                  className="text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-600 dark:text-slate-400 block mb-1">Product Category</label>
+                <select
+                  disabled={isAgreed}
+                  value={terms.productCategory || 'Electronics'}
+                  onChange={e => setTerms({ ...terms, productCategory: e.target.value })}
+                  className="w-full p-2.5 border rounded-xl dark:bg-slate-900 dark:text-white"
+                >
+                  <option value="Electronics">Electronics (Phones, Laptops, Gadgets)</option>
+                  <option value="Fashion">Fashion & Apparel</option>
+                  <option value="Home & Office">Home & Office Appliances</option>
+                  <option value="Vehicles">Vehicles & Automotive Parts</option>
+                  <option value="Beauty">Beauty & Personal Care</option>
+                  <option value="Furniture">Furniture & Decor</option>
+                  <option value="General Goods">Other General Goods</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="font-bold text-slate-600 dark:text-slate-400 block mb-1">Item Condition</label>
                 <select
                   disabled={isAgreed}
@@ -268,6 +302,15 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
                   <option value="Testing not allowed">Testing not allowed</option>
                   <option value="Specific test agreed">Specific test agreed</option>
                 </select>
+                {terms.testing === 'Specific test agreed' && (
+                  <Input
+                    disabled={isAgreed}
+                    value={terms.testingDescription || ''}
+                    onChange={e => setTerms({ ...terms, testingDescription: e.target.value })}
+                    placeholder="Describe specific testing agreed..."
+                    className="mt-1 text-xs"
+                  />
+                )}
               </div>
 
               <div>
@@ -338,6 +381,15 @@ export const SafePayWorkspace = ({ transactionId: propTxId }: { transactionId?: 
                   <option value="Required">Required</option>
                   <option value="Not required">Not required</option>
                 </select>
+                {terms.serialImei === 'Required' && (
+                  <Input
+                    disabled={isAgreed}
+                    value={terms.serialImeiValue || ''}
+                    onChange={e => setTerms({ ...terms, serialImeiValue: e.target.value })}
+                    placeholder="Enter Serial # or IMEI..."
+                    className="mt-1 text-xs"
+                  />
+                )}
               </div>
 
               <div>

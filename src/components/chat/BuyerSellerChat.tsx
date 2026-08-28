@@ -27,6 +27,7 @@ import { Conversation, Message, Dispute, ItemInformation, Parcel, MessageStatus,
 import { useNavigate } from 'react-router-dom';
 import { CameraCaptureModal } from './CameraCaptureModal';
 import { VerifiedEvidenceCallScreen } from './VerifiedEvidenceCallScreen';
+import { LiveTelegramCallModal } from './LiveTelegramCallModal';
 import { ROLES } from '../../constants/roles';
 import { paymentProtectionRepository } from '../../services/db/PaymentProtectionRepository';
 
@@ -100,6 +101,7 @@ export const BuyerSellerChat = () => {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [isCameraCaptureOpen, setIsCameraCaptureOpen] = useState(false);
   const [isCallScreenActive, setIsCallScreenActive] = useState(false);
+  const [isLiveCallOpen, setIsLiveCallOpen] = useState(false);
 
   // Scroll ref
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -928,6 +930,17 @@ export const BuyerSellerChat = () => {
 
               {/* Action buttons on header */}
               <div className="flex items-center gap-2">
+                {!activeConv.isDisputed && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsLiveCallOpen(true)}
+                    className="rounded-xl flex items-center gap-1 text-[11px] h-8 text-primary-600 border-primary-200 hover:bg-primary-50"
+                  >
+                    <Phone size={14} /> Call
+                  </Button>
+                )}
+
                 <Button
                   variant="primary"
                   size="sm"
@@ -938,6 +951,10 @@ export const BuyerSellerChat = () => {
                         ? (activeConv.participants.find(id => id !== currentUserId) || activeConv.participants[0])
                         : (activeConv.sellerId === currentUserId ? activeConv.buyerId : activeConv.sellerId);
 
+                      const partnerName = activeConv.type === 'USERNAME'
+                        ? (activeConv.participantNames?.[partnerId] || 'User')
+                        : (activeConv.sellerId === currentUserId ? activeConv.buyerName : activeConv.sellerName);
+
                       const res = await fetch('/api/safepay/workspace/create', {
                         method: 'POST',
                         headers: {
@@ -945,10 +962,10 @@ export const BuyerSellerChat = () => {
                           'Authorization': `Bearer ${fbUser ? await fbUser.getIdToken() : ''}`
                         },
                         body: JSON.stringify({
-                          buyerId: activeConv.buyerId || currentUserId,
-                          buyerName: activeConv.buyerName || currentUserName,
-                          sellerId: activeConv.sellerId || partnerId,
-                          sellerName: activeConv.sellerName || 'Seller',
+                          buyerId: activeConv.buyerId || (isMerchant ? partnerId : currentUserId),
+                          buyerName: activeConv.buyerName || (isMerchant ? partnerName : currentUserName),
+                          sellerId: activeConv.sellerId || (isMerchant ? currentUserId : partnerId),
+                          sellerName: activeConv.sellerName || (isMerchant ? currentUserName : partnerName),
                           itemTitle: activeConv.itemInfo?.title || 'Agreed SafePay Purchase',
                           itemPrice: activeConv.itemInfo?.estimatedValue || 10000,
                           conversationId: activeConv.id,
@@ -957,6 +974,14 @@ export const BuyerSellerChat = () => {
                       });
                       const data = await res.json();
                       if (data.success && data.transaction) {
+                        // Send interactive announcement message in chat
+                        await communicationService.sendMessage(
+                          activeConv.id,
+                          currentUserId,
+                          currentUserRole,
+                          currentUserName,
+                          `🤝 SafePay Deal Initiated! Deal Ref: ${data.transaction.transactionId}. Click "SafePay Workspace" to review and sign dual agreement terms.`
+                        );
                         navigate(`/safepay/workspace/${data.transaction.transactionId}`);
                       } else {
                         toast.error(data.error || 'Failed to open SafePay Workspace');
@@ -965,7 +990,7 @@ export const BuyerSellerChat = () => {
                       toast.error('Could not initialize SafePay Workspace');
                     }
                   }}
-                  className="rounded-xl flex items-center gap-1.5 text-[11px] h-8 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                  className="rounded-xl flex items-center gap-1.5 text-[11px] h-8 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-bold"
                 >
                   <ShieldCheck size={14} /> SafePay Workspace
                 </Button>
@@ -1807,7 +1832,24 @@ export const BuyerSellerChat = () => {
         />
       )}
 
-      {/* SAFEPAY EVIDENCE RECORDING OVERLAY */}
+      {/* TELEGRAM-STYLE LIVE WEBCALL MODAL */}
+      {activeConv && isLiveCallOpen && (
+        <LiveTelegramCallModal
+          isOpen={isLiveCallOpen}
+          onClose={() => setIsLiveCallOpen(false)}
+          conversationId={activeConv.id}
+          partnerName={(() => {
+            const partnerId = activeConv.type === 'USERNAME'
+              ? (activeConv.participants.find(id => id !== currentUserId) || activeConv.participants[0])
+              : (activeConv.sellerId === currentUserId ? activeConv.buyerId : activeConv.sellerId);
+            return activeConv.participantNames?.[partnerId || ''] || activeConv.buyerName || activeConv.sellerName || 'User';
+          })()}
+          isVideoCall={true}
+          SafePayId={activePPId}
+        />
+      )}
+
+      {/* SAFEPAY EVIDENCE RECORDING OVERLAY (OFFLINE ASYNCHRONOUS RECORDING) */}
       {activeConv && isCallScreenActive && (
         <VerifiedEvidenceCallScreen
           isOpen={isCallScreenActive}

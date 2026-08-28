@@ -1311,15 +1311,20 @@ export interface SafePayFeeConfig {
 }
 
 export interface SafePayAgreementTerms {
+  itemName?: string;
+  productCategory?: string;
   itemCondition: string;
   testing: string;
+  testingDescription?: string;
   warranty: string;
   returnPolicy: string;
   authenticity: string;
   contents: string;
   serialImei: string;
+  serialImeiValue?: string;
   packaging: string;
   delivery: string;
+  deliveryMethod?: string;
   inspection: string;
   defectDefinition: string;
   specialInstructions?: string;
