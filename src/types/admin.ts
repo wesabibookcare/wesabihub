@@ -69,6 +69,7 @@ export const ADMIN_NAV_ITEMS = [
   { id: 'reports', label: 'Reports', icon: BarChart3, href: '/admin/reports', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'FINANCE_OFFICER'] },
   { id: 'test-mode', label: 'Test Mode (Sandbox)', icon: ShieldCheck, href: '/admin/test-mode', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER'] },
   { id: 'settings', label: 'System Settings', icon: Settings, href: '/admin/settings', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER'] },
+  { id: 'secrets', label: 'API Secrets Vault', icon: ShieldCheck, href: '/admin/secrets', allowedRoles: ['SUPER_ADMIN'] },
   { id: 'infrastructure', label: 'Infrastructure', icon: ShieldCheck, href: '/admin/infrastructure', allowedRoles: ['SUPER_ADMIN'] },
   { id: 'content-cms', label: 'Content (CMS)', icon: FileText, href: '/admin/content', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER'] },
   { id: 'help-center-config', label: 'AI Help Desk Config', icon: HelpCircle, href: '/admin/help-center', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER'] },

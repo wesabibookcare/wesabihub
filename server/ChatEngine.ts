@@ -9,16 +9,19 @@ export async function getGeminiApiKey(db?: any): Promise<string | null> {
   }
   if (db) {
     try {
+      // 1. Check systemSettings/secrets first (Primary Super Admin Vault)
+      const secretsSnap = await db.collection('systemSettings').doc('secrets').get();
+      if (secretsSnap && secretsSnap.exists) {
+        const d = secretsSnap.data();
+        const key = d?.geminiApiKey || d?.GEMINI_API_KEY;
+        if (key && typeof key === 'string' && key.trim() !== '') return key.trim();
+      }
+
+      // 2. Check systemSettings/global fallback
       const globalSnap = await db.collection('systemSettings').doc('global').get();
       if (globalSnap && globalSnap.exists) {
         const d = globalSnap.data();
         const key = d?.geminiApiKey || d?.aiApiKey || d?.aiSettings?.geminiApiKey;
-        if (key && typeof key === 'string' && key.trim() !== '') return key.trim();
-      }
-      const secretsSnap = await db.collection('systemSettings').doc('secrets').get();
-      if (secretsSnap && secretsSnap.exists) {
-        const d = secretsSnap.data();
-        const key = d?.GEMINI_API_KEY || d?.geminiApiKey;
         if (key && typeof key === 'string' && key.trim() !== '') return key.trim();
       }
     } catch (e) {

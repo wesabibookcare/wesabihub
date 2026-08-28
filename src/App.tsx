@@ -155,6 +155,7 @@ import { SecurityDashboardPage } from './pages/admin/SecurityDashboardPage';
 import { OperationalCctvPage } from './pages/admin/OperationalCctvPage';
 import { GlobalSettingsPage } from './pages/admin/GlobalSettingsPage';
 import { InfrastructureCertificationPage } from './pages/admin/InfrastructureCertificationPage';
+import { ApiSecretsConfigPage } from './pages/admin/ApiSecretsConfigPage';
 import { CommissionManagementPage } from './pages/admin/CommissionManagementPage';
 import { RevenueReportsPage } from './pages/admin/RevenueReportsPage';
 import { ComplaintCentrePage as AdminComplaintCentrePage } from './pages/admin/ComplaintCentrePage';
@@ -340,6 +341,7 @@ export default function App() {
         <Route path="/admin/commissions" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><CommissionManagementPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/revenue" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><RevenueReportsPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/settings" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><GlobalSettingsPage /></RoleGuard></ProtectedRoute>} />
+        <Route path="/admin/secrets" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN']}><ApiSecretsConfigPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/infrastructure" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN']}><InfrastructureCertificationPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/help-center" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN']}><HelpCenterConfigPage /></RoleGuard></ProtectedRoute>} />
 

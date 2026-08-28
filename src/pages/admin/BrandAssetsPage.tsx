@@ -26,6 +26,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { configurationEngine } from '@/src/engines';
 import { auditEngine } from '../../services/AuditEngine';
 import { auth } from '../../lib/firebase';
+import { toast } from 'sonner';
 
 export const BrandAssetsPage = () => {
   const { settings, loading } = useSettings();
@@ -67,8 +68,10 @@ export const BrandAssetsPage = () => {
       });
 
       setSaveStatus({ type: 'success', message: 'Brand assets updated successfully' });
+      toast.success('Brand assets updated successfully!');
     } catch (error: any) {
       setSaveStatus({ type: 'error', message: `Failed to save changes: ${error.message}` });
+      toast.error(`Failed to save changes: ${error.message}`);
     } finally {
       setIsSaving(false);
       setTimeout(() => setSaveStatus(null), 5000);

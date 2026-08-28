@@ -276,9 +276,11 @@ service cloud.firestore {
     }
 
     match /systemSettings/{setId} {
-      allow read: if true;
+      // Sensitive system secrets (API keys, Firebase private keys, provider tokens)
+      // must strictly be read and written only by Super Admins. Client read is blocked.
+      allow read: if setId == 'secrets' ? hasRole('SUPER_ADMIN') : true;
       allow create: if isAdmin() || isBootstrapActive();
-      allow update, delete: if isAdmin();
+      allow update, delete: if setId == 'secrets' ? hasRole('SUPER_ADMIN') : isAdmin();
     }
 
     match /adminRoles/{roleId} {
