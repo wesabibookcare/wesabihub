@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   MessageSquare, Send, ShieldAlert, Image, Video, FileText, Smile,
@@ -675,25 +675,27 @@ export const BuyerSellerChat = () => {
     }
   };
 
-  // Filter conversations list
-  const filteredConversations = conversations.filter(c => {
+  // Performance Optimization (Bolt ⚡): Memoize conversation filtering to avoid linear search & lowercasing on every render/keystroke
+  const filteredConversations = useMemo(() => {
     const term = searchQuery.toLowerCase().trim();
-    if (!term) return true;
+    if (!term) return conversations;
 
-    // Support searching by participant names/usernames
-    const participantNamesMatch = c.participantNames ? Object.values(c.participantNames).some((n: any) => n.toLowerCase().includes(term)) : false;
-    const participantUsernamesMatch = c.participantUsernames ? Object.values(c.participantUsernames).some((u: any) => u.toLowerCase().includes(term)) : false;
+    return conversations.filter(c => {
+      // Support searching by participant names/usernames
+      const participantNamesMatch = c.participantNames ? Object.values(c.participantNames).some((n: any) => n.toLowerCase().includes(term)) : false;
+      const participantUsernamesMatch = c.participantUsernames ? Object.values(c.participantUsernames).some((u: any) => u.toLowerCase().includes(term)) : false;
 
-    return (
-      (c.buyerName && c.buyerName.toLowerCase().includes(term)) ||
-      (c.sellerName && c.sellerName.toLowerCase().includes(term)) ||
-      (c.lastMessageText && c.lastMessageText.toLowerCase().includes(term)) ||
-      (c.trackingNumber && c.trackingNumber.toLowerCase().includes(term)) ||
-      (c.shipmentId && c.shipmentId.toLowerCase().includes(term)) ||
-      participantNamesMatch ||
-      participantUsernamesMatch
-    );
-  });
+      return (
+        (c.buyerName && c.buyerName.toLowerCase().includes(term)) ||
+        (c.sellerName && c.sellerName.toLowerCase().includes(term)) ||
+        (c.lastMessageText && c.lastMessageText.toLowerCase().includes(term)) ||
+        (c.trackingNumber && c.trackingNumber.toLowerCase().includes(term)) ||
+        (c.shipmentId && c.shipmentId.toLowerCase().includes(term)) ||
+        participantNamesMatch ||
+        participantUsernamesMatch
+      );
+    });
+  }, [conversations, searchQuery]);
 
   const isUserParticipant = activeConv && (
     activeConv.buyerId === currentUserId ||
@@ -702,31 +704,33 @@ export const BuyerSellerChat = () => {
   );
   const isUserSupportOrAdmin = ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN'].includes(currentUserRole);
 
-  // Combine Messages and Tracking Events into a unified timeline
-  const timelineItems = [...messages];
-  if (trackingEvents && trackingEvents.length > 0) {
-    trackingEvents.forEach(evt => {
-      // Inject tracking events as special SYSTEM messages
-      timelineItems.push({
-        id: `trk-${evt.id}`,
-        conversationId: activeConv?.id || '',
-        senderId: 'SYSTEM',
-        senderRole: 'SYSTEM' as UserRole,
-        senderName: 'Logistics System',
-        text: `Shipment Update: ${evt.status} - ${evt.location || 'Hub'}`,
-        status: 'DELIVERED',
-        delivered: true,
-        timestamp: evt.timestamp,
-        metadata: {
-          isTrackingEvent: true,
-          status: evt.status
-        }
-      } as any);
-    });
-  }
+  // Performance Optimization (Bolt ⚡): Memoize combined chat timeline sorting to prevent O(N log N) date conversions & array allocations during typing
+  const timelineItems = useMemo(() => {
+    const items = [...messages];
+    if (trackingEvents && trackingEvents.length > 0) {
+      trackingEvents.forEach(evt => {
+        // Inject tracking events as special SYSTEM messages
+        items.push({
+          id: `trk-${evt.id}`,
+          conversationId: activeConv?.id || '',
+          senderId: 'SYSTEM',
+          senderRole: 'SYSTEM' as UserRole,
+          senderName: 'Logistics System',
+          text: `Shipment Update: ${evt.status} - ${evt.location || 'Hub'}`,
+          status: 'DELIVERED',
+          delivered: true,
+          timestamp: evt.timestamp,
+          metadata: {
+            isTrackingEvent: true,
+            status: evt.status
+          }
+        } as any);
+      });
+    }
 
-  // Sort chronologically
-  timelineItems.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    // Sort chronologically once per message/event change
+    return items.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }, [messages, trackingEvents, activeConv?.id]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 h-[calc(100vh-140px)]">
