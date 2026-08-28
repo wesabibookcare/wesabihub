@@ -1,0 +1,3 @@
+## 2026-08-28 - Chat Timeline & Conversation List Memoization
+**Learning:** High-frequency input changes in chat components (such as typing messages or searching conversations) trigger component re-renders on every keystroke. Without memoization, operations like linear filtering, string lowercasing, and especially array sorting with `new Date().getTime()` run on every single keypress, degrading performance as conversation and message history grows.
+**Action:** Wrap linear collection filtering and date-sorting timeline computations in `useMemo` with minimal, strict dependency arrays to preserve computations across input state changes.
