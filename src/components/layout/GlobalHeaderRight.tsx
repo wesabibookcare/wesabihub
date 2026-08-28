@@ -62,7 +62,10 @@ export const GlobalHeaderRight: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => { setShowRoleMenu(!showRoleMenu); setShowNotifications(false); setShowProfile(false); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            aria-expanded={showRoleMenu}
+            aria-haspopup="true"
+            aria-label="Switch User Role Perspective"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
               impersonatedRole
                 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 animate-pulse'
                 : 'bg-primary-500/10 text-primary-700 dark:text-primary-300 border-primary-500/20 hover:bg-primary-500/20'
@@ -121,7 +124,10 @@ export const GlobalHeaderRight: React.FC = () => {
       {/* Notifications */}
       <div className="relative">
         <button
-          className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+          aria-expanded={showNotifications}
+          aria-haspopup="true"
+          className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-colors shrink-0"
           onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); setShowRoleMenu(false); }}
         >
           <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -135,7 +141,10 @@ export const GlobalHeaderRight: React.FC = () => {
       {/* Profile Menu */}
       <div className="relative">
         <button
-          className="flex items-center gap-3 shrink-0"
+          aria-label="User profile menu"
+          aria-expanded={showProfile}
+          aria-haspopup="true"
+          className="flex items-center gap-3 shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
           onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); setShowRoleMenu(false); }}
         >
           <div className="text-right hidden sm:block">

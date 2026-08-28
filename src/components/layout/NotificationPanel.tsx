@@ -64,16 +64,20 @@ export const NotificationPanel: React.FC<{ onClose: () => void }> = ({ onClose }
   }
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden flex flex-col max-h-[80vh]">
+    <div
+      role="region"
+      aria-label="Notifications Panel"
+      className="absolute top-full right-0 mt-2 w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden flex flex-col max-h-[80vh]"
+    >
       <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-2">
         <div className="flex items-center justify-between">
             <h3 className="font-bold dark:text-white">Notifications</h3>
             <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={markAllAsRead} title="Mark all as read"><Check size={16} /></Button>
-                <Button variant="ghost" size="sm" onClick={onClose}><X size={16} /></Button>
+                <Button variant="ghost" size="sm" onClick={markAllAsRead} title="Mark all as read" aria-label="Mark all notifications as read"><Check size={16} /></Button>
+                <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close notifications panel"><X size={16} /></Button>
             </div>
         </div>
-        <select className="w-full text-xs p-1 border rounded" value={filter} onChange={e => setFilter(e.target.value as any)}>
+        <select aria-label="Filter notifications by category" className="w-full text-xs p-1 border rounded" value={filter} onChange={e => setFilter(e.target.value as any)}>
             <option value="ALL">All Categories</option>
             {['WESABICHAT', 'SHIPMENT', 'PAYMENT', 'RETURN', 'STORAGE', 'COMPLAINT', 'DISPUTE', 'ANNOUNCEMENT', 'APPROVAL', 'INVITATION', 'API', 'PLATFORM', 'SECURITY', 'SYSTEM'].map(c => <option key={c} value={c}>{c === 'WESABICHAT' ? 'OmorfiHubChat' : c}</option>)}
         </select>
@@ -95,7 +99,7 @@ export const NotificationPanel: React.FC<{ onClose: () => void }> = ({ onClose }
                         <p className="font-bold text-sm dark:text-white">{notification.title}</p>
                         <p className="text-xs text-slate-500">{notification.message}</p>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}><Trash2 size={14} /></Button>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }} aria-label="Delete notification"><Trash2 size={14} /></Button>
                   </div>
                 ))}
             </div>
