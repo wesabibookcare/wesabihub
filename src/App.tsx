@@ -223,7 +223,7 @@ export default function App() {
 
         {/* Customer Module Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><RoleGuard allowedRoles={['CUSTOMER', 'MERCHANT', 'SUPER_ADMIN']}><CustomerDashboard /></RoleGuard></ProtectedRoute>} />
-        <Route path="/customer/send" element={<ProtectedRoute><RoleGuard allowedRoles={['MERCHANT', 'SUPER_ADMIN']} requiredPermission="SEND_PARCEL"><SendParcelPage /></RoleGuard></ProtectedRoute>} />
+        <Route path="/customer/send" element={<ProtectedRoute><RoleGuard allowedRoles={['CUSTOMER', 'MERCHANT', 'SUPER_ADMIN']}><SendParcelPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/customer/receive" element={<ProtectedRoute><RoleGuard allowedRoles={['CUSTOMER', 'MERCHANT', 'SUPER_ADMIN']}><ReceiveParcelPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/customer/track" element={<ProtectedRoute><RoleGuard allowedRoles={['CUSTOMER', 'MERCHANT', 'SUPER_ADMIN']}><TrackParcelPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/customer/hubs" element={<ProtectedRoute><RoleGuard allowedRoles={['CUSTOMER', 'MERCHANT', 'SUPER_ADMIN']}><FindHubPointPage /></RoleGuard></ProtectedRoute>} />

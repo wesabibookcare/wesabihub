@@ -384,9 +384,15 @@ export const HelpCenterWidget = () => {
           { icon: MessageSquare, label: 'Chat with Omorfi', action: () => setView('chat'), color: 'text-primary-500', bg: 'bg-primary-50 dark:bg-primary-900/20' },
         ];
       default:
-        const hasSendPermission = permissionService.hasPermission(user, 'SEND_PARCEL');
+        const isApprovedMerchant = (user?.roles?.includes('MERCHANT') || user?.role === 'MERCHANT') &&
+          (user?.status === 'APPROVED' || user?.status === 'ACTIVE' || user?.verificationStatus?.kyc === true);
+        const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN' || user?.email === 'wesabibookcare@gmail.com';
+        const canSendParcel = isApprovedMerchant || isSuperAdmin;
+
         return [
-          ...(hasSendPermission ? [{ icon: Send, label: 'Send a Parcel', action: () => { setIsOpen(false); navigate('/customer/send'); }, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' }] : []),
+          canSendParcel
+            ? { icon: Send, label: 'Send a Parcel', action: () => { setIsOpen(false); navigate('/customer/send'); }, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' }
+            : { icon: Send, label: 'Send Parcels (Apply as Merchant)', action: () => { setIsOpen(false); navigate('/register?role=MERCHANT'); }, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
           { icon: Search, label: 'Track My Parcel', action: () => { setIsOpen(false); navigate('/customer/track'); }, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
           { icon: MessageSquare, label: 'Omorfi Customer Care', action: () => setView('chat'), color: 'text-primary-500', bg: 'bg-primary-50 dark:bg-primary-900/20' },
           { icon: FileImage, label: 'Analyze Package Photo', action: () => setView('media-analysis'), color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },

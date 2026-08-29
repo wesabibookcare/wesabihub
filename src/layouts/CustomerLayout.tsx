@@ -21,9 +21,16 @@ import { permissionService } from '../services/permissionService';
 
 export const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const isApprovedMerchant = (user?.roles?.includes('MERCHANT') || user?.role === 'MERCHANT') &&
+    (user?.status === 'APPROVED' || user?.status === 'ACTIVE' || user?.verificationStatus?.kyc === true);
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN' || user?.email === 'wesabibookcare@gmail.com';
+  const canSendParcel = isApprovedMerchant || isSuperAdmin;
+
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-    ...(permissionService.hasPermission(user, 'SEND_PARCEL') ? [{ icon: Send, label: 'Send Parcel', href: '/customer/send' }] : []),
+    canSendParcel
+      ? { icon: Send, label: 'Send Parcel', href: '/customer/send' }
+      : { icon: Send, label: 'Send Parcels (Apply as Merchant)', href: '/register?role=MERCHANT' },
     { icon: Download, label: 'Receive Parcel', href: '/customer/receive' },
     { icon: Search, label: 'Track Parcel', href: '/customer/track' },
     { icon: MapPin, label: 'Find Hub Point', href: '/customer/hubs' },

@@ -33,7 +33,10 @@ import {
 
 export const CustomerDashboard = () => {
   const { user, fbUser } = useAuth();
-  const canSend = permissionService.hasPermission(user, 'SEND_PARCEL');
+  const isApprovedMerchant = (user?.roles?.includes('MERCHANT') || user?.role === 'MERCHANT') &&
+    (user?.status === 'APPROVED' || user?.status === 'ACTIVE' || user?.verificationStatus?.kyc === true);
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN' || user?.email === 'wesabibookcare@gmail.com';
+  const canSend = isApprovedMerchant || isSuperAdmin;
   const [shipments, setShipments] = useState<Parcel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -152,9 +155,13 @@ export const CustomerDashboard = () => {
                   )}
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
-                   {canSend && (
+                   {canSend ? (
                      <Button className="rounded-xl px-6 h-12" asChild>
                         <Link to="/customer/send">Send Parcel</Link>
+                     </Button>
+                   ) : (
+                     <Button className="rounded-xl px-6 h-12 bg-amber-600 hover:bg-amber-700 text-white font-bold" asChild>
+                        <Link to="/register?role=MERCHANT">Send Parcels (Apply as Merchant)</Link>
                      </Button>
                    )}
                    <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-700 text-white hover:bg-slate-800" asChild>
@@ -176,7 +183,9 @@ export const CustomerDashboard = () => {
            <h2 className="text-2xl font-bold font-display dark:text-white">Quick Actions</h2>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                ...(canSend ? [{ icon: Send, label: 'Send Parcel', color: 'bg-blue-50 text-blue-600', hover: 'hover:border-blue-500', href: '/customer/send' }] : []),
+                canSend
+                  ? { icon: Send, label: 'Send Parcel', color: 'bg-blue-50 text-blue-600', hover: 'hover:border-blue-500', href: '/customer/send' }
+                  : { icon: Send, label: 'Send Parcels (Apply as Merchant)', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/register?role=MERCHANT' },
                 { icon: Search, label: 'Track Parcel', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/customer/track' },
                 { icon: MapPin, label: 'Find Hub Point', color: 'bg-emerald-50 text-emerald-600', hover: 'hover:border-emerald-500', href: '/customer/hubs' },
                 { icon: Download, label: 'Receive Parcel', color: 'bg-purple-50 text-purple-600', hover: 'hover:border-purple-500', href: '/customer/receive' },

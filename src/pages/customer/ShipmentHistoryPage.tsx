@@ -34,7 +34,10 @@ import { toast } from 'sonner';
 
 export const ShipmentHistoryPage = () => {
   const { user } = useAuth();
-  const canSend = permissionService.hasPermission(user, 'SEND_PARCEL');
+  const isApprovedMerchant = (user?.roles?.includes('MERCHANT') || user?.role === 'MERCHANT') &&
+    (user?.status === 'APPROVED' || user?.status === 'ACTIVE' || user?.verificationStatus?.kyc === true);
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN' || user?.email === 'wesabibookcare@gmail.com';
+  const canSend = isApprovedMerchant || isSuperAdmin;
   const [isExporting, setIsExporting] = useState(false);
   const [ratingParcel, setRatingParcel] = useState<Parcel | null>(null);
 
@@ -173,7 +176,11 @@ export const ShipmentHistoryPage = () => {
                 <Button className="mt-4 rounded-xl px-8" asChild>
                   <Link to="/customer/send">Send Parcel</Link>
                 </Button>
-              ) : undefined}
+              ) : (
+                <Button className="mt-4 rounded-xl px-8 bg-amber-600 hover:bg-amber-700 font-bold" asChild>
+                  <Link to="/register?role=MERCHANT">Apply for Merchant Account</Link>
+                </Button>
+              )}
             />
           </Card>
         ) : (
