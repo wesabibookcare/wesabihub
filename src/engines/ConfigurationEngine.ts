@@ -42,14 +42,170 @@ class ConfigurationEngine {
   }
 
   /**
+   * Default Global Settings Fallback
+   */
+  private getDefaultGlobalSettings(): SystemSettings {
+    return {
+      id: 'global',
+      platformName: 'OmorfiHub',
+      tagline: 'Seamless Logistics for Everyone',
+      supportEmail: 'support@omorfihub.com',
+      supportPhone: '+234 123 456 7890',
+      socialLinks: {
+        facebook: 'https://facebook.com/omorfihub',
+        twitter: 'https://twitter.com/omorfihub',
+        instagram: 'https://instagram.com/omorfihub',
+        linkedin: 'https://linkedin.com/company/omorfihub',
+        whatsapp: 'https://wa.me/2341234567890',
+        telegram: 'https://t.me/omorfihub',
+        website: 'https://omorfihub.com'
+      },
+      branding: {
+        logoUrl: '/assets/brand/omorfi-logo.png',
+        logoDarkUrl: '/assets/brand/omorfi-logo.png',
+        logoLightUrl: '/assets/brand/omorfi-logo.png',
+        logoWithTaglineUrl: '/assets/brand/omorfi-logo.png',
+        faviconUrl: '/favicon.ico',
+        appIconUrl: '/assets/brand/omorfi-logo.png',
+        emailLogoUrl: '/assets/brand/omorfi-logo.png',
+        documentLogoUrl: '/assets/brand/omorfi-logo.png',
+        primaryColor: '#0F172A',
+        secondaryColor: '#3B82F6',
+        typography: {
+          headingFont: 'Space Grotesk',
+          bodyFont: 'Inter',
+          baseFontSize: '16px'
+        },
+        defaultTheme: 'light'
+      },
+      landingPage: {
+        hero: {
+          title: 'Trusted & Reliable Pick & Drop-Off Centre',
+          subtitle: "Connecting you closer to your parcels. We've built Nigeria's largest network of verified neighborhood centers.",
+          ctaText: 'Get Started',
+          ctaLink: '/register'
+        },
+        cta: {
+          title: 'Ready to grow your business?',
+          description: 'Join thousands of merchants and hub points today.',
+          buttonText: 'Join Now',
+          buttonLink: '/register'
+        },
+        aboutUsText: 'OmorfiHub is the trusted Pick-Up & Drop-Off (PUDO) network.',
+        descriptions: {
+          networkSummary: 'A nationwide network of local businesses serving as secure parcel hubs.',
+          merchantValueProp: 'Expand your reach without increasing your logistics costs.',
+          logisticsValueProp: 'Focus on middle-mile delivery while hubs handle the last mile.',
+          centerValueProp: 'Turn your business into a high-traffic logistics hub.'
+        },
+        features: [],
+        statistics: [],
+        testimonials: []
+      },
+      footer: {
+        aboutText: 'OmorfiHub is the trusted Pick-Up & Drop-Off (PUDO) network.',
+        copyrightNotice: '© 2026 OmorfiHub. All rights reserved.',
+        links: []
+      },
+      countryConfig: {
+        defaultCountry: 'Nigeria',
+        defaultCurrency: 'Naira',
+        defaultCurrencySymbol: '₦',
+        defaultTimezone: 'Africa/Lagos',
+        defaultPhoneCode: '+234',
+        defaultDateFormat: 'DD/MM/YYYY',
+        defaultAddressFormat: '{address}, {city}, {state}, {country}',
+        defaultWeightUnit: 'kg',
+        defaultMeasurementUnit: 'metric',
+        taxSettings: { vatRate: 7.5, enabled: true },
+        consumerProtectionRules: 'Governed by FCCPC.',
+        supportedCountries: ['Nigeria'],
+        multiCountryEnabled: false,
+        languages: ['English']
+      },
+      policies: {
+        privacyPolicy: '# Privacy Policy...',
+        termsOfService: '# Terms of Service...',
+        paymentProtectionPolicy: '# Payment Protection Policy...',
+        returnsPolicy: '# Returns Policy...',
+        storagePolicy: '# Storage Policy...',
+        merchantPolicy: '# Merchant Policy...',
+        centreAgreement: '# Centre Agreement...',
+        developerAgreement: '# Developer Agreement...',
+        communityGuidelines: '# Community Guidelines...'
+      },
+      companyPages: {
+        aboutUs: '# About Us',
+        howItWorks: '# How It Works',
+        solutions: '# Solutions',
+        merchants: '# Merchants',
+        logistics: '# Logistics',
+        hubs: '# Hubs'
+      },
+      contactInfo: {
+        supportEmail: 'support@omorfihub.com',
+        supportPhone: '+234 123 456 7890',
+        whatsapp: '+234 123 456 7890',
+        address: 'Lagos, Nigeria',
+        workingHours: 'Mon-Fri 9AM-6PM'
+      },
+      maintenanceMode: false,
+      platformFees: {
+        percentage: 5,
+        fixed: 100
+      },
+      paymentConfig: {
+        primaryProvider: 'FLUTTERWAVE',
+        backupProvider: 'PAYSTACK',
+        enabledProviders: ['FLUTTERWAVE', 'PAYSTACK'],
+        primarySafePayProvider: 'FLUTTERWAVE',
+        primaryPlatformProvider: 'PAYSTACK',
+        enableFallback: true,
+        allowedFallbackTypes: ['WALLET_FUNDING', 'REGISTRATION_FEE', 'MEMBERSHIP', 'SUBSCRIPTION', 'GENERAL_PLATFORM_CHARGE'],
+        retryLimits: 3,
+        timeoutDuration: 30,
+        paymentMaintenanceMode: false,
+        providerPriority: ['PAYSTACK', 'FLUTTERWAVE'],
+        isCardPaymentEnabled: false,
+        isBankTransferEnabled: true,
+        allowedPaymentMethods: ['BANK_TRANSFER', 'WALLET']
+      },
+      featureFlags: {
+        enableMerchantRegistration: true,
+        enableLogisticsOnboarding: true,
+        enableHubCenterApplications: true,
+        enablePublicMarketplace: true,
+        enableAIAssistant: false,
+        enableGlobalSearch: true,
+        enableSafePay: true
+      }
+    };
+  }
+
+  /**
    * Global Settings
    */
   async getGlobalSettings(): Promise<SystemSettings> {
     if (this.settingsCache) return this.settingsCache;
-    const settings = await systemSettingsRepository.getById('global');
-    if (!settings) throw new Error('Global system settings not found');
-    this.settingsCache = settings;
-    return settings;
+    try {
+      const settings = await systemSettingsRepository.getById('global');
+      if (settings) {
+        this.settingsCache = settings;
+        return settings;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch global system settings from database, using safe defaults:', err);
+    }
+
+    const fallback = this.getDefaultGlobalSettings();
+    this.settingsCache = fallback;
+
+    // Attempt background creation if missing
+    systemSettingsRepository.create('global', fallback as any).catch(err => {
+      console.warn('Background auto-creation of global system settings skipped or failed:', err?.message || err);
+    });
+
+    return fallback;
   }
 
   /**
