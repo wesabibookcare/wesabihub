@@ -153,7 +153,9 @@ export const RegisterPage: React.FC = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        const redirectPath = ROLE_REDIRECTS[newUser.role] || '/dashboard';
+        const redirectPath = (newUser.pendingRoleApplication || newUser.requestedRole)
+          ? '/dashboard'
+          : (ROLE_REDIRECTS[newUser.role] || '/dashboard');
         navigate(redirectPath);
       }, 3000);
     } catch (err: any) {
