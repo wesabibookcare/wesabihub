@@ -31,6 +31,7 @@ import { LoginPage } from './pages/public/LoginPage';
 import { RegisterPage } from './pages/public/RegisterPage';
 import { ForgotPasswordPage } from './pages/public/ForgotPasswordPage';
 import { AnnouncementBanner } from './components/marketing/AnnouncementBanner';
+import { ApplicationStatusBanner } from './components/common/ApplicationStatusBanner';
 import { AdBanner } from './components/marketing/AdBanner';
 import { BootstrapPage } from './pages/public/BootstrapPage';
 import { UnauthorizedPage } from './pages/public/UnauthorizedPage';
@@ -185,6 +186,7 @@ export default function App() {
         <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 overflow-y-auto overflow-x-hidden scroll-smooth">
           <Toaster position="top-right" richColors />
           <AnnouncementBanner />
+          <ApplicationStatusBanner />
           <main className="flex-1 flex flex-col min-h-0">
             <ErrorBoundary>
             <Routes>

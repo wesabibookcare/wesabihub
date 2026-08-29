@@ -90,11 +90,52 @@ export const LiveFaceScanModal: React.FC<LiveFaceScanModalProps> = ({
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+
+          // Quality check 1: Brightness/Lighting
+          let totalBrightness = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            totalBrightness += (r * 299 + g * 587 + b * 114) / 1000;
+          }
+          const avgBrightness = totalBrightness / (data.length / 4);
+
+          if (avgBrightness < 40) {
+            setError('Lighting is too dark. Please move to a brighter environment or turn on lights.');
+            setScanning(false);
+            return;
+          }
+          if (avgBrightness > 245) {
+            setError('Lighting is too harsh or overexposed. Please avoid direct glare.');
+            setScanning(false);
+            return;
+          }
+
+          // Quality check 2: Sharpness / Contrast variance
+          let varianceSum = 0;
+          const pixelCount = data.length / 4;
+          for (let i = 0; i < data.length; i += 16) {
+            const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            const diff = gray - avgBrightness;
+            varianceSum += diff * diff;
+          }
+          const stdDev = Math.sqrt(varianceSum / (pixelCount / 4));
+
+          if (stdDev < 15) {
+            setError('Image appears blurry or covered. Please center your face clearly in the camera frame.');
+            setScanning(false);
+            return;
+          }
+
           const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
           canvas.toBlob(blob => {
             if (blob) {
               setPreviewUrl(dataUrl);
               setCapturedBlob(blob);
+              setError(null);
             }
             setScanning(false);
           }, 'image/jpeg', 0.9);

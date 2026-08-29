@@ -1,13 +1,15 @@
 import React from 'react';
-import { ShieldAlert, Mail, ArrowLeft, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ShieldAlert, Mail, ArrowLeft, Clock, LayoutDashboard, Sparkles } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { cn } from '../../lib/utils';
 
 export const AccountRestrictedPage: React.FC = () => {
   const { user, signOut } = useAuth();
-  const isPending = user?.status === 'PENDING' || user?.status === 'UNDER_REVIEW' || user?.status === 'EMAIL_UNVERIFIED';
+  const location = useLocation();
+  const requestedRole = (location.state as any)?.role || user?.requestedRole || 'Merchant';
+  const isPending = user?.pendingRoleApplication || user?.status === 'PENDING' || user?.status === 'UNDER_REVIEW' || user?.status === 'EMAIL_UNVERIFIED';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
@@ -24,11 +26,11 @@ export const AccountRestrictedPage: React.FC = () => {
         </div>
 
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-          {isPending ? 'Verification in Progress' : 'Account Restricted'}
+          {isPending ? 'Application Under Review' : 'Account Restricted'}
         </h1>
-        <p className="text-slate-800 dark:text-slate-300 mb-8">
+        <p className="text-slate-800 dark:text-slate-300 mb-8 text-sm">
           {isPending ? (
-            'Your application is currently under review by our team. We will notify you via email once your account has been verified and activated.'
+            `Thank you for registering! Your application for a ${String(requestedRole).replace(/_/g, ' ')} profile has been submitted and is currently under review by our team. Meanwhile, your Customer account is fully active!`
           ) : (
             'We noticed some unusual activity or pending verification on your account. As a result, your access to OmorfiHub has been temporarily restricted.'
           )}
@@ -46,8 +48,17 @@ export const AccountRestrictedPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Button className="w-full gap-2" variant="outline" asChild>
+        <div className="space-y-3">
+          {isPending && (
+            <Button className="w-full gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold h-11 rounded-xl shadow-lg shadow-primary-500/20" asChild>
+              <Link to="/dashboard">
+                <LayoutDashboard className="h-4 w-4" />
+                Go to Customer Dashboard
+              </Link>
+            </Button>
+          )}
+
+          <Button className="w-full gap-2 rounded-xl" variant="outline" asChild>
             <a href="mailto:support@omorfihub.com">
               <Mail className="h-4 w-4" />
               Contact Support
@@ -55,7 +66,7 @@ export const AccountRestrictedPage: React.FC = () => {
           </Button>
 
           <Button
-            className="w-full gap-2"
+            className="w-full gap-2 rounded-xl text-slate-500"
             variant="ghost"
             onClick={() => signOut()}
           >
