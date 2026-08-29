@@ -478,8 +478,12 @@ export const ProfileCompletionPage: React.FC = () => {
 
       if (user.status === 'UNDER_REVIEW') {
         navigate('/account-restricted', { state: { reason: 'PENDING_APPROVAL', role } });
+      } else if (user.pendingRoleApplication || user.requestedRole) {
+        // Active as Customer while role application is under review
+        toast.info(`Your ${role.replace(/_/g, ' ')} application is under review. Your Customer account is active!`);
+        navigate('/dashboard');
       } else {
-        const redirectPath = ROLE_REDIRECTS[role] || '/dashboard';
+        const redirectPath = ROLE_REDIRECTS[user.role || role] || '/dashboard';
         navigate(redirectPath);
       }
     } catch (err: any) {

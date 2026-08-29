@@ -62,6 +62,10 @@ export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ child
 
   if (fbUser || user) {
     if (profileMissing) {
+      // Don't interrupt registration process if user is currently submitting /register
+      if (location.pathname === '/register') {
+        return <>{children}</>;
+      }
       return <Navigate to="/role-selection" replace />;
     }
     const redirectPath =
@@ -108,6 +112,10 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
 
   const userRoles = Array.isArray(user.roles) ? user.roles : [user.role].filter(Boolean);
   if (allowedRoles && !userRoles.some(role => allowedRoles.includes(role)) && !allowedRoles.includes(activeRole as UserRole)) {
+    // Users with pending role applications (e.g. pending Merchant review) can cleanly access Customer Dashboard
+    if (user.pendingRoleApplication || user.requestedRole) {
+      return <Navigate to="/dashboard" replace />;
+    }
     return <>{fallback}</>;
   }
 
