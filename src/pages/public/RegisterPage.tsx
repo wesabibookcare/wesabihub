@@ -175,9 +175,19 @@ export const RegisterPage: React.FC = () => {
     try {
       const user = await userEngine.signInWithGoogle();
       if (user) {
+        if (selectedRole && selectedRole !== 'CUSTOMER') {
+          const hasRole = user.roles?.includes(selectedRole) || user.role === selectedRole;
+          const isPendingThisRole = (user.requestedRole === selectedRole || user.pendingRoleApplication);
+          if (!hasRole && !isPendingThisRole) {
+            navigate('/profile-completion', { state: { role: selectedRole } });
+            return;
+          }
+        }
         setSuccess(true);
         setTimeout(() => {
-          const redirectPath = ROLE_REDIRECTS[user.role] || '/dashboard';
+          const redirectPath = (user.pendingRoleApplication || user.requestedRole)
+            ? '/dashboard'
+            : (ROLE_REDIRECTS[user.role] || '/dashboard');
           navigate(redirectPath);
         }, 2000);
       } else {

@@ -288,7 +288,7 @@ export const BuyerSellerChat = () => {
         setIsNewConvOpen(false);
       } else {
         const input = usernameSearch.trim();
-        let targetUser = await userRepository.getByUsername(input);
+        let targetUser = await userRepository.searchUser(input);
 
         // Also check if input matches any parcel / tracking number
         let matchedParcel = allParcels.find(p =>
@@ -301,25 +301,11 @@ export const BuyerSellerChat = () => {
           const isMerchant = currentUserRole === 'MERCHANT';
           const partnerUid = isMerchant ? matchedParcel.recipientInfo?.email : matchedParcel.senderId;
           if (partnerUid) {
-            targetUser = await userRepository.getById(partnerUid);
-          }
-          if (!targetUser) {
-            // Find user by email or name
-            const allU = await userRepository.getAllUsers();
-            targetUser = allU.find(u => u.email === matchedParcel.recipientInfo?.email || u.uid === matchedParcel.senderId) || null;
+            targetUser = await userRepository.searchUser(partnerUid);
           }
         }
 
-        if (!targetUser) {
-          const allU = await userRepository.getAllUsers();
-          targetUser = allU.find(u =>
-            u.email?.toLowerCase() === input.toLowerCase() ||
-            u.displayName?.toLowerCase().includes(input.toLowerCase()) ||
-            u.phoneNumber === input
-          ) || null;
-        }
-
-        if (!targetUser) throw new Error('User or parcel not found. Check the OmorfiHub username, email, or tracking number and try again.');
+        if (!targetUser) throw new Error('User or parcel not found. Check the OmorfiHub username, email, phone, or tracking number and try again.');
         if (targetUser.uid === currentUserId) throw new Error('You cannot start a conversation with yourself.');
 
         let newConv;
@@ -618,9 +604,8 @@ export const BuyerSellerChat = () => {
           return;
         }
 
-        // Search by username (with or without @ prefix) or raw search input
-        const cleanUsername = term.replace(/^@/, '');
-        let targetUser = await userRepository.getByUsername(cleanUsername) || await userRepository.getByUsername(term);
+        // Search by username, email, phone, or display name
+        let targetUser = await userRepository.searchUser(term);
         if (targetUser) {
           if (targetUser.uid === currentUserId) {
             throw new Error('You cannot start a conversation with yourself.');
@@ -637,33 +622,6 @@ export const BuyerSellerChat = () => {
 
           setActiveConv(newConv);
           toast.success(`Started Omorfi Chat with ${targetUser.displayName}`);
-          return;
-        }
-
-        // Try raw display name search as a fallback helper
-        let matchedUser = null;
-        try {
-          const allUsers = await userRepository.getAll();
-          matchedUser = allUsers.find(u => u.displayName?.toLowerCase() === term.toLowerCase());
-        } catch (e) {
-          console.warn('Raw display name search bypassed due to PII protection rules:', e);
-        }
-        if (matchedUser) {
-          if (matchedUser.uid === currentUserId) {
-            throw new Error('You cannot start a conversation with yourself.');
-          }
-
-          const newConv = await communicationService.createUsernameConversation(
-            currentUserId,
-            currentUserName,
-            matchedUser.uid,
-            matchedUser.displayName,
-            user?.wesabiUsername || '',
-            matchedUser.wesabiUsername || ''
-          );
-
-          setActiveConv(newConv);
-          toast.success(`Started Omorfi Chat with ${matchedUser.displayName}`);
           return;
         }
 

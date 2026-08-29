@@ -18,11 +18,11 @@ export const ApplicationStatusBanner: React.FC = () => {
 
   if (isPending) {
     return (
-      <div className="bg-amber-500 text-slate-950 py-2 px-4 text-xs font-semibold shadow-md flex items-center justify-between gap-2 z-40 relative">
+      <div className="bg-amber-500 text-slate-950 py-2.5 px-4 text-xs font-semibold shadow-md flex items-center justify-between gap-2 z-40 relative">
         <div className="flex items-center gap-2 overflow-hidden">
           <Clock className="w-4 h-4 shrink-0 text-slate-950 animate-pulse" />
           <span className="truncate">
-            Your <strong>{requestedRoleLabel}</strong> application has been submitted and is currently under review by our team.
+            Thank you for your registration. Your form for <strong>{requestedRoleLabel}</strong> role will be approved soon.
           </span>
         </div>
         <span className="text-[10px] bg-slate-950/10 px-2 py-0.5 rounded font-bold whitespace-nowrap shrink-0">

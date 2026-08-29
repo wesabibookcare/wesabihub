@@ -30,7 +30,7 @@ export const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ childr
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     canSendParcel
       ? { icon: Send, label: 'Send Parcel', href: '/customer/send' }
-      : { icon: Send, label: 'Send Parcels (Apply as Merchant)', href: '/register?role=MERCHANT' },
+      : { icon: Send, label: 'Send Parcels (Apply as Merchant)', href: '/customer/settings?tab=roles&apply=MERCHANT' },
     { icon: Download, label: 'Receive Parcel', href: '/customer/receive' },
     { icon: Search, label: 'Track Parcel', href: '/customer/track' },
     { icon: MapPin, label: 'Find Hub Point', href: '/customer/hubs' },
