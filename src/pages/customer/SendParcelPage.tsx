@@ -96,6 +96,12 @@ const STEPS = [
 export const SendParcelPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN' || user?.email === 'wesabibookcare@gmail.com';
+  const isApprovedMerchant = (user?.roles?.includes('MERCHANT') || user?.role === 'MERCHANT') &&
+    (user?.status === 'APPROVED' || user?.status === 'ACTIVE' || user?.verificationStatus?.kyc === true);
+  const canSendParcel = isSuperAdmin || isApprovedMerchant;
+
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedMethod, setSelectedMethod] = useState<'WALLET' | 'CARD' | 'BANK' | 'FLUTTERWAVE'>('BANK');
   const [showFlutterwave, setShowFlutterwave] = useState(false);
@@ -889,36 +895,47 @@ export const SendParcelPage = () => {
     }
   };
 
-  const isCustomerOnly = user?.role === 'CUSTOMER' && !user?.roles?.includes('MERCHANT');
-
-  return (
-    <CustomerLayout>
-      <div className="max-w-3xl mx-auto space-y-10">
-        {isCustomerOnly && (
-          <Card className="p-8 border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 space-y-4 rounded-3xl">
+  if (!canSendParcel) {
+    return (
+      <CustomerLayout>
+        <div className="max-w-3xl mx-auto space-y-10 py-6">
+          <Card className="p-8 md:p-12 border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 space-y-6 rounded-3xl text-left">
             <div className="flex items-start gap-4">
-              <Info className="text-amber-600 shrink-0 mt-1" size={28} />
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-amber-900 dark:text-amber-300 font-display">
-                  Merchant Account Required to Send Parcels
+              <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 shrink-0">
+                <ShieldCheck size={32} />
+              </div>
+              <div className="space-y-3">
+                <Badge variant="warning" className="px-3 py-1 font-bold">Approved Merchant Only</Badge>
+                <h2 className="text-2xl font-black text-amber-950 dark:text-amber-200 font-display">
+                  Approved Merchant Account Required
                 </h2>
-                <p className="text-sm text-amber-800 dark:text-amber-400 leading-relaxed">
-                  Individual Customers on OmorfiHub are restricted from creating or sending shipments directly to ensure legal accountability, parcel safety, and SafePay protection. To send parcels, please apply for a Merchant account and complete identity verification.
+                <p className="text-sm text-amber-900 dark:text-amber-300 leading-relaxed font-medium">
+                  For security, legal accountability, and parcel safety, sending parcels directly on OmorfiHub is restricted strictly to verified Merchant accounts with legal documentation on file.
                 </p>
-                <div className="pt-2 flex flex-wrap gap-3">
-                  <Button asChild className="rounded-xl shadow-md">
-                    <Link to="/merchant/register">Apply for Merchant Account</Link>
+                <div className="p-4 rounded-xl bg-amber-100/70 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200 text-xs font-semibold leading-relaxed flex items-center gap-3">
+                  <Info size={20} className="shrink-0 text-amber-700" />
+                  <span>If you are a merchant awaiting profile approval, our team is reviewing your documents. Once approved, single item parcel sending will be unlocked.</span>
+                </div>
+                <div className="pt-4 flex flex-wrap gap-4">
+                  <Button asChild className="rounded-xl px-6 h-12 font-bold shadow-lg shadow-amber-500/20">
+                    <Link to="/register?role=MERCHANT">Apply for a Merchant Account</Link>
                   </Button>
-                  <Button variant="outline" asChild className="rounded-xl">
-                    <Link to="/track">Track an Existing Parcel</Link>
+                  <Button variant="outline" asChild className="rounded-xl px-6 h-12 border-amber-300 text-amber-900 dark:text-amber-200 hover:bg-amber-100">
+                    <Link to="/customer/track">Track an Existing Parcel</Link>
                   </Button>
                 </div>
               </div>
             </div>
           </Card>
-        )}
+        </div>
+      </CustomerLayout>
+    );
+  }
 
-        {currentStep < 8 && !isCustomerOnly && (
+  return (
+    <CustomerLayout>
+      <div className="max-w-3xl mx-auto space-y-10">
+        {currentStep < 8 && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
                <h1 className="text-3xl font-bold dark:text-white font-display">Send a Parcel</h1>

@@ -175,10 +175,10 @@ export const CreateShipmentPage = () => {
     h.city.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isMerchantUnverified = user?.role === 'MERCHANT' &&
-    user?.verificationStatus?.kyc !== true &&
-    user?.status !== 'APPROVED' &&
-    user?.status !== 'ACTIVE';
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN' || user?.email === 'wesabibookcare@gmail.com';
+  const isApprovedMerchant = (user?.roles?.includes('MERCHANT') || user?.role === 'MERCHANT') &&
+    (user?.status === 'APPROVED' || user?.status === 'ACTIVE' || user?.verificationStatus?.kyc === true);
+  const isMerchantUnverified = !isSuperAdmin && !isApprovedMerchant;
 
   const handleCreateShipment = async () => {
     if (!user) return;
