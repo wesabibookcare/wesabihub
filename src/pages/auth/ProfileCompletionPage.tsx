@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Loader2, CheckCircle2, FileUp, X, Camera, ShieldCheck } from 'lucide-react';
 import { auth } from '../../lib/firebase';
+import { useAuth } from '../../context/AuthContext';
 import { ROLE_REDIRECTS } from '../../services/authService';
 import { invitationEngine, complianceEngine } from '@/src/engines';
 import { workflowEngine, configurationEngine } from '../../engines';
@@ -490,10 +491,20 @@ export const ProfileCompletionPage: React.FC = () => {
     }
   };
 
+  const { signOut } = useAuth();
+
   if (!role) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 relative">
+      <button
+        type="button"
+        onClick={() => signOut()}
+        className="absolute top-4 right-4 text-xs font-bold text-slate-500 hover:text-red-600 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition z-10"
+      >
+        Sign Out / Cancel
+      </button>
+
       <Card className="w-full max-w-md shadow-xl border-none">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold font-display text-center">Complete Your Profile</CardTitle>
@@ -607,6 +618,30 @@ export const ProfileCompletionPage: React.FC = () => {
                     );
                   }
 
+                  const isNumericField = ['nin', 'bvn', 'phone', 'cacNumber', 'tinNumber', 'bankAccountNo', 'guarantor1Phone', 'guarantor2Phone'].includes(field.name);
+                  const isUsernameField = field.name === 'wesabiUsername';
+
+                  const getMaxLength = (name: string) => {
+                    if (name === 'nin' || name === 'bvn') return 11;
+                    if (name === 'bankAccountNo') return 10;
+                    if (name === 'phone' || name.includes('Phone')) return 15;
+                    return undefined;
+                  };
+
+                  const handleInputChange = (val: string) => {
+                    let cleanedVal = val;
+                    if (isNumericField) {
+                      cleanedVal = val.replace(/\D/g, '');
+                      const maxLen = getMaxLength(field.name);
+                      if (maxLen && cleanedVal.length > maxLen) {
+                        cleanedVal = cleanedVal.slice(0, maxLen);
+                      }
+                    } else if (isUsernameField) {
+                      cleanedVal = val.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    }
+                    setProfileData({ ...profileData, [field.name]: cleanedVal });
+                  };
+
                   return (
                     <div key={field.name} className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-900">
@@ -614,13 +649,21 @@ export const ProfileCompletionPage: React.FC = () => {
                       </label>
                       <Input
                         type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
-                        placeholder={`Enter ${field.label.toLowerCase()}`}
+                        inputMode={isNumericField ? 'numeric' : undefined}
+                        placeholder={
+                          isUsernameField ? 'e.g. john_doe (no spaces)' :
+                          isNumericField ? 'Digits only' :
+                          `Enter ${field.label.toLowerCase()}`
+                        }
                         required={field.required}
                         readOnly={isReadOnly}
                         value={profileData[field.name] || ''}
-                        onChange={e => setProfileData({...profileData, [field.name]: e.target.value})}
+                        onChange={e => handleInputChange(e.target.value)}
                         className={isReadOnly ? "bg-slate-50 dark:bg-slate-800/50 text-slate-900 pr-10" : ""}
                       />
+                      {isUsernameField && (
+                        <p className="text-[10px] text-slate-500 font-medium">Username may only contain letters, numbers, and underscores.</p>
+                      )}
                       {field.name === 'hubId' && checkingInvite && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           <Loader2 className="animate-spin text-primary-600" size={16} />

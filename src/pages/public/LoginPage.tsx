@@ -43,6 +43,7 @@ const formatAuthError = (err: any): string => {
 };
 
 export const LoginPage: React.FC = () => {
+  const { fbUser, profileMissing, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -153,6 +154,39 @@ export const LoginPage: React.FC = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Card className="shadow-xl rounded-3xl border-slate-200">
           <CardContent className="pt-6">
+            {fbUser && profileMissing && (
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl space-y-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-amber-900 dark:text-amber-200">Incomplete Registration Session</p>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                      You are signed in as <strong>{fbUser.email}</strong>, but your profile registration is not finished yet.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="w-full text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl"
+                    onClick={() => navigate('/role-selection')}
+                  >
+                    Continue Registration
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs text-amber-800 border-amber-300 hover:bg-amber-100 rounded-xl"
+                    onClick={() => signOut()}
+                  >
+                    Sign Out & Start Over
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <form className="space-y-6" onSubmit={handleLogin}>
               {error && (
                 <Alert variant="error">
