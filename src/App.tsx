@@ -169,6 +169,7 @@ import { ReportsPage as AdminReportsPage } from './pages/admin/ReportsPage';
 import { NotificationsConfigPage } from './pages/admin/NotificationsConfigPage';
 import { TestModePage } from './pages/admin/TestModePage';
 import { SearchResultsPage as AdminSearchResultsPage } from './pages/admin/SearchResultsPage';
+import { AdminChatPage } from './pages/admin/ChatPage';
 
 import { DeveloperDashboard } from './pages/developer/Dashboard';
 import { ApiKeysPage as DeveloperKeysPage } from './pages/developer/ApiKeysPage';
@@ -316,6 +317,7 @@ export default function App() {
         <Route path="/admin/hub-approvals" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><HubApprovalsPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/verification" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'VERIFICATION_OFFICER']}><AdminVerificationPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/disputes" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER']}><AdminDisputesPage /></RoleGuard></ProtectedRoute>} />
+        <Route path="/admin/chat" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER', 'DISPUTE_ADMIN']}><AdminChatPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/support" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER']}><AdminComplaintCentrePage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/complaints" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER']}><AdminComplaintCentrePage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/countries" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><AdminCountriesPage /></RoleGuard></ProtectedRoute>} />

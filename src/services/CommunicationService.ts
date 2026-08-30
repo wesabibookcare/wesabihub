@@ -110,10 +110,10 @@ class CommunicationService {
           ...(recipientRole && { [recipientId]: recipientRole }),
         }
       }),
-      status: 'PENDING',
+      status: 'ACTIVE',
       initiatorId,
       isDisputed: false,
-      lastMessageText: 'Chat Request Sent',
+      lastMessageText: 'Chat started',
       lastMessageAt: new Date().toISOString(),
       lastMessageStatus: 'SENT',
       typingStatus: {},

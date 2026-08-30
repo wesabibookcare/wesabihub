@@ -22,7 +22,8 @@ import {
   HelpCircle,
   GraduationCap,
   Radio,
-  ShieldAlert
+  ShieldAlert,
+  MessageSquare
 } from 'lucide-react';
 
 export interface AdminStats {
@@ -65,6 +66,7 @@ export const ADMIN_NAV_ITEMS = [
   { id: 'verification', label: 'Verification', icon: ShieldCheck, href: '/admin/verification', badge: '12', allowedRoles: ['SUPER_ADMIN', 'VERIFICATION_OFFICER'] },
   { id: 'business-rules', label: 'Business Rules', icon: Briefcase, href: '/admin/business-rules', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER'] },
   { id: 'disputes', label: 'Protection Disputes', icon: ShieldCheck, href: '/admin/disputes', badge: '3', allowedRoles: ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER'] },
+  { id: 'chat', label: 'Omorfi Chat', icon: MessageSquare, href: '/admin/chat', allowedRoles: ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'OPERATIONS_MANAGER', 'DISPUTE_ADMIN'] },
   { id: 'security-audit', label: 'Anti-Fraud & Security', icon: ShieldAlert, href: '/admin/audit', allowedRoles: ['SUPER_ADMIN', 'SECURITY_ADMIN', 'OPERATIONS_MANAGER'] },
   { id: 'reports', label: 'Reports', icon: BarChart3, href: '/admin/reports', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'FINANCE_OFFICER'] },
   { id: 'test-mode', label: 'Test Mode (Sandbox)', icon: ShieldCheck, href: '/admin/test-mode', allowedRoles: ['SUPER_ADMIN', 'OPERATIONS_MANAGER'] },
