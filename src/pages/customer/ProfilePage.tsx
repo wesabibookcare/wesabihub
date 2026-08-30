@@ -195,7 +195,7 @@ export const ProfilePage = () => {
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold dark:text-white font-display">My Profile</h1>
-          <p className="text-slate-900">Manage your personal information and account security.</p>
+          <p className="text-slate-600 dark:text-slate-300 font-medium">Manage your personal information and account security.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-10">
@@ -230,15 +230,15 @@ export const ProfilePage = () => {
                  <h3 className="text-xl font-bold dark:text-white font-display">Personal Details</h3>
                  <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">First Name</label>
+                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">First Name</label>
                        <Input value={firstName} onChange={e => setFirstName(e.target.value)} prefix={<User size={18} />} />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Last Name</label>
+                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Last Name</label>
                        <Input value={lastName} onChange={e => setLastName(e.target.value)} prefix={<User size={18} />} />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">OmorfiHub Username</label>
+                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">OmorfiHub Username</label>
                        <Input
                           value={wesabiUsername}
                           onChange={e => setWesabiUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
@@ -246,14 +246,14 @@ export const ProfilePage = () => {
                           placeholder="username"
                           className="font-bold text-primary-600 font-mono"
                        />
-                       <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique (no spaces allowed).</p>
+                       <p className="text-[10px] text-slate-600 dark:text-slate-400">Must be unique (no spaces allowed).</p>
                     </div>
                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
+                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Email Address</label>
                        <Input value={user?.email || ''} prefix={<Mail size={18} />} disabled />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                       <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Phone Number</label>
+                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Phone Number</label>
                        <Input
                           value={phone}
                           inputMode="numeric"

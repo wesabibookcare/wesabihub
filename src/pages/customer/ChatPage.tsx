@@ -8,7 +8,7 @@ export const CustomerChatPage = () => {
       <div className="space-y-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold font-display dark:text-white">Omorfi Chat</h1>
-          <p className="text-sm text-slate-900">Official premium communication between Buyer and Seller with secure SafePay evidence.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Official premium communication between Buyer and Seller with secure SafePay evidence.</p>
         </div>
         <BuyerSellerChat />
       </div>

@@ -290,7 +290,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Sender Information</h2>
-              <p className="text-slate-900">Confirm your details as the sender.</p>
+              <p className="text-slate-600 dark:text-slate-300">Confirm your details as the sender.</p>
             </div>
             <div className="grid gap-4">
               <div className="space-y-2">
@@ -316,7 +316,7 @@ export const SendParcelPage = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h2 className="text-2xl font-bold dark:text-white">Recipient Information</h2>
-                <p className="text-slate-900">Who are you sending this parcel to?</p>
+                <p className="text-slate-600 dark:text-slate-300">Who are you sending this parcel to?</p>
               </div>
               <Button
                 type="button"
@@ -365,7 +365,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Parcel Details</h2>
-              <p className="text-slate-900">Tell us more about the package.</p>
+              <p className="text-slate-600 dark:text-slate-300">Tell us more about the package.</p>
             </div>
             <div className="grid gap-6">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -433,7 +433,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Choose Drop-off Point</h2>
-              <p className="text-slate-900">Select where you will hand over the parcel.</p>
+              <p className="text-slate-600 dark:text-slate-300">Select where you will hand over the parcel.</p>
             </div>
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
@@ -548,7 +548,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Choose Destination Point</h2>
-              <p className="text-slate-900">Where should the recipient pick up the parcel?</p>
+              <p className="text-slate-600 dark:text-slate-300">Where should the recipient pick up the parcel?</p>
             </div>
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
@@ -663,7 +663,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Delivery Options</h2>
-              <p className="text-slate-900">Select how quickly you want it delivered.</p>
+              <p className="text-slate-600 dark:text-slate-300">Select how quickly you want it delivered.</p>
             </div>
             <div className="space-y-4">
                {[
@@ -720,7 +720,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Review Shipment</h2>
-              <p className="text-slate-900">Confirm everything is correct before payment.</p>
+              <p className="text-slate-600 dark:text-slate-300">Confirm everything is correct before payment.</p>
             </div>
             <div className="grid gap-6">
                <div className="grid sm:grid-cols-2 gap-6">
@@ -795,7 +795,7 @@ export const SendParcelPage = () => {
                    <CreditCard size={40} />
                 </div>
                 <h2 className="text-2xl font-bold dark:text-white">Payment Method</h2>
-                <p className="text-slate-900">Choose how you want to pay for this shipment.</p>
+                <p className="text-slate-600 dark:text-slate-300">Choose how you want to pay for this shipment.</p>
              </div>
              <div className="space-y-4">
                 {[
@@ -856,14 +856,14 @@ export const SendParcelPage = () => {
              </div>
              <div className="space-y-4">
                 <h2 className="text-4xl font-bold dark:text-white font-display">Shipment Created!</h2>
-                <p className="text-xl text-slate-900">Your parcel is ready for drop-off.</p>
+                <p className="text-xl text-slate-600 dark:text-slate-300 font-medium">Your parcel is ready for drop-off.</p>
              </div>
              <Card className="p-8 max-w-sm mx-auto border-dashed border-2 border-primary-500 bg-primary-50/50 dark:bg-primary-900/10">
-                <p className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-2">Tracking Reference</p>
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-2">Tracking Reference</p>
                 <p className="text-4xl font-black text-primary-600 font-mono tracking-tighter">{formData.trackingNumber || 'WSH-GENERATING'}</p>
              </Card>
              <div className="space-y-4 max-w-md mx-auto">
-                <p className="text-slate-900">
+                <p className="text-slate-600 dark:text-slate-300">
                    Please take your parcel to <strong>{formData.dropOffHubName}</strong> and show this tracking reference to the hub manager.
                 </p>
                 <div className="flex flex-col gap-3">
@@ -939,7 +939,7 @@ export const SendParcelPage = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
                <h1 className="text-3xl font-bold dark:text-white font-display">Send a Parcel</h1>
-               <span className="text-slate-900 font-bold">Step {currentStep + 1} of {STEPS.length - 1}</span>
+               <span className="text-slate-700 dark:text-slate-300 font-bold">Step {currentStep + 1} of {STEPS.length - 1}</span>
             </div>
 
             {/* Progress Bar */}
