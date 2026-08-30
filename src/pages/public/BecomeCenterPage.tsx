@@ -35,21 +35,26 @@ export const BecomeCenterPage = () => {
                 Increase foot traffic, earn additional revenue, and serve your community by becoming a verified Pick-Up & Drop-Off center.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="h-16 px-10 rounded-2xl text-lg">Apply to Join</Button>
-                <Button variant="outline" size="lg" className="h-16 px-10 rounded-2xl text-lg border-slate-700 text-white hover:bg-slate-800">
+                <Button size="lg" className="h-16 px-10 rounded-2xl text-lg" asChild>
+                  <Link to="/register?role=CENTER_OWNER">Apply to Join</Link>
+                </Button>
+                <Button variant="outline" size="lg" className="h-16 px-10 rounded-2xl text-lg border-slate-700 text-white hover:bg-slate-800" onClick={() => {
+                  const el = document.getElementById('requirements-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}>
                   View Requirements
                 </Button>
               </div>
             </div>
             <div className="relative">
                <div className="grid grid-cols-2 gap-4">
-                  <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-sm text-white">
+                  <Card className="p-8 bg-white/10 border-white/10 backdrop-blur-sm text-white">
                      <p className="text-3xl font-bold mb-1">₦250k+</p>
-                     <p className="text-sm text-slate-800">Monthly Potential</p>
+                     <p className="text-sm text-slate-300 font-medium">Monthly Potential</p>
                   </Card>
-                  <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-sm text-white">
+                  <Card className="p-8 bg-white/10 border-white/10 backdrop-blur-sm text-white">
                      <p className="text-3xl font-bold mb-1">30%+</p>
-                     <p className="text-sm text-slate-800">Foot Traffic Increase</p>
+                     <p className="text-sm text-slate-300 font-medium">Foot Traffic Increase</p>
                   </Card>
                </div>
             </div>
@@ -133,7 +138,7 @@ export const BecomeCenterPage = () => {
       </section>
 
       {/* Requirements */}
-      <section className="py-32">
+      <section id="requirements-section" className="py-32">
         <div className="max-w-4xl mx-auto px-4">
           <Card className="p-12 border-slate-200 dark:border-slate-800 shadow-2xl rounded-[40px]">
             <h2 className="text-3xl font-bold mb-8 font-display dark:text-white">Minimum Requirements</h2>
@@ -153,7 +158,9 @@ export const BecomeCenterPage = () => {
               ))}
             </div>
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 text-center">
-              <Button size="lg" className="h-14 px-12 rounded-2xl">Apply Now</Button>
+              <Button size="lg" className="h-14 px-12 rounded-2xl" asChild>
+                <Link to="/register?role=CENTER_OWNER">Apply Now</Link>
+              </Button>
             </div>
           </Card>
         </div>
