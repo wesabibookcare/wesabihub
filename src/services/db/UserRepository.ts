@@ -22,8 +22,14 @@ class UserRepository extends BaseRepository<User> {
   }
 
   async getByEmail(email: string): Promise<User | null> {
-    const users = await this.getAll([where('email', '==', email), where('status', '!=', 'BLOCKED')]);
-    return users.length > 0 ? users[0] : null;
+    if (!email) return null;
+    const clean = email.trim().toLowerCase();
+    const users = await this.getAll([where('email', '==', clean), where('status', '!=', 'BLOCKED')]);
+    if (users.length > 0) return users[0];
+
+    // Fallback: search all users case-insensitively
+    const allUsers = await this.getAll([]);
+    return allUsers.find(u => u.email?.trim().toLowerCase() === clean && u.status !== 'BLOCKED') || null;
   }
 
   async getByUsername(username: string): Promise<User | null> {
@@ -37,8 +43,8 @@ class UserRepository extends BaseRepository<User> {
     const lowerClean = clean.toLowerCase().replace(/^@/, '');
 
     const matched = allUsers.find(u => {
-      if (!u.wesabiUsername) return false;
-      const uName = u.wesabiUsername.toLowerCase();
+      if (!u.wesabiUsername && !u.displayName) return false;
+      const uName = (u.wesabiUsername || u.displayName || '').toLowerCase();
       const cleanUName = uName.replace(/^@/, '').replace(/^wsh_/, '').replace(/^wesabi/, '');
       return uName === lowerClean ||
              uName === `@${lowerClean}` ||
@@ -51,10 +57,63 @@ class UserRepository extends BaseRepository<User> {
   }
 
   async getByPhone(phone: string): Promise<User | null> {
-    const users = await this.getAll([where('phoneNumber', '==', phone)]);
+    if (!phone) return null;
+    const clean = phone.trim();
+    const digitsOnly = clean.replace(/\D/g, '');
+
+    const users = await this.getAll([where('phoneNumber', '==', clean)]);
     if (users.length > 0) return users[0];
-    const users2 = await this.getAll([where('phone', '==', phone)]);
-    return users2.length > 0 ? users2[0] : null;
+    const users2 = await this.getAll([where('phone', '==', clean)]);
+    if (users2.length > 0) return users2[0];
+
+    if (digitsOnly) {
+      const allUsers = await this.getAll([]);
+      return allUsers.find(u => {
+        const uDigits = (u.phoneNumber || u.phone || '').replace(/\D/g, '');
+        return uDigits && (uDigits === digitsOnly || uDigits.endsWith(digitsOnly) || digitsOnly.endsWith(uDigits));
+      }) || null;
+    }
+    return null;
+  }
+
+  async searchUser(searchTerm: string): Promise<User | null> {
+    if (!searchTerm || !searchTerm.trim()) return null;
+    const clean = searchTerm.trim();
+    const lowerClean = clean.toLowerCase().replace(/^@/, '');
+    const numericOnly = clean.replace(/\D/g, '');
+
+    // 1. Direct exact lookups
+    const byId = await this.getById(clean);
+    if (byId) return byId;
+
+    const byEmail = await this.getByEmail(clean);
+    if (byEmail) return byEmail;
+
+    const byUsername = await this.getByUsername(clean);
+    if (byUsername) return byUsername;
+
+    const byPhone = await this.getByPhone(clean);
+    if (byPhone) return byPhone;
+
+    // 2. Comprehensive search across all users
+    const allUsers = await this.getAllUsers();
+    return allUsers.find(u => {
+      if (!u) return false;
+      const uEmail = (u.email || '').toLowerCase();
+      const uUsername = (u.wesabiUsername || '').toLowerCase().replace(/^@/, '').replace(/^wsh_/, '').replace(/^wesabi/, '');
+      const uName = (u.displayName || '').toLowerCase();
+      const uPhone = (u.phoneNumber || u.phone || '').replace(/\D/g, '');
+
+      return (
+        uEmail === lowerClean ||
+        (lowerClean.length >= 3 && uEmail.includes(lowerClean)) ||
+        uUsername === lowerClean ||
+        (lowerClean.length >= 3 && uUsername.includes(lowerClean)) ||
+        uName === lowerClean ||
+        (lowerClean.length >= 3 && uName.includes(lowerClean)) ||
+        (numericOnly.length >= 7 && uPhone.includes(numericOnly))
+      );
+    }) || null;
   }
 
   async getByRole(role: string): Promise<User[]> {

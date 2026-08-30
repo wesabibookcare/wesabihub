@@ -178,7 +178,7 @@ export const ShipmentHistoryPage = () => {
                 </Button>
               ) : (
                 <Button className="mt-4 rounded-xl px-8 bg-amber-600 hover:bg-amber-700 font-bold" asChild>
-                  <Link to="/register?role=MERCHANT">Apply for Merchant Account</Link>
+                  <Link to="/customer/settings?tab=roles&apply=MERCHANT">Apply for Merchant Account</Link>
                 </Button>
               )}
             />

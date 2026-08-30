@@ -918,7 +918,7 @@ export const SendParcelPage = () => {
                 </div>
                 <div className="pt-4 flex flex-wrap gap-4">
                   <Button asChild className="rounded-xl px-6 h-12 font-bold shadow-lg shadow-amber-500/20">
-                    <Link to="/register?role=MERCHANT">Apply for a Merchant Account</Link>
+                    <Link to="/customer/settings?tab=roles&apply=MERCHANT">Apply for a Merchant Account</Link>
                   </Button>
                   <Button variant="outline" asChild className="rounded-xl px-6 h-12 border-amber-300 text-amber-900 dark:text-amber-200 hover:bg-amber-100">
                     <Link to="/customer/track">Track an Existing Parcel</Link>

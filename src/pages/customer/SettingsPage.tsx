@@ -1,6 +1,7 @@
 import { RoleManagement } from '@/src/components/customer/RoleManagement';
 import { PrivacySecurity } from '@/src/components/customer/PrivacySecurity';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings,
@@ -24,9 +25,20 @@ import { userEngine } from '@/src/engines';
 import { toast } from 'sonner';
 
 export const SettingsPage = () => {
-  const [activeCategory, setActiveCategory] = useState('notifications');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialTab = searchParams.get('tab') || (location.state as any)?.tab || 'notifications';
+
+  const [activeCategory, setActiveCategory] = useState(initialTab);
   const { theme, setTheme, updateUserPreference } = useSettings();
   const { user } = useAuth();
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') || (location.state as any)?.tab;
+    if (tabParam) {
+      setActiveCategory(tabParam);
+    }
+  }, [location.search, location.state]);
 
   const [prefs, setPrefs] = useState({
     push: true,

@@ -474,13 +474,12 @@ export const ProfileCompletionPage: React.FC = () => {
       }
 
       const user = response.data!;
-      toast.success('Profile registration complete!');
+      toast.success(`Thank you for your registration. Your form for ${role.replace(/_/g, ' ')} role will be approved soon.`);
 
       if (user.status === 'UNDER_REVIEW') {
         navigate('/account-restricted', { state: { reason: 'PENDING_APPROVAL', role } });
       } else if (user.pendingRoleApplication || user.requestedRole) {
         // Active as Customer while role application is under review
-        toast.info(`Your ${role.replace(/_/g, ' ')} application is under review. Your Customer account is active!`);
         navigate('/dashboard');
       } else {
         const redirectPath = ROLE_REDIRECTS[user.role || role] || '/dashboard';

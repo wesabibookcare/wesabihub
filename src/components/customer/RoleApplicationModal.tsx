@@ -7,7 +7,7 @@ import { roleApplicationRepository } from '@/src/services/db/RoleApplicationRepo
 import { RoleApplication, UserRole } from '@/src/types';
 import { toast } from 'sonner';
 import { cn } from '@/src/lib/utils';
-import { Camera, RefreshCw, Check, ArrowRight, ArrowLeft, Loader2, IdCard, UserCircle, MapPin } from 'lucide-react';
+import { Camera, RefreshCw, Check, ArrowRight, ArrowLeft, Loader2, IdCard, UserCircle, MapPin, Upload } from 'lucide-react';
 
 interface RoleApplicationModalProps {
   isOpen: boolean;
@@ -48,6 +48,7 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
 
+  const [activeCameraTarget, setActiveCameraTarget] = useState<'FRONT' | 'BACK' | 'SELFIE' | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -57,35 +58,52 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
+    setActiveCameraTarget(null);
   };
 
-  const startCamera = async (facingMode: 'user' | 'environment') => {
+  const startCamera = async (target: 'FRONT' | 'BACK' | 'SELFIE', facingMode: 'user' | 'environment') => {
+    stopCamera();
     setCameraError(null);
+    setActiveCameraTarget(target);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode, width: 640, height: 480 },
         audio: false
       });
       setStream(mediaStream);
-      if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      setTimeout(() => {
+        if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      }, 100);
     } catch (err) {
-      setCameraError('Could not access your camera. Please allow camera access to continue, or check that your device has a working camera.');
+      setCameraError('Could not access your camera. Please allow camera access, or upload a document photo from your device.');
     }
   };
 
-  // Start the right camera for the current step whenever the modal / step changes
   useEffect(() => {
     if (!isOpen) {
       stopCamera();
-      return;
     }
-    if (step === 0 && !docImage) startCamera('environment');
-    else if (step === 1 && !selfieImage) startCamera('user');
-    else stopCamera();
-
     return () => stopCamera();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, step, docImage, selfieImage]);
+  }, [isOpen]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, setImage: (val: string) => void) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size exceeds 10MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImage(event.target.result as string);
+          toast.success('File uploaded successfully!');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Reset state whenever the modal is opened fresh
   useEffect(() => {
@@ -112,16 +130,22 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
     return canvas.toDataURL('image/jpeg');
   };
 
-  const handleCaptureDoc = () => {
+  const handleCaptureDocFront = () => {
     const frame = captureFrame();
     if (frame) { setDocImage(frame); stopCamera(); }
-    else toast.error('Failed to capture your document. Please try again.');
+    else toast.error('Failed to capture document front. Try uploading a photo instead.');
+  };
+
+  const handleCaptureDocBack = () => {
+    const frame = captureFrame();
+    if (frame) { setDocBackImage(frame); stopCamera(); }
+    else toast.error('Failed to capture document back. Try uploading a photo instead.');
   };
 
   const handleCaptureSelfie = () => {
     const frame = captureFrame();
     if (frame) { setSelfieImage(frame); stopCamera(); }
-    else toast.error('Failed to capture your photo. Please try again.');
+    else toast.error('Failed to capture your photo. Try uploading a photo instead.');
   };
 
   const canProceedFromStep = (s: number) => {
@@ -243,51 +267,93 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Front Capture */}
               <div className="space-y-2">
-                <span className="text-xs font-semibold text-slate-600">NIN Card Front</span>
-                <div className="rounded-xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">NIN Card Front</span>
+                <div className="rounded-xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative border border-slate-700">
                   {docImage ? (
                     <img src={docImage} alt="Captured NIN Front" className="w-full h-full object-cover" />
-                  ) : cameraError ? (
-                    <p className="text-white text-xs text-center p-4">{cameraError}</p>
+                  ) : activeCameraTarget === 'FRONT' ? (
+                    cameraError ? (
+                      <p className="text-white text-xs text-center p-4">{cameraError}</p>
+                    ) : (
+                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    )
                   ) : (
-                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    <div className="text-center p-4 text-slate-400 text-xs">
+                      <IdCard size={28} className="mx-auto mb-1 opacity-50" />
+                      No front photo attached
+                    </div>
                   )}
                 </div>
+
                 {docImage ? (
-                  <Button variant="outline" size="sm" onClick={() => { setDocImage(null); startCamera('environment'); }} className="w-full gap-1">
-                    <RefreshCw size={14} /> Retake Front
+                  <Button variant="outline" size="sm" onClick={() => { setDocImage(null); stopCamera(); }} className="w-full gap-1">
+                    <RefreshCw size={14} /> Remove / Replace
                   </Button>
+                ) : activeCameraTarget === 'FRONT' ? (
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleCaptureDocFront} disabled={!!cameraError} className="flex-1 gap-1 bg-emerald-600 hover:bg-emerald-700">
+                      <Camera size={14} /> Snap Now
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={stopCamera}>
+                      Cancel
+                    </Button>
+                  </div>
                 ) : (
-                  <Button size="sm" onClick={handleCaptureDoc} disabled={!!cameraError} className="w-full gap-1 bg-primary-600">
-                    <IdCard size={14} /> Snap Front
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" onClick={() => startCamera('FRONT', 'environment')} className="gap-1 bg-primary-600 text-xs">
+                      <Camera size={12} /> Camera
+                    </Button>
+                    <label className="inline-flex items-center justify-center px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200">
+                      <Upload size={12} className="mr-1" /> Upload
+                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, setDocImage)} className="hidden" />
+                    </label>
+                  </div>
                 )}
               </div>
 
               {/* Back Capture */}
               <div className="space-y-2">
-                <span className="text-xs font-semibold text-slate-600">NIN Card Back</span>
-                <div className="rounded-xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">NIN Card Back</span>
+                <div className="rounded-xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative border border-slate-700">
                   {docBackImage ? (
                     <img src={docBackImage} alt="Captured NIN Back" className="w-full h-full object-cover" />
-                  ) : cameraError ? (
-                    <p className="text-white text-xs text-center p-4">{cameraError}</p>
+                  ) : activeCameraTarget === 'BACK' ? (
+                    cameraError ? (
+                      <p className="text-white text-xs text-center p-4">{cameraError}</p>
+                    ) : (
+                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    )
                   ) : (
-                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    <div className="text-center p-4 text-slate-400 text-xs">
+                      <IdCard size={28} className="mx-auto mb-1 opacity-50" />
+                      No back photo attached
+                    </div>
                   )}
                 </div>
+
                 {docBackImage ? (
-                  <Button variant="outline" size="sm" onClick={() => { setDocBackImage(null); startCamera('environment'); }} className="w-full gap-1">
-                    <RefreshCw size={14} /> Retake Back
+                  <Button variant="outline" size="sm" onClick={() => { setDocBackImage(null); stopCamera(); }} className="w-full gap-1">
+                    <RefreshCw size={14} /> Remove / Replace
                   </Button>
+                ) : activeCameraTarget === 'BACK' ? (
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleCaptureDocBack} disabled={!!cameraError} className="flex-1 gap-1 bg-emerald-600 hover:bg-emerald-700">
+                      <Camera size={14} /> Snap Now
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={stopCamera}>
+                      Cancel
+                    </Button>
+                  </div>
                 ) : (
-                  <Button size="sm" onClick={() => {
-                    const frame = captureFrame();
-                    if (frame) { setDocBackImage(frame); stopCamera(); }
-                    else toast.error('Failed to capture document back.');
-                  }} disabled={!!cameraError} className="w-full gap-1 bg-primary-600">
-                    <IdCard size={14} /> Snap Back
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" onClick={() => startCamera('BACK', 'environment')} className="gap-1 bg-primary-600 text-xs">
+                      <Camera size={12} /> Camera
+                    </Button>
+                    <label className="inline-flex items-center justify-center px-3 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200">
+                      <Upload size={12} className="mr-1" /> Upload
+                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, setDocBackImage)} className="hidden" />
+                    </label>
+                  </div>
                 )}
               </div>
             </div>
@@ -297,28 +363,49 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
         {/* Step 1: Live facial capture */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Take a live photo of yourself</p>
-            <div className="rounded-2xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative">
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Take or upload a photo of yourself</p>
+            <div className="rounded-2xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative border border-slate-700">
               {selfieImage ? (
                 <img src={selfieImage} alt="Captured selfie" className="w-full h-full object-cover" />
-              ) : cameraError ? (
-                <p className="text-white text-xs text-center p-6">{cameraError}</p>
+              ) : activeCameraTarget === 'SELFIE' ? (
+                cameraError ? (
+                  <p className="text-white text-xs text-center p-6">{cameraError}</p>
+                ) : (
+                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
+                )
               ) : (
-                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
+                <div className="text-center p-6 text-slate-400 text-xs">
+                  <UserCircle size={40} className="mx-auto mb-2 opacity-50" />
+                  No photo attached yet
+                </div>
               )}
             </div>
-            <div className="flex gap-3">
-              {selfieImage ? (
-                <Button variant="outline" onClick={() => { setSelfieImage(null); startCamera('user'); }} className="flex-1 gap-2">
-                  <RefreshCw size={16} /> Retake
+
+            {selfieImage ? (
+              <Button variant="outline" onClick={() => { setSelfieImage(null); stopCamera(); }} className="w-full gap-2">
+                <RefreshCw size={16} /> Remove / Replace Photo
+              </Button>
+            ) : activeCameraTarget === 'SELFIE' ? (
+              <div className="flex gap-3">
+                <Button onClick={handleCaptureSelfie} disabled={!!cameraError} className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700">
+                  <Camera size={16} /> Snap Photo
                 </Button>
-              ) : (
-                <Button onClick={handleCaptureSelfie} disabled={!!cameraError} className="flex-1 gap-2 bg-primary-600 hover:bg-primary-700">
-                  <UserCircle size={16} /> Capture Photo
+                <Button variant="outline" onClick={stopCamera}>
+                  Cancel
                 </Button>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-500">This must be a live photo taken now, not an uploaded picture. Make sure your face is clearly visible and well lit.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <Button onClick={() => startCamera('SELFIE', 'user')} className="gap-2 bg-primary-600 hover:bg-primary-700">
+                  <Camera size={16} /> Open Camera
+                </Button>
+                <label className="inline-flex items-center justify-center px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200">
+                  <Upload size={16} className="mr-2" /> Upload Photo
+                  <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, setSelfieImage)} className="hidden" />
+                </label>
+              </div>
+            )}
+            <p className="text-[11px] text-slate-500">Make sure your face is clearly visible and well lit in the photo.</p>
           </div>
         )}
 

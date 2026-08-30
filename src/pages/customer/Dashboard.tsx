@@ -161,7 +161,7 @@ export const CustomerDashboard = () => {
                      </Button>
                    ) : (
                      <Button className="rounded-xl px-6 h-12 bg-amber-600 hover:bg-amber-700 text-white font-bold" asChild>
-                        <Link to="/register?role=MERCHANT">Send Parcels (Apply as Merchant)</Link>
+                        <Link to="/customer/settings?tab=roles&apply=MERCHANT">Send Parcels (Apply as Merchant)</Link>
                      </Button>
                    )}
                    <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-700 text-white hover:bg-slate-800" asChild>
@@ -185,7 +185,7 @@ export const CustomerDashboard = () => {
               {[
                 canSend
                   ? { icon: Send, label: 'Send Parcel', color: 'bg-blue-50 text-blue-600', hover: 'hover:border-blue-500', href: '/customer/send' }
-                  : { icon: Send, label: 'Send Parcels (Apply as Merchant)', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/register?role=MERCHANT' },
+                  : { icon: Send, label: 'Send Parcels (Apply as Merchant)', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/customer/settings?tab=roles&apply=MERCHANT' },
                 { icon: Search, label: 'Track Parcel', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/customer/track' },
                 { icon: MapPin, label: 'Find Hub Point', color: 'bg-emerald-50 text-emerald-600', hover: 'hover:border-emerald-500', href: '/customer/hubs' },
                 { icon: Download, label: 'Receive Parcel', color: 'bg-purple-50 text-purple-600', hover: 'hover:border-purple-500', href: '/customer/receive' },

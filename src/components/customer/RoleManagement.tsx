@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card } from '@/src/components/ui/Card';
 import { Button } from '@/src/components/ui/Button';
 import { Badge } from '@/src/components/ui/Badge';
@@ -13,12 +14,25 @@ import { RoleApplicationModal } from './RoleApplicationModal';
 
 export const RoleManagement: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const autoApplyRole = searchParams.get('apply') || (location.state as any)?.applyRole;
+
   const { loading: settingsLoading } = useSettings();
   const [applications, setApplications] = useState<RoleApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [applyingForRole, setApplyingForRole] = useState<{ id: string; title: string } | null>(null);
 
   const userId = user?.uid || user?.id;
+
+  useEffect(() => {
+    if (autoApplyRole && (VALID_PUBLIC_ROLES as readonly string[]).includes(autoApplyRole)) {
+      const roleObj = ROLES.find(r => r.id === autoApplyRole);
+      if (roleObj && !(user?.roles || []).includes(roleObj.id)) {
+        setApplyingForRole({ id: roleObj.id, title: roleObj.title });
+      }
+    }
+  }, [autoApplyRole, user?.roles]);
 
   useEffect(() => {
     if (userId) {
