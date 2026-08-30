@@ -290,7 +290,7 @@ export const SendParcelPage = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-bold dark:text-white">Sender Information</h2>
-              <p className="text-slate-900">Confirm your details as the sender.</p>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">Confirm your details as the sender.</p>
             </div>
             <div className="grid gap-4">
               <div className="space-y-2">
@@ -303,8 +303,9 @@ export const SendParcelPage = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold dark:text-white">Phone Number</label>
                 <Input
+                    inputMode="numeric"
                   value={formData.senderPhone}
-                  onChange={(e) => updateFormData({ senderPhone: e.target.value })}
+                    onChange={(e) => updateFormData({ senderPhone: e.target.value.replace(/\D/g, '') })}
                 />
               </div>
             </div>
@@ -316,7 +317,7 @@ export const SendParcelPage = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h2 className="text-2xl font-bold dark:text-white">Recipient Information</h2>
-                <p className="text-slate-900">Who are you sending this parcel to?</p>
+                <p className="text-slate-600 dark:text-slate-300 text-sm">Who are you sending this parcel to?</p>
               </div>
               <Button
                 type="button"
@@ -340,9 +341,10 @@ export const SendParcelPage = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold dark:text-white">Recipient's Phone Number</label>
                 <Input
-                  placeholder="+234 000 000 0000"
+                  inputMode="numeric"
+                  placeholder="08000000000"
                   value={formData.recipientPhone}
-                  onChange={(e) => updateFormData({ recipientPhone: e.target.value })}
+                  onChange={(e) => updateFormData({ recipientPhone: e.target.value.replace(/\D/g, '') })}
                 />
               </div>
               <div className="space-y-2">
@@ -835,9 +837,9 @@ export const SendParcelPage = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">{method.sub}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">{method.sub}</p>
                        </div>
-                       <ChevronRight size={20} className={cn("transition-transform", isSelected && method.active ? "text-primary-600 translate-x-1" : "text-slate-400")} />
+                       <ChevronRight size={20} className={cn("transition-transform", isSelected && method.active ? "text-primary-600 translate-x-1" : "text-slate-500 dark:text-slate-400")} />
                     </Card>
                   );
                 })}
