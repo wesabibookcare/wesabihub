@@ -233,7 +233,7 @@ export const ProfilePage = () => {
                            <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">OmorfiHub Username</label>
                            <Input
                               value={wesabiUsername}
-                              onChange={(e) => setWesabiUsername(e.target.value)}
+                              onChange={(e) => setWesabiUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                               prefix={<AtSign size={16} className="text-primary-500" />}
                               className="h-10 text-sm font-bold font-mono text-primary-600"
                            />
@@ -242,7 +242,13 @@ export const ProfilePage = () => {
                      <div className="space-y-6">
                         <div>
                            <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">Support Line</label>
-                           <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 text-sm font-black" />
+                           <Input
+                              value={phone}
+                              inputMode="numeric"
+                              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 15))}
+                              placeholder="Digits only"
+                              className="h-10 text-sm font-black"
+                           />
                         </div>
                         <div>
                            <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mb-2 block">Headquarters</label>

@@ -241,12 +241,12 @@ export const ProfilePage = () => {
                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">OmorfiHub Username</label>
                        <Input
                           value={wesabiUsername}
-                          onChange={e => setWesabiUsername(e.target.value)}
+                          onChange={e => setWesabiUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                           prefix={<AtSign size={18} className="text-primary-500" />}
                           placeholder="username"
                           className="font-bold text-primary-600 font-mono"
                        />
-                       <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique across OmorfiHub.</p>
+                       <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique (no spaces allowed).</p>
                     </div>
                     <div className="space-y-2">
                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
@@ -254,7 +254,13 @@ export const ProfilePage = () => {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Phone Number</label>
-                       <Input value={phone} onChange={e => setPhone(e.target.value)} prefix={<Phone size={18} />} />
+                       <Input
+                          value={phone}
+                          inputMode="numeric"
+                          onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 15))}
+                          prefix={<Phone size={18} />}
+                          placeholder="Digits only"
+                       />
                     </div>
                  </div>
 

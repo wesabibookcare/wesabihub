@@ -143,9 +143,60 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
   };
 
   const handleCaptureSelfie = () => {
-    const frame = captureFrame();
-    if (frame) { setSelfieImage(frame); stopCamera(); }
-    else toast.error('Failed to capture your photo. Try uploading a photo instead.');
+    if (!videoRef.current) {
+      toast.error('Camera stream not ready.');
+      return;
+    }
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      // Quality check 1: Brightness/Lighting
+      let totalBrightness = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        totalBrightness += (r * 299 + g * 587 + b * 114) / 1000;
+      }
+      const avgBrightness = totalBrightness / (data.length / 4);
+
+      if (avgBrightness < 40) {
+        toast.error('Lighting is too dark. Please move to a brighter environment or turn on lights.');
+        return;
+      }
+      if (avgBrightness > 245) {
+        toast.error('Lighting is too harsh or overexposed. Please avoid direct glare.');
+        return;
+      }
+
+      // Quality check 2: Sharpness / Contrast variance
+      let varianceSum = 0;
+      const pixelCount = data.length / 4;
+      for (let i = 0; i < data.length; i += 16) {
+        const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        const diff = gray - avgBrightness;
+        varianceSum += diff * diff;
+      }
+      const stdDev = Math.sqrt(varianceSum / (pixelCount / 4));
+
+      if (stdDev < 15) {
+        toast.error('Image appears blurry or dark/obscured. Please position your face clearly in the camera frame.');
+        return;
+      }
+
+      const frame = canvas.toDataURL('image/jpeg', 0.9);
+      setSelfieImage(frame);
+      stopCamera();
+    } catch (err) {
+      toast.error('Failed to capture live face scan.');
+    }
   };
 
   const canProceedFromStep = (s: number) => {
@@ -238,9 +289,10 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
                 label="NIN (National ID Number)"
+                inputMode="numeric"
                 value={nin}
-                onChange={e => setNin(e.target.value)}
-                placeholder="11-digit NIN"
+                onChange={e => setNin(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                placeholder="11-digit NIN (digits only)"
                 required
               />
               <Input
@@ -256,7 +308,7 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
               <Input
                 label={role === 'CENTER_OWNER' ? "CAC Registration Number (Required)" : "CAC Registration Number (Optional)"}
                 value={cac}
-                onChange={e => setCac(e.target.value)}
+                onChange={e => setCac(e.target.value.toUpperCase())}
                 placeholder="e.g. RC123456"
                 required={role === 'CENTER_OWNER'}
               />
@@ -363,7 +415,7 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
         {/* Step 1: Live facial capture */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Take or upload a photo of yourself</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Live Camera Face Recognition Scan (Snapping Only)</p>
             <div className="rounded-2xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative border border-slate-700">
               {selfieImage ? (
                 <img src={selfieImage} alt="Captured selfie" className="w-full h-full object-cover" />
@@ -376,36 +428,30 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
               ) : (
                 <div className="text-center p-6 text-slate-400 text-xs">
                   <UserCircle size={40} className="mx-auto mb-2 opacity-50" />
-                  No photo attached yet
+                  Live camera scan required
                 </div>
               )}
             </div>
 
             {selfieImage ? (
-              <Button variant="outline" onClick={() => { setSelfieImage(null); stopCamera(); }} className="w-full gap-2">
-                <RefreshCw size={16} /> Remove / Replace Photo
+              <Button variant="outline" onClick={() => { setSelfieImage(null); startCamera('SELFIE', 'user'); }} className="w-full gap-2">
+                <RefreshCw size={16} /> Retake Face Scan
               </Button>
             ) : activeCameraTarget === 'SELFIE' ? (
               <div className="flex gap-3">
                 <Button onClick={handleCaptureSelfie} disabled={!!cameraError} className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700">
-                  <Camera size={16} /> Snap Photo
+                  <Camera size={16} /> Snap Live Photo
                 </Button>
                 <Button variant="outline" onClick={stopCamera}>
                   Cancel
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={() => startCamera('SELFIE', 'user')} className="gap-2 bg-primary-600 hover:bg-primary-700">
-                  <Camera size={16} /> Open Camera
-                </Button>
-                <label className="inline-flex items-center justify-center px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200">
-                  <Upload size={16} className="mr-2" /> Upload Photo
-                  <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, setSelfieImage)} className="hidden" />
-                </label>
-              </div>
+              <Button onClick={() => startCamera('SELFIE', 'user')} className="w-full gap-2 bg-primary-600 hover:bg-primary-700">
+                <Camera size={16} /> Open Camera for Face Scan
+              </Button>
             )}
-            <p className="text-[11px] text-slate-500">Make sure your face is clearly visible and well lit in the photo.</p>
+            <p className="text-[11px] text-slate-500">Live camera snap only. Blurry or dark photos will be rejected automatically.</p>
           </div>
         )}
 
@@ -414,7 +460,13 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
           <div className="space-y-4">
             <p className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><MapPin size={16} /> Confirm your real address</p>
             <Input label="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="As it appears on your ID" />
-            <Input label="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. 0801 234 5678" />
+            <Input
+              label="Phone Number"
+              inputMode="numeric"
+              value={phone}
+              onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 15))}
+              placeholder="e.g. 08012345678 (digits only)"
+            />
             <Input label="Street Address" value={address} onChange={e => setAddress(e.target.value)} placeholder="House number and street" />
             <div className="grid grid-cols-2 gap-4">
               <Input label="City" value={city} onChange={e => setCity(e.target.value)} />
