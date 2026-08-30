@@ -2,7 +2,7 @@ import { UserRole, User, RegistrationPayload, UserStatus, ApplicationStatus, Rol
 import { Permission } from '../services/permissionService';
 import { userRepository } from '../services/db/UserRepository';
 import { permissionService } from '../services/permissionService';
-import { authService } from '../services/authService';
+import { authService, ROLE_REDIRECTS } from '../services/authService';
 import { roleApplicationRepository } from '../services/db/RoleApplicationRepository';
 import { monitoringEngine } from './MonitoringEngine';
 import { addressRepository } from '../services/db/AddressRepository';
@@ -86,9 +86,10 @@ class UserEngine {
 
     const finalProfileData = { ...profileData, ...uploadedDocs, updatedAt: new Date().toISOString() };
 
-    // Assigned active primary role is CUSTOMER for approval-required roles, or requested role if direct access
-    const assignedRole: UserRole = isDirectAccess ? safeRole : 'CUSTOMER';
-    const assignedRoles: UserRole[] = isDirectAccess ? [safeRole] : ['CUSTOMER'];
+    // Set the user's primary role directly to safeRole so they can access their role's dashboard for profile setup,
+    // while keeping pendingRoleApplication = true and requestedRole = safeRole for Admin verification tracking.
+    const assignedRole: UserRole = safeRole;
+    const assignedRoles: UserRole[] = Array.from(new Set([safeRole, 'CUSTOMER' as UserRole]));
 
     // 3. Persist User
     const userDoc: User = {
@@ -129,10 +130,10 @@ class UserEngine {
 
       await notificationEngine.send(
         uid,
-        'Application Received & Customer Account Active',
-        `You're approved as a Customer for now, your ${safeRole.replace(/_/g, ' ')} application is under review.`,
+        'Application Received — Welcome to OmorfiHub!',
+        `Your ${safeRole.replace(/_/g, ' ')} application is under review. You have full access to set up your profile and hub tools while Admin completes verification.`,
         'INFO',
-        '/customer/dashboard',
+        ROLE_REDIRECTS[safeRole] || '/dashboard',
         'SYSTEM'
       );
     } else {

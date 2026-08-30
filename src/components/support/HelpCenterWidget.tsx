@@ -43,8 +43,6 @@ export const HelpCenterWidget = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (isPending) return null;
-
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<ViewState>('home');
   const isAIView = view === 'chat' || view === 'media-analysis' || view === 'image-generator';
@@ -402,6 +400,8 @@ export const HelpCenterWidget = () => {
   };
 
   const menuItems = getRoleActions();
+
+  if (isPending) return null;
 
   return (
     <div className="fixed z-50 pointer-events-none inset-0 flex items-end justify-end p-4 md:p-6 lg:p-8 pb-[max(env(safe-area-inset-bottom,16px),16px)]">

@@ -171,6 +171,24 @@ export const OwnerDashboard = () => {
         </div>
       </div>
 
+      {/* Pending Application Banner */}
+      {(user?.pendingRoleApplication || company?.status === 'PENDING' || company?.status === 'SUBMITTED') && (
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 animate-pulse" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm">Logistics Partner Application Under Review</h4>
+              <p className="text-xs text-amber-800 dark:text-amber-300">Your partner registration application is under review by the Verification Desk. You can configure fleet, assign drivers, and manage settings while Admin completes verification.</p>
+            </div>
+          </div>
+          <Badge variant="warning" className="shrink-0 bg-amber-500 text-slate-950 font-black">
+            UNDER REVIEW
+          </Badge>
+        </div>
+      )}
+
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (

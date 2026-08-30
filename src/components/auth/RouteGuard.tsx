@@ -110,12 +110,12 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     return <>{children}</>;
   }
 
-  const userRoles = Array.isArray(user.roles) ? user.roles : [user.role].filter(Boolean);
+  const userRoles = Array.from(new Set([
+    ...(Array.isArray(user.roles) ? user.roles : [user.role].filter(Boolean)),
+    ...(user.requestedRole ? [user.requestedRole] : [])
+  ]));
+
   if (allowedRoles && !userRoles.some(role => allowedRoles.includes(role)) && !allowedRoles.includes(activeRole as UserRole)) {
-    // Users with pending role applications (e.g. pending Merchant review) can cleanly access Customer Dashboard
-    if (user.pendingRoleApplication || user.requestedRole) {
-      return <Navigate to="/dashboard" replace />;
-    }
     return <>{fallback}</>;
   }
 
