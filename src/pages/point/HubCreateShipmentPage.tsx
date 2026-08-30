@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Building2,
@@ -207,9 +208,9 @@ export const HubCreateShipmentPage: React.FC = () => {
               </p>
             </div>
             <div className="pt-2">
-              <a href="/point/dashboard/owner" className="inline-flex items-center justify-center rounded-xl px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm">
+              <Link to="/point/dashboard/owner" className="inline-flex items-center justify-center rounded-xl px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm">
                 Return to Hub Dashboard
-              </a>
+              </Link>
             </div>
           </div>
         </div>
