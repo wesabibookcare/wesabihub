@@ -34,27 +34,24 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const combinedClassName = cn(baseStyles, variants[variant], sizes[size], className);
 
     if (asChild && React.isValidElement(children)) {
+      const childElement = children as React.ReactElement<any>;
+      const innerContent = isLoading ? (
+        <LoadingIcon size={16} />
+      ) : (
+        <>
+          {leftIcon && <span className="mr-2">{leftIcon}</span>}
+          {childElement.props.children}
+          {rightIcon && <span className="ml-2">{rightIcon}</span>}
+        </>
+      );
+
       return (
         <Slot
           ref={ref}
           className={combinedClassName}
           {...props}
         >
-          {React.cloneElement(children as React.ReactElement<any>, {
-            children: (
-              <>
-                {isLoading ? (
-                  <LoadingIcon size={16} />
-                ) : (
-                  <>
-                    {leftIcon && <span className="mr-2">{leftIcon}</span>}
-                    {children.props.children}
-                    {rightIcon && <span className="ml-2">{rightIcon}</span>}
-                  </>
-                )}
-              </>
-            )
-          })}
+          {React.cloneElement(childElement, {}, innerContent)}
         </Slot>
       );
     }
