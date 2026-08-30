@@ -201,6 +201,31 @@ export const BulkShipmentsPage = () => {
     }));
   };
 
+  const isPendingVerification = !!(user?.pendingRoleApplication || user?.status === 'PENDING' || user?.status === 'SUBMITTED');
+
+  if (isPendingVerification) {
+    return (
+      <MerchantLayout>
+        <div className="max-w-2xl mx-auto my-12 p-8 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-3xl text-center space-y-6 shadow-md">
+          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 mx-auto">
+            <AlertCircle size={32} className="animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold dark:text-white font-display">Merchant Application Under Review</h2>
+            <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed max-w-lg mx-auto">
+              Your Merchant business profile is currently pending Admin verification. Bulk shipment creation will be unlocked automatically as soon as your account approval is completed.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button className="rounded-xl px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs" onClick={() => window.location.href = '/merchant/dashboard'}>
+              Go to Merchant Dashboard
+            </Button>
+          </div>
+        </div>
+      </MerchantLayout>
+    );
+  }
+
   return (
     <MerchantLayout>
       <div className="max-w-5xl mx-auto space-y-10">

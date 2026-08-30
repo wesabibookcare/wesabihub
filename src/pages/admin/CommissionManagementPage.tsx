@@ -174,12 +174,12 @@ fetchedRules.sort((a, b) => b.version - a.version);
                   <h3 className="text-lg font-black tracking-tight mb-4">Default Global Distribution</h3>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
-                      <span className="text-xs font-bold text-slate-800 uppercase tracking-widest">Platform</span>
-                      <span className="text-xl font-black">40%</span>
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-widest">Platform Share</span>
+                      <span className="text-xl font-black">40% - 50%</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
-                      <span className="text-xs font-bold text-slate-800 uppercase tracking-widest">Centre</span>
-                      <span className="text-xl font-black">60%</span>
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-widest">Hub Tier Share</span>
+                      <span className="text-xl font-black">50% - 60%</span>
                     </div>
                   </div>
                </Card>
@@ -394,8 +394,8 @@ fetchedRules.sort((a, b) => b.version - a.version);
              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
                   { label: 'Total Platform Revenue', value: '₦4,289,500', sub: '+12% from last month', icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                  { label: 'Centre Payouts', value: '₦2,573,700', sub: '60% of total revenue', icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
-                  { label: 'Platform Net', value: '₦1,715,800', sub: '40% of total revenue', icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                  { label: 'Centre Payouts', value: '₦2,573,700', sub: 'Tiered revenue share payouts', icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { label: 'Platform Net', value: '₦1,715,800', sub: 'Net platform commission', icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                   { label: 'Future Logistics Fund', value: '₦0', sub: 'Projected next phase', icon: Layers, color: 'text-amber-600', bg: 'bg-amber-50' },
                 ].map(stat => (
                   <Card key={stat.label} className="p-6 border-none shadow-xl shadow-slate-200/50">
@@ -418,9 +418,9 @@ fetchedRules.sort((a, b) => b.version - a.version);
                 </div>
                 <div className="space-y-6">
                    {[
-                      { name: 'Lagos Main Hub', total: 1200000, comm: 720000, plat: 480000 },
-                      { name: 'Abuja Central Point', total: 850000, comm: 510000, plat: 340000 },
-                      { name: 'Port Harcourt Hub', total: 640000, comm: 384000, plat: 256000 },
+                      { name: 'Lagos Main Hub', total: 1200000, comm: 720000, plat: 480000, tierShare: '60%' },
+                      { name: 'Abuja Central Point', total: 850000, comm: 467500, plat: 382500, tierShare: '55%' },
+                      { name: 'Port Harcourt Hub', total: 640000, comm: 320000, plat: 320000, tierShare: '50%' },
                    ].map(hub => (
                       <div key={hub.name} className="space-y-2">
                          <div className="flex justify-between items-end">
@@ -429,13 +429,13 @@ fetchedRules.sort((a, b) => b.version - a.version);
                                <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest mt-0.5">Total Generated: ₦{hub.total.toLocaleString()}</p>
                             </div>
                             <div className="text-right">
-                               <p className="text-xs font-black text-emerald-600">₦{hub.comm.toLocaleString()} (60%)</p>
+                               <p className="text-xs font-black text-emerald-600">₦{hub.comm.toLocaleString()} ({hub.tierShare})</p>
                                <p className="text-[9px] font-bold text-slate-800 uppercase tracking-widest">Platform: ₦{hub.plat.toLocaleString()}</p>
                             </div>
                          </div>
                          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-emerald-500" style={{ width: '60%' }} />
-                            <div className="h-full bg-indigo-500" style={{ width: '40%' }} />
+                            <div className="h-full bg-emerald-500" style={{ width: hub.tierShare }} />
+                            <div className="h-full bg-indigo-500" style={{ width: `${100 - parseInt(hub.tierShare)}%` }} />
                          </div>
                       </div>
                    ))}

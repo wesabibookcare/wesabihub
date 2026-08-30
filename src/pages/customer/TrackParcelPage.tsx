@@ -188,13 +188,13 @@ export const TrackParcelPage = () => {
 
   const isDelivered = realShipment
     ? (realShipment.status === 'DELIVERED' || realShipment.status === 'COMPLETED' || realShipment.status === 'RELEASED')
-    : trackingNumber.toUpperCase().includes('DELIVERED');
+    : false;
 
   const isOutForDelivery = realShipment
     ? (realShipment.status === 'IN_TRANSIT')
-    : trackingNumber.toUpperCase().includes('OUT');
+    : false;
 
-  // Mock locations
+  // Hub locations for tracker map
   const LAGOS_HUB = { lat: 6.5244, lng: 3.3792 };
   const ABUJA_WUSE = { lat: 9.0765, lng: 7.3986 };
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';

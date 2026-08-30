@@ -151,14 +151,11 @@ export const RegisterPage: React.FC = () => {
         });
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        const redirectPath = ROLE_REDIRECTS[newUser.role] || '/dashboard';
-        navigate(redirectPath);
-      }, 3000);
+      setError(null);
+      const redirectPath = ROLE_REDIRECTS[newUser.role] || '/dashboard';
+      navigate(redirectPath, { replace: true });
     } catch (err: any) {
       setError(formatAuthError(err));
-    } finally {
       setLoading(false);
     }
   };
@@ -181,50 +178,17 @@ export const RegisterPage: React.FC = () => {
             return;
           }
         }
-        setSuccess(true);
-        setTimeout(() => {
-          const redirectPath = ROLE_REDIRECTS[user.role] || '/dashboard';
-          navigate(redirectPath);
-        }, 2000);
+        setError(null);
+        const redirectPath = ROLE_REDIRECTS[user.role] || '/dashboard';
+        navigate(redirectPath, { replace: true });
       } else {
         navigate('/role-selection');
       }
     } catch (err: any) {
       setError(formatAuthError(err));
-    } finally {
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <Card className="text-center py-8">
-            <CardContent className="space-y-4">
-              <div className="flex justify-center">
-                <CheckCircle2 className="h-16 w-16 text-green-500" />
-              </div>
-              <CardTitle className="text-2xl font-bold">Account Created!</CardTitle>
-              <CardDescription className="text-lg">
-                {email ? (
-                  <>
-                    We've sent a verification email to <strong>{email}</strong>.
-                    Please check your inbox to verify your account.
-                  </>
-                ) : (
-                  "Welcome to OmorfiHub! Setting up your workspace..."
-                )}
-              </CardDescription>
-              <p className="text-sm text-slate-900 pt-4">
-                Redirecting you to your dashboard...
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">

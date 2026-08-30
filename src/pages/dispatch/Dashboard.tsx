@@ -922,7 +922,19 @@ export const DispatchDashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-2 pt-2 border-t">
-                      <Button size="sm" className="bg-slate-900 hover:bg-black text-white" onClick={() => { setSelectedJob(job); toast.success(`Dispatch Trip Accepted! Pick up your package at Ikeja Hub. Remember to track GPS safely.`); }}>
+                      <Button
+                        size="sm"
+                        className="bg-slate-900 hover:bg-black text-white"
+                        onClick={() => {
+                          const isAuthorized = riderProfile?.status === 'ACTIVE' || riderProfile?.status === 'APPROVED';
+                          if (!isAuthorized || user?.pendingRoleApplication) {
+                            toast.error('Application Under Review. You cannot accept transit jobs until approved by Admin.');
+                            return;
+                          }
+                          setSelectedJob(job);
+                          toast.success(`Dispatch Trip Accepted! Pick up your package at Ikeja Hub. Remember to track GPS safely.`);
+                        }}
+                      >
                         Accept & Start Route
                       </Button>
                       <Button size="sm" variant="ghost" className="text-red-500" onClick={() => toast.success('Job offer declined.')}>
