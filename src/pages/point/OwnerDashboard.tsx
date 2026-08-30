@@ -287,7 +287,7 @@ export const PointOwnerDashboard = () => {
                            <span className="text-4xl font-black font-display text-white">
                               {hub?.trustScore || 0}
                            </span>
-                           <span className="text-sm font-bold text-slate-800">/100</span>
+                           <span className="text-sm font-bold text-slate-400">/100</span>
                         </div>
                         <div className="flex flex-col items-end">
                            <div className="flex gap-0.5 mb-1 text-yellow-400">
@@ -296,11 +296,11 @@ export const PointOwnerDashboard = () => {
                                    key={i}
                                    size={16}
                                    fill={i < (hub?.starRating || 0) ? "currentColor" : "none"}
-                                   className={i < (hub?.starRating || 0) ? "text-yellow-400" : "text-slate-800"}
+                                   className={i < (hub?.starRating || 0) ? "text-yellow-400" : "text-slate-600"}
                                  />
                               ))}
                            </div>
-                           <span className="text-[10px] text-slate-800 font-bold uppercase tracking-widest">
+                           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                               {hub?.starRating || 0} Star Rating
                            </span>
                         </div>
@@ -311,7 +311,7 @@ export const PointOwnerDashboard = () => {
                           style={{ width: `${hub?.trustScore || 0}%` }}
                         />
                      </div>
-                     <p className="text-xs text-slate-800">
+                     <p className="text-xs text-slate-300">
                         High Trust Scores grant up to <strong>1.8x visibility</strong> on search priority.
                      </p>
                   </div>
