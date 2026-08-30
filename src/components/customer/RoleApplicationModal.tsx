@@ -363,7 +363,7 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
         {/* Step 1: Live facial capture */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Take or upload a photo of yourself</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Live Face Camera Capture</p>
             <div className="rounded-2xl overflow-hidden bg-slate-900 aspect-video flex items-center justify-center relative border border-slate-700">
               {selfieImage ? (
                 <img src={selfieImage} alt="Captured selfie" className="w-full h-full object-cover" />
@@ -376,14 +376,14 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
               ) : (
                 <div className="text-center p-6 text-slate-400 text-xs">
                   <UserCircle size={40} className="mx-auto mb-2 opacity-50" />
-                  No photo attached yet
+                  Live camera stream required for facial recognition
                 </div>
               )}
             </div>
 
             {selfieImage ? (
-              <Button variant="outline" onClick={() => { setSelfieImage(null); stopCamera(); }} className="w-full gap-2">
-                <RefreshCw size={16} /> Remove / Replace Photo
+              <Button variant="outline" onClick={() => { setSelfieImage(null); startCamera('SELFIE', 'user'); }} className="w-full gap-2">
+                <RefreshCw size={16} /> Retake Face Scan
               </Button>
             ) : activeCameraTarget === 'SELFIE' ? (
               <div className="flex gap-3">
@@ -395,17 +395,11 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={() => startCamera('SELFIE', 'user')} className="gap-2 bg-primary-600 hover:bg-primary-700">
-                  <Camera size={16} /> Open Camera
-                </Button>
-                <label className="inline-flex items-center justify-center px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200">
-                  <Upload size={16} className="mr-2" /> Upload Photo
-                  <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, setSelfieImage)} className="hidden" />
-                </label>
-              </div>
+              <Button onClick={() => startCamera('SELFIE', 'user')} className="w-full gap-2 bg-primary-600 hover:bg-primary-700">
+                <Camera size={16} /> Open Live Camera
+              </Button>
             )}
-            <p className="text-[11px] text-slate-500">Make sure your face is clearly visible and well lit in the photo.</p>
+            <p className="text-[11px] text-slate-500">To prevent identity fraud, face recognition strictly requires a live camera scan. Make sure your face is clearly visible and well lit.</p>
           </div>
         )}
 
