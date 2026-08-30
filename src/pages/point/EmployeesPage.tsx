@@ -123,6 +123,16 @@ export const EmployeesPage = () => {
     }
   };
 
+  const handleApproveStaff = async (empId: string, empName: string) => {
+    try {
+      await userEngine.updateUser(empId, { status: 'ACTIVE', pendingRoleApplication: false } as any);
+      setEmployees(prev => prev.map(e => e.uid === empId ? { ...e, status: 'ACTIVE', pendingRoleApplication: false } : e));
+      toast.success(`${empName} has been approved and activated for your hub.`);
+    } catch (err: any) {
+      toast.error('Failed to approve staff member: ' + err.message);
+    }
+  };
+
   return (
     <PointLayout>
       <div className="space-y-10">
@@ -208,9 +218,16 @@ export const EmployeesPage = () => {
 
                    <div className="space-y-1">
                       <h4 className="text-xl font-bold dark:text-white font-display group-hover:text-primary-600 transition-colors">{emp.displayName}</h4>
-                      <Badge variant="outline" className="rounded-lg h-6 gap-1 bg-slate-50 dark:bg-slate-800 border-none font-bold">
-                         <Shield size={12} className="text-primary-600" /> {emp.role?.replace('_', ' ')}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                         <Badge variant="outline" className="rounded-lg h-6 gap-1 bg-slate-50 dark:bg-slate-800 border-none font-bold">
+                            <Shield size={12} className="text-primary-600" /> {emp.role?.replace('_', ' ')}
+                         </Badge>
+                         {emp.status === 'PENDING' && (
+                            <Button size="sm" onClick={() => handleApproveStaff(emp.uid, emp.displayName || 'Staff')} className="h-6 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md">
+                               Approve
+                            </Button>
+                         )}
+                      </div>
                    </div>
 
                    <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">

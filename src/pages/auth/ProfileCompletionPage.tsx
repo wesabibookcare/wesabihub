@@ -285,7 +285,8 @@ export const ProfileCompletionPage: React.FC = () => {
       case 'CENTER_STAFF':
         return [
           { name: 'fullName', label: 'Full Name', type: 'text', required: true },
-          { name: 'hubId', label: 'Hub ID / Invite Code', type: 'text', required: true },
+          { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+          { name: 'hubId', label: 'Hub ID / Invite Code (Optional)', type: 'text', required: false },
         ];
       case 'DEVELOPER':
         return [
@@ -425,6 +426,11 @@ export const ProfileCompletionPage: React.FC = () => {
         if (!faceScanCaptured) {
           missingFields.push('Live Face Camera Scan');
         }
+      }
+
+      // Hub Staff requires Live Face Camera Scan
+      if (role === 'CENTER_STAFF' && !faceScanCaptured) {
+        missingFields.push('Live Face Camera Scan');
       }
 
       // Validate document requirements dynamically
@@ -678,6 +684,52 @@ export const ProfileCompletionPage: React.FC = () => {
                     </div>
                   );
                 })}
+
+                {/* Mandatory Face Verification for Hub Staff */}
+                {role === 'CENTER_STAFF' && (
+                  <div className="space-y-4 border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+                    <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Required Face Verification</h3>
+                    <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl space-y-2 border border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Camera size={14} className="text-primary-500" /> Live Face Camera Scan <span className="text-red-500">*</span>
+                          </p>
+                          <p className="text-[10px] text-slate-500">Must be a clear live face camera scan (blurry photos will be rejected)</p>
+                        </div>
+                        {faceScanCaptured ? (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md flex items-center gap-1">
+                            <ShieldCheck size={12} /> Captured
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {faceScanCaptured ? (
+                        <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg">
+                          <img src={faceScanCaptured} alt="Face scan" className="w-12 h-12 rounded-full object-cover border border-emerald-500" />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setFaceScanModalOpen(true)}
+                            className="text-xs rounded-lg"
+                          >
+                            Retake Scan
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setFaceScanModalOpen(true)}
+                          className="w-full text-xs font-bold py-2 border-primary-500 text-primary-600 hover:bg-primary-50 rounded-lg flex items-center justify-center gap-2"
+                        >
+                          <Camera size={14} /> Start Live Face Scan
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Mandatory Identity Documents & Live Scan for Approval Roles */}
                 {!['CUSTOMER', 'CENTER_STAFF'].includes(role) && (
