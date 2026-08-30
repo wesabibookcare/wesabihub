@@ -359,7 +359,7 @@ export const ApprovalWorkflowTab: React.FC = () => {
   };
 
   // Categorize applications for rendering tabs
-  const pendingApps = applications.filter(app => app.status === 'SUBMITTED' || app.status === 'PENDING');
+  const pendingApps = applications.filter(app => !app.status || app.status === 'SUBMITTED' || app.status === 'PENDING');
   const suspendedApps = applications.filter(app => app.status === 'UNDER_REVIEW');
   const reUploadRequestedApps = applications.filter(app => app.status === 'RE_UPLOAD_REQUESTED' || app.status === 'MORE_INFORMATION_REQUIRED');
 

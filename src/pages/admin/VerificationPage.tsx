@@ -36,7 +36,7 @@ export const VerificationPage: React.FC = () => {
   useEffect(() => {
     // Subscribe to applications to show live badge count of pending applications
     const unsubscribe = userEngine.roles.subscribeToQuery([], (apps) => {
-      const pending = apps.filter(a => a.status === 'SUBMITTED' || a.status === 'UNDER_REVIEW').length;
+      const pending = apps.filter(a => !a.status || a.status === 'SUBMITTED' || a.status === 'PENDING' || a.status === 'UNDER_REVIEW').length;
       setPendingCount(pending);
       setLoading(false);
     });

@@ -297,14 +297,26 @@ service cloud.firestore {
       allow read: if isSignedIn() && (
         resource.data.buyerId == request.auth.uid ||
         resource.data.sellerId == request.auth.uid ||
-        (resource.data.participants != null && request.auth.uid in resource.data.participants) ||
+        resource.data.initiatorId == request.auth.uid ||
+        ('participants' in resource.data && resource.data.participants.hasAny([request.auth.uid])) ||
         isStaff()
       );
-      allow create: if isSignedIn() && (incoming().buyerId == request.auth.uid || incoming().sellerId == request.auth.uid || (incoming().participants != null && request.auth.uid in incoming().participants));
+      allow create: if isSignedIn() && (
+        incoming().buyerId == request.auth.uid ||
+        incoming().sellerId == request.auth.uid ||
+        incoming().initiatorId == request.auth.uid ||
+        ('participants' in incoming() && incoming().participants.hasAny([request.auth.uid])) ||
+        isStaff()
+      );
       allow update: if isSignedIn() && (
-        ((resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || (resource.data.participants != null && request.auth.uid in resource.data.participants))
-         && (existing().isDisputed != true || incoming().isDisputed == true))
-        || isStaff()
+        (
+          (
+            resource.data.buyerId == request.auth.uid ||
+            resource.data.sellerId == request.auth.uid ||
+            resource.data.initiatorId == request.auth.uid ||
+            ('participants' in resource.data && resource.data.participants.hasAny([request.auth.uid]))
+          ) && (existing().isDisputed != true || incoming().isDisputed == true)
+        ) || isStaff()
       );
     }
 
@@ -312,14 +324,18 @@ service cloud.firestore {
       allow read: if isSignedIn() && exists(/databases/$(database)/documents/conversations/$(convId)) && (
         get(/databases/$(database)/documents/conversations/$(convId)).data.buyerId == request.auth.uid ||
         get(/databases/$(database)/documents/conversations/$(convId)).data.sellerId == request.auth.uid ||
-        (get(/databases/$(database)/documents/conversations/$(convId)).data.participants != null && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants) ||
+        get(/databases/$(database)/documents/conversations/$(convId)).data.initiatorId == request.auth.uid ||
+        ('participants' in get(/databases/$(database)/documents/conversations/$(convId)).data && get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid])) ||
         isStaff()
       );
       allow create: if isSignedIn() && exists(/databases/$(database)/documents/conversations/$(convId)) && (
-        (get(/databases/$(database)/documents/conversations/$(convId)).data.buyerId == request.auth.uid ||
-         get(/databases/$(database)/documents/conversations/$(convId)).data.sellerId == request.auth.uid ||
-         (get(/databases/$(database)/documents/conversations/$(convId)).data.participants != null && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants))
-        && get(/databases/$(database)/documents/conversations/$(convId)).data.isDisputed != true
+        (
+          get(/databases/$(database)/documents/conversations/$(convId)).data.buyerId == request.auth.uid ||
+          get(/databases/$(database)/documents/conversations/$(convId)).data.sellerId == request.auth.uid ||
+          get(/databases/$(database)/documents/conversations/$(convId)).data.initiatorId == request.auth.uid ||
+          ('participants' in get(/databases/$(database)/documents/conversations/$(convId)).data && get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid])) ||
+          isStaff()
+        ) && (get(/databases/$(database)/documents/conversations/$(convId)).data.isDisputed != true || isStaff())
       );
       allow update, delete: if false;
     }
