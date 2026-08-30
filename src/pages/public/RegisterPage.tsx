@@ -346,10 +346,11 @@ export const RegisterPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <Input
                           placeholder="Phone Number"
+                          inputMode="numeric"
                           value={g.phoneNumber}
                           onChange={(e) => {
                             const newG = [...guarantors];
-                            newG[idx].phoneNumber = e.target.value;
+                            newG[idx].phoneNumber = e.target.value.replace(/\D/g, '').slice(0, 15);
                             setGuarantors(newG);
                           }}
                           required

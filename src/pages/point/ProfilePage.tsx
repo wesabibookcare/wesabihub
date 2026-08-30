@@ -343,16 +343,22 @@ export const ProfilePage = () => {
                           <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">OmorfiHub Username</label>
                           <Input
                              value={wesabiUsername}
-                             onChange={e => setWesabiUsername(e.target.value)}
+                             onChange={e => setWesabiUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                              leftIcon={<AtSign size={18} className="text-primary-500" />}
-                             placeholder="WSH_point"
+                             placeholder="username"
                              className="font-bold text-primary-600 font-mono"
                           />
-                          <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique across the platform. Others will use this exact text to find and chat with you.</p>
+                          <p className="text-[10px] text-slate-800 dark:text-slate-300">Must be unique (no spaces allowed).</p>
                        </div>
                        <div className="space-y-2">
                           <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Contact Phone</label>
-                          <Input value={phone} onChange={e => setPhone(e.target.value)} leftIcon={<Phone size={18} />} />
+                          <Input
+                             value={phone}
+                             inputMode="numeric"
+                             onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 15))}
+                             placeholder="Digits only"
+                             leftIcon={<Phone size={18} />}
+                          />
                        </div>
                     </div>
                  ) : (
