@@ -185,6 +185,8 @@ export const PointStaffDashboard = () => {
     );
   }
 
+  const isHubSuspended = hub.status === 'SUSPENDED' || hub.status === 'INACTIVE';
+
   if (!hub) {
     return (
       <PointLayout>
@@ -209,6 +211,18 @@ export const PointStaffDashboard = () => {
   return (
     <PointLayout>
       <div className="space-y-10 pb-16">
+        {isHubSuspended && (
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 text-red-600 dark:text-red-400">
+            <AlertCircle size={28} className="shrink-0" />
+            <div>
+              <h3 className="font-bold text-base">Parent Hub Operations Suspended</h3>
+              <p className="text-xs text-slate-700 dark:text-slate-300">
+                Your assigned hub ({hub.name}) is currently suspended or inactive. Operational actions (parcel intake, release, shipment creation) are disabled until the hub status is restored by Administrator.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header & Shift Status Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">

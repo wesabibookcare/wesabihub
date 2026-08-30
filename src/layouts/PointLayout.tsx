@@ -20,11 +20,16 @@ import { Button } from '@/src/components/ui/Button';
 import { GlobalHeaderRight } from '../components/layout/GlobalHeaderRight';
 import { ResponsiveLayout, MenuItem } from './ResponsiveLayout';
 
+import { useAuth } from '../context/AuthContext';
+
 export const PointLayout = ({ children }: { children: React.ReactNode }) => {
-  const [role, setRole] = useState<'owner' | 'staff'>('owner');
+  const { user, activeRole } = useAuth();
+  const isStaffRole = activeRole === 'CENTER_STAFF' || user?.role === 'CENTER_STAFF';
+  const [role, setRole] = useState<'owner' | 'staff'>(isStaffRole ? 'staff' : 'owner');
   const navigate = useNavigate();
 
   const toggleRole = () => {
+    if (isStaffRole) return;
     const newRole = role === 'owner' ? 'staff' : 'owner';
     setRole(newRole);
     navigate(newRole === 'owner' ? '/point/dashboard/owner' : '/point/dashboard/staff');
@@ -68,14 +73,16 @@ export const PointLayout = ({ children }: { children: React.ReactNode }) => {
          Hub Online: ID-4029-LEK
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={toggleRole}
-        className="rounded-full text-[10px] h-8 px-4 font-bold uppercase tracking-widest bg-primary-50 dark:bg-primary-900/10 text-primary-600 border-primary-100 dark:border-primary-800 shrink-0 hidden md:inline-flex"
-      >
-        Switch to {role === 'owner' ? 'Staff' : 'Owner'}
-      </Button>
+      {!isStaffRole && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleRole}
+          className="rounded-full text-[10px] h-8 px-4 font-bold uppercase tracking-widest bg-primary-50 dark:bg-primary-900/10 text-primary-600 border-primary-100 dark:border-primary-800 shrink-0 hidden md:inline-flex"
+        >
+          Switch to {role === 'owner' ? 'Staff' : 'Owner'}
+        </Button>
+      )}
 
       <GlobalHeaderRight />
     </>
