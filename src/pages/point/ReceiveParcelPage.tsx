@@ -15,7 +15,8 @@ import {
   Info,
   ShieldCheck,
   FileText,
-  Loader2
+  Loader2,
+  Clock
 } from 'lucide-react';
 import { PointLayout } from '@/src/layouts/PointLayout';
 import { Card } from '@/src/components/ui/Card';

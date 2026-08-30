@@ -49,7 +49,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, href, isAc
       "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
       isActive
         ? "bg-primary-600 text-white shadow-lg shadow-primary-500/30"
-        : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+        : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
     )}
     title={isCollapsed ? label : undefined}
   >
@@ -260,7 +260,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
                 if (isSmallScreen) setIsDrawerOpen(false);
                 navigate('/login');
               }}
-              className="flex items-center justify-center gap-3 px-4 py-3 w-full rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all dark:text-slate-400 dark:hover:bg-red-950/20"
+              className="flex items-center justify-center gap-3 px-4 py-3 w-full rounded-xl text-slate-700 hover:bg-red-50 hover:text-red-600 transition-all dark:text-slate-200 dark:hover:bg-red-950/20"
               title={isCollapsed && !isSmallScreen ? "Sign Out" : undefined}
             >
               <LogOut size={20} className="shrink-0" />
@@ -278,7 +278,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             {isSmallScreen && (
               <button
                 onClick={() => setIsDrawerOpen(true)}
-                className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+                className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
                 aria-label="Open menu"
               >
                 <Menu size={24} />
@@ -286,7 +286,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             )}
             {title && (
               <div className="hidden sm:block">
-                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">{title}</h2>
+                <h2 className="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">{title}</h2>
               </div>
             )}
           </div>
@@ -322,7 +322,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
                       navigate(-1);
                     }
                   }}
-                  className="flex items-center gap-2 rounded-xl text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800"
+                  className="flex items-center gap-2 rounded-xl text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back
@@ -330,7 +330,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
               </div>
             )}
             {children}
-            <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <div className="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
               <img
                 src={settings?.omorfiLogo || BRAND_ASSETS.omorfiLogo}
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
