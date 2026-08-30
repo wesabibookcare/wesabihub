@@ -117,7 +117,7 @@ export const RevenueReportsPage = () => {
            {[
              { label: 'Gross Revenue', value: `₦${stats.totalRevenue.toLocaleString()}`, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', trend: stats.growth },
              { label: 'Platform Earnings', value: `₦${stats.platformEarnings.toLocaleString()}`, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50 dark:bg-primary-900/20', trend: '+8%' },
-             { label: 'Hub Payouts', value: `₦${stats.centrePayouts.toLocaleString()}`, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', trend: '60%' },
+             { label: 'Hub Payouts', value: `₦${stats.centrePayouts.toLocaleString()}`, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', trend: 'Tier Split' },
              { label: 'Awaiting Settlement', value: '₦12,400', icon: Wallet, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', trend: 'Audit Req' },
            ].map((stat, i) => (
              <Card key={i} className="p-6 border-slate-200 dark:border-slate-800">
@@ -231,8 +231,8 @@ export const RevenueReportsPage = () => {
                        <tr>
                           <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Shipment</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Gross Fee</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Platform (40%)</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Centre (60%)</th>
+                          <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Platform Share</th>
+                          <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Centre Share</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Status</th>
                           <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-widest">Timestamp</th>
                        </tr>

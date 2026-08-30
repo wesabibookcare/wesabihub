@@ -33,12 +33,33 @@ export const EarningsPage = () => {
   const [hub, setHub] = useState<any>(null);
   const [records, setRecords] = useState<CommissionRecord[]>([]);
   const [totalEarned, setTotalEarned] = useState(0);
+  const [tierConfig, setTierConfig] = useState({ hubPercent: 60, platformPercent: 40 });
 
   useEffect(() => {
     if (user) {
       fetchHubData();
+      fetchFinancialRules();
     }
   }, [user]);
+
+  const fetchFinancialRules = async () => {
+    try {
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('@/src/lib/firebase');
+      const snap = await getDoc(doc(db, 'systemSettings', 'financialRules'));
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.tiers && Array.isArray(data.tiers) && data.tiers.length > 0) {
+          // Use highest volume tier or average configured tier
+          const topTier = data.tiers[data.tiers.length - 1];
+          const hubP = topTier.hubPercentage || 60;
+          setTierConfig({ hubPercent: hubP, platformPercent: 100 - hubP });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load financial rules for earnings:', e);
+    }
+  };
 
   const fetchHubData = async () => {
     try {
@@ -131,18 +152,18 @@ export const EarningsPage = () => {
            <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-6">
               <div>
                  <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Commission Split</p>
-                 <h3 className="text-3xl font-black dark:text-white font-display mt-1">60% Centre</h3>
+                 <h3 className="text-3xl font-black dark:text-white font-display mt-1">{tierConfig.hubPercent}% Centre</h3>
               </div>
               <div className="space-y-3">
                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-900">Standard Rate</span>
-                    <span className="text-xs font-bold dark:text-white">60%</span>
+                    <span className="text-xs text-slate-900">Configured Tier Share</span>
+                    <span className="text-xs font-bold dark:text-white">{tierConfig.hubPercent}%</span>
                  </div>
                  <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '60%' }} className="h-full bg-primary-600 rounded-full" />
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${tierConfig.hubPercent}%` }} className="h-full bg-primary-600 rounded-full" />
                  </div>
                  <p className="text-[10px] text-slate-800 leading-relaxed italic">
-                   Centres receive 60% of the shipment subtotal. Platform fee is 40%.
+                   Centres receive {tierConfig.hubPercent}% of the hub parcel fee according to Admin pricing rules. Platform fee is {tierConfig.platformPercent}%.
                  </p>
               </div>
            </Card>
@@ -237,7 +258,7 @@ export const EarningsPage = () => {
                        <div className="absolute inset-0 rounded-full border-[12px] border-primary-600 border-t-emerald-500 border-l-emerald-500 transform rotate-45 opacity-20" />
                        <div className="text-center">
                           <p className="text-[10px] font-bold text-slate-800 uppercase">Your Share</p>
-                          <p className="text-xl font-black dark:text-white">60%</p>
+                          <p className="text-xl font-black dark:text-white">{tierConfig.hubPercent}%</p>
                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -246,14 +267,14 @@ export const EarningsPage = () => {
                              <div className="w-2 h-2 rounded-full bg-primary-600" />
                              <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Platform</span>
                           </div>
-                          <p className="text-sm font-bold dark:text-white">40%</p>
+                          <p className="text-sm font-bold dark:text-white">{tierConfig.platformPercent}%</p>
                        </div>
                        <div className="space-y-1">
                           <div className="flex items-center gap-2">
                              <div className="w-2 h-2 rounded-full bg-emerald-500" />
                              <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Centre</span>
                           </div>
-                          <p className="text-sm font-bold dark:text-white">60%</p>
+                          <p className="text-sm font-bold dark:text-white">{tierConfig.hubPercent}%</p>
                        </div>
                     </div>
                  </div>
