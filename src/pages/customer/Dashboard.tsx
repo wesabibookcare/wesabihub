@@ -220,12 +220,12 @@ export const CustomerDashboard = () => {
                     {loading ? (
                       <div className="p-12 text-center">
                         <Loader2 className="animate-spin mx-auto text-primary-600" size={32} />
-                        <p className="mt-4 text-slate-900">Fetching your shipments...</p>
+                        <p className="mt-4 text-slate-600 dark:text-slate-300 font-medium">Fetching your shipments...</p>
                       </div>
                     ) : shipments.length === 0 ? (
                       <Card className="p-12 text-center border-dashed border-2">
                         <Package className="mx-auto text-slate-300 mb-4" size={48} />
-                        <p className="text-slate-900 font-bold">No shipments found</p>
+                        <p className="text-slate-700 dark:text-slate-300 font-bold">No shipments found</p>
                         {canSend ? (
                           <Button variant="outline" className="mt-4" asChild>
                             <Link to="/customer/send">Send your first parcel</Link>
@@ -240,12 +240,12 @@ export const CustomerDashboard = () => {
                       shipments.slice(0, 5).map((shipment, i) => (
                         <Card key={shipment.id} className="p-4 flex items-center justify-between border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
                           <div className="flex items-center gap-4">
-                             <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-900">
+                             <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
                                 <Package size={24} />
                              </div>
                              <div>
                                 <p className="font-bold dark:text-white">{shipment.trackingNumber}</p>
-                                <p className="text-sm text-slate-900">{shipment.status.replace(/_/g, ' ')}</p>
+                                <p className="text-sm text-slate-600 dark:text-slate-400">{shipment.status.replace(/_/g, ' ')}</p>
                              </div>
                           </div>
                           <div className="text-right hidden sm:block">
@@ -320,7 +320,7 @@ export const CustomerDashboard = () => {
                     </div>
                     <div className="space-y-2">
                        <h3 className="text-xl font-bold dark:text-white">Need Help?</h3>
-                       <p className="text-slate-900 dark:text-slate-300 text-sm leading-relaxed">
+                       <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
                           Our customer support team is available 24/7 to assist with your shipments.
                        </p>
                     </div>

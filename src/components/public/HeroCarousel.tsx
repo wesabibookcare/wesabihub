@@ -34,11 +34,14 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ intervalMs = 4500, c
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.1, ease: 'easeInOut' }}
-          className="absolute inset-0"
+          className="absolute inset-0 bg-slate-950"
         >
           <img
             src={SLIDES[index].src}
             alt={SLIDES[index].caption}
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
             className="w-full h-full object-cover"
           />
           {/* Dark gradient so foreground text stays readable over any photo */}
