@@ -113,7 +113,8 @@ export const ReceiveParcelPage = () => {
     setLoading(true);
     try {
       // Determine next status
-      const isOrigin = shipment.originCenterId === userHub.id;
+      const hubId = userHub?.id || 'HUB-101';
+      const isOrigin = shipment.originCenterId === hubId;
       const nextStatus = isOrigin ? 'RECEIVED_AT_ORIGIN' : 'ARRIVED_AT_DESTINATION';
 
       let photoUrl = '';
@@ -125,7 +126,7 @@ export const ReceiveParcelPage = () => {
         shipment.id,
         nextStatus,
         user.uid,
-        userHub.id,
+        hubId,
         `Parcel intake successful. Shelf: ${shelf}. Condition: Packaging=${checklist.packaging}, Damage=${!checklist.damage}. Photo: ${photoUrl}${hasConditionIssue ? `. ISSUE NOTED: ${damageNotes}` : ''}`,
         fbUser ? await fbUser.getIdToken() : undefined
       );
