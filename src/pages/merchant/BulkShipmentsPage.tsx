@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
   Files,
@@ -217,8 +218,8 @@ export const BulkShipmentsPage = () => {
             </p>
           </div>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button className="rounded-xl px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs" onClick={() => window.location.href = '/merchant/dashboard'}>
-              Go to Merchant Dashboard
+            <Button asChild className="rounded-xl px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs">
+              <Link to="/merchant/dashboard">Go to Merchant Dashboard</Link>
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { PointLayout } from '@/src/layouts/PointLayout';
 import { Card } from '@/src/components/ui/Card';
@@ -814,7 +815,7 @@ export const ReleaseParcelPage = () => {
             </div>
             <div className="pt-2">
               <Button asChild className="rounded-xl px-8 bg-primary-600 hover:bg-primary-700 text-white font-bold">
-                <a href="/point/dashboard/owner">Return to Hub Dashboard</a>
+                <Link to="/point/dashboard/owner">Return to Hub Dashboard</Link>
               </Button>
             </div>
           </Card>

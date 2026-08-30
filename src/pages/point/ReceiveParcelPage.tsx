@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   PackagePlus,
@@ -211,7 +212,7 @@ export const ReceiveParcelPage = () => {
             </div>
             <div className="pt-2">
               <Button asChild className="rounded-xl px-8 bg-primary-600 hover:bg-primary-700 text-white font-bold">
-                <a href="/point/dashboard/owner">Return to Hub Dashboard</a>
+                <Link to="/point/dashboard/owner">Return to Hub Dashboard</Link>
               </Button>
             </div>
           </Card>

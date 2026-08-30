@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Building2,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PointLayout } from '@/src/layouts/PointLayout';
+import { Button } from '@/src/components/ui/Button';
 import { useAuth } from '@/src/context/AuthContext';
 import { workflowEngine } from '@/src/engines/WorkflowEngine';
 import { userEngine } from '@/src/engines/UserEngine';
@@ -207,9 +209,9 @@ export const HubCreateShipmentPage: React.FC = () => {
               </p>
             </div>
             <div className="pt-2">
-              <a href="/point/dashboard/owner" className="inline-flex items-center justify-center rounded-xl px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm">
-                Return to Hub Dashboard
-              </a>
+              <Button asChild className="rounded-xl px-8 bg-primary-600 hover:bg-primary-700 text-white font-bold">
+                <Link to="/point/dashboard/owner">Return to Hub Dashboard</Link>
+              </Button>
             </div>
           </div>
         </div>
