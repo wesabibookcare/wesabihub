@@ -153,9 +153,7 @@ export const RegisterPage: React.FC = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        const redirectPath = (newUser.pendingRoleApplication || newUser.requestedRole)
-          ? '/dashboard'
-          : (ROLE_REDIRECTS[newUser.role] || '/dashboard');
+        const redirectPath = ROLE_REDIRECTS[newUser.role] || '/dashboard';
         navigate(redirectPath);
       }, 3000);
     } catch (err: any) {
@@ -185,9 +183,7 @@ export const RegisterPage: React.FC = () => {
         }
         setSuccess(true);
         setTimeout(() => {
-          const redirectPath = (user.pendingRoleApplication || user.requestedRole)
-            ? '/dashboard'
-            : (ROLE_REDIRECTS[user.role] || '/dashboard');
+          const redirectPath = ROLE_REDIRECTS[user.role] || '/dashboard';
           navigate(redirectPath);
         }, 2000);
       } else {

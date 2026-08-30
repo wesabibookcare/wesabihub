@@ -188,6 +188,31 @@ export const ReceiveParcelPage = () => {
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
+  if (userHub && (userHub.status === 'PENDING' || !userHub.isVerified)) {
+    return (
+      <PointLayout>
+        <div className="max-w-2xl mx-auto p-8 my-10">
+          <Card className="p-8 text-center space-y-6 border-amber-200 bg-amber-50/30 dark:bg-amber-950/20">
+            <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 mx-auto">
+              <Clock size={32} className="animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold dark:text-white font-display">Operational Access Pending</h2>
+              <p className="text-sm text-slate-800 dark:text-slate-300">
+                Your Hub Center <strong>"{userHub.name}"</strong> is currently under review by the Verification Desk. Live parcel intake will be enabled automatically as soon as your Hub is approved by Admin.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Button asChild className="rounded-xl px-8 bg-primary-600 hover:bg-primary-700 text-white font-bold">
+                <a href="/point/dashboard/owner">Go to Hub Dashboard</a>
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </PointLayout>
+    );
+  }
+
   return (
     <PointLayout>
       <div className="max-w-4xl mx-auto space-y-10 pb-20">
