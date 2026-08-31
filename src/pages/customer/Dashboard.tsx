@@ -204,6 +204,59 @@ export const CustomerDashboard = () => {
            </div>
         </motion.div>
 
+        {/* Dynamic Workspace Activation Cards */}
+        <motion.div variants={item} className="space-y-6">
+           <div className="flex items-center justify-between">
+              <div>
+                 <h2 className="text-2xl font-bold font-display dark:text-white">Expand Your Workspaces</h2>
+                 <p className="text-slate-600 dark:text-slate-400 text-sm">Activate additional capabilities on your single OmorfiHub account</p>
+              </div>
+           </div>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Merchant Card */}
+              <Card className="p-6 bg-gradient-to-br from-indigo-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4">
+                 <div className="space-y-2">
+                    <span className="text-2xl">📦</span>
+                    <h3 className="text-xl font-bold">Want to sell or send high-volume shipments?</h3>
+                    <p className="text-xs text-indigo-200">Unlock bulk parcel tools, storefront integration & verified merchant badges.</p>
+                 </div>
+                 <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl h-11" asChild>
+                    <Link to="/customer/settings?tab=roles&apply=MERCHANT">
+                       👉 ACTIVATE MERCHANT WORKSPACE
+                    </Link>
+                 </Button>
+              </Card>
+
+              {/* Hub Owner Card */}
+              <Card className="p-6 bg-gradient-to-br from-amber-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4">
+                 <div className="space-y-2">
+                    <span className="text-2xl">⛽️</span>
+                    <h3 className="text-xl font-bold">Have a physical shop or filling station?</h3>
+                    <p className="text-xs text-amber-200">Earn steady commissions per parcel processed at your physical location.</p>
+                 </div>
+                 <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl h-11" asChild>
+                    <Link to="/customer/settings?tab=roles&apply=CENTER_OWNER">
+                       👉 Apply as OmorfiHub Center Owner
+                    </Link>
+                 </Button>
+              </Card>
+
+              {/* SendOmorfi Rider Card */}
+              <Card className="p-6 bg-gradient-to-br from-emerald-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4">
+                 <div className="space-y-2">
+                    <span className="text-2xl">🚗</span>
+                    <h3 className="text-xl font-bold">Have a bicycle, vehicle or can walk?</h3>
+                    <p className="text-xs text-emerald-200">Join our flexible last-mile dispatch fleet with live face scan verification.</p>
+                 </div>
+                 <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl h-11" asChild>
+                    <Link to="/customer/settings?tab=roles&apply=DISPATCH_RIDER">
+                       👉 JOIN SendOmorfi Dispatch fleet
+                    </Link>
+                 </Button>
+              </Card>
+           </div>
+        </motion.div>
+
         {/* Dashboard Grid */}
         <div className="grid lg:grid-cols-3 gap-10">
            {/* Main Column */}
