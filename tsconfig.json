@@ -20,7 +20,7 @@
         "./*"
       ]
     },
-    "types": ["vite/client"],
+    "types": ["vite/client", "bun-types"],
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
