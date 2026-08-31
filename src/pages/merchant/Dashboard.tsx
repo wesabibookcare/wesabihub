@@ -132,13 +132,13 @@ export const MerchantDashboard = () => {
             <h1 className="text-3xl font-black dark:text-white font-display uppercase italic tracking-tight">
               {loading ? <span className="animate-pulse">Loading dashboard...</span> : `Welcome back, ${merchantBus?.name || user?.displayName || 'Merchant'}`}
             </h1>
-            <p className="text-slate-800 font-medium">
+            <p className="text-slate-600 dark:text-slate-400 font-medium">
               {loading ? 'Fetching your store updates...' : merchantBus?.status === 'ACTIVE' ? 'Your business is growing!' : 'Complete your setup to start shipping.'}
             </p>
           </div>
           <div className="flex items-center gap-3">
              <div className="text-right">
-                <p className="text-xs font-black text-slate-800 uppercase tracking-[0.2em]">Store Status</p>
+                <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Store Status</p>
                 <div className="flex items-center gap-2 justify-end">
                    <div className={cn(
                      "w-2 h-2 rounded-full animate-pulse",
@@ -203,11 +203,11 @@ export const MerchantDashboard = () => {
                        <WalletIcon size={20} />
                     </div>
                  </div>
-                 <p className="text-sm font-black text-slate-700 uppercase tracking-[0.1em]">Available Balance</p>
+                 <p className="text-sm font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.1em]">Available Balance</p>
                  <h3 className="text-3xl font-black dark:text-white font-display mt-1">
                    {loading ? <Loader2 className="animate-spin text-primary-600" /> : `₦${(wallet?.balance || 0).toLocaleString()}`}
                  </h3>
-                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-900 font-medium">
+                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
                     <Clock size={14} /> Last payout {wallet?.lastUpdated ? new Date(wallet.lastUpdated).toLocaleDateString() : 'N/A'}
                  </div>
               </Card>
@@ -221,11 +221,11 @@ export const MerchantDashboard = () => {
                     </div>
                     <Badge variant="info">{loading ? '...' : stats.newOrders} Active</Badge>
                  </div>
-                 <p className="text-sm font-black text-slate-700 uppercase tracking-[0.1em]">SafePay Funds</p>
+                 <p className="text-sm font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.1em]">SafePay Funds</p>
                  <h3 className="text-3xl font-black dark:text-white font-display mt-1">
                    {loading ? <Loader2 className="animate-spin text-amber-600" /> : `₦${safePayFunds.toLocaleString()}`}
                  </h3>
-                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-900 font-medium">
+                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
                     <TrendingUp size={14} /> Tracking secured transactions
                  </div>
               </Card>
@@ -239,11 +239,11 @@ export const MerchantDashboard = () => {
                     </div>
                     <Badge variant="info" className="bg-white/10 text-white border-none">All Time</Badge>
                  </div>
-                 <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">Total Shipments</p>
+                 <p className="text-sm font-bold text-slate-300 uppercase tracking-widest">Total Shipments</p>
                  <h3 className="text-3xl font-black font-display mt-1">
                    {loading ? <Loader2 className="animate-spin text-white" /> : stats.totalShipments}
                  </h3>
-                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-900">
+                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
                     <Truck size={14} /> Efficient delivery tracking
                  </div>
               </Card>
@@ -262,7 +262,7 @@ export const MerchantDashboard = () => {
               <Card className="overflow-hidden border-slate-200 dark:border-slate-800 min-h-[200px]">
                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
                     {loading ? (
-                      <div className="p-12 flex flex-col items-center justify-center text-slate-900">
+                      <div className="p-12 flex flex-col items-center justify-center text-slate-600 dark:text-slate-400">
                         <Loader2 className="animate-spin mb-4" size={32} />
                         <p>Loading shipments...</p>
                       </div>
@@ -299,7 +299,7 @@ export const MerchantDashboard = () => {
                               } className="mb-1">
                                  {shipment.status.replace(/_/g, ' ')}
                               </Badge>
-                              <p className="text-[10px] text-slate-900">
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400">
                                 {shipment.createdAt ? new Date(shipment.createdAt).toLocaleDateString() : 'Recent'}
                               </p>
                            </div>
@@ -320,7 +320,7 @@ export const MerchantDashboard = () => {
                       { label: 'Total Shipments', value: stats.totalShipments, color: 'text-indigo-600' },
                     ].map((stat, i) => (
                       <Card key={i} className="p-4 text-center border-slate-200 dark:border-slate-800">
-                         <p className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1">{stat.label}</p>
+                         <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
                          <p className={cn("text-xl font-black font-display", stat.color)}>
                            {loading ? '...' : stat.value}
                          </p>
@@ -384,11 +384,11 @@ export const MerchantDashboard = () => {
                              <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-0.5">
                                    <p className="font-bold text-xs dark:text-white truncate">{alert.title}</p>
-                                   <span className="text-[10px] text-slate-900 shrink-0">
+                                   <span className="text-[10px] text-slate-500 dark:text-slate-400 shrink-0">
                                      {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                    </span>
                                 </div>
-                                <p className="text-[10px] text-slate-800 line-clamp-1">{alert.message}</p>
+                                <p className="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-1">{alert.message}</p>
                              </div>
                           </div>
                         </Link>
@@ -405,7 +405,7 @@ export const MerchantDashboard = () => {
                     </div>
                     <div>
                        <h4 className="font-bold dark:text-white text-sm">Need Help?</h4>
-                       <p className="text-[10px] text-slate-800">Merchant support is online</p>
+                       <p className="text-[10px] text-slate-500 dark:text-slate-400">Merchant support is online</p>
                     </div>
                  </div>
                  <Button variant="outline" className="w-full rounded-xl text-sm h-10 transition-all active:scale-95" asChild>

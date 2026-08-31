@@ -84,7 +84,7 @@ export const MerchantSolutionsPage = () => {
                   <benefit.icon className="w-7 h-7" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4 font-display dark:text-white">{benefit.title}</h3>
-                <p className="text-slate-900 dark:text-slate-300 leading-relaxed">{benefit.desc}</p>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{benefit.desc}</p>
                 {benefit.title === 'Payment Protection' && (
                   <Link to="/safepay" className="inline-flex items-center gap-1 text-sm font-bold text-primary-600 hover:underline mt-4">
                     Learn how SafePay works <ArrowRight size={14} />
@@ -129,7 +129,7 @@ export const MerchantSolutionsPage = () => {
                          <div className="shrink-0 w-1.5 h-12 bg-primary-200 dark:bg-primary-800 group-hover:bg-primary-600 transition-colors rounded-full" />
                          <div className="space-y-2">
                             <h4 className="text-xl font-bold dark:text-white">{item.title}</h4>
-                            <p className="text-slate-900 dark:text-slate-300 leading-relaxed">{item.desc}</p>
+                            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{item.desc}</p>
                          </div>
                       </div>
                    ))}
@@ -141,22 +141,22 @@ export const MerchantSolutionsPage = () => {
                    <Card className="p-8 space-y-4">
                       <BarChart3 className="w-10 h-10 text-blue-500" />
                       <h4 className="font-bold dark:text-white">Growth Analytics</h4>
-                      <p className="text-sm text-slate-900">Track delivery performance across all regions.</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">Track delivery performance across all regions.</p>
                    </Card>
                    <Card className="p-8 space-y-4 mt-12">
                       <Globe className="w-10 h-10 text-emerald-500" />
                       <h4 className="font-bold dark:text-white">Region Heatmap</h4>
-                      <p className="text-sm text-slate-900">Identify your most active customer locations.</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">Identify your most active customer locations.</p>
                    </Card>
                    <Card className="p-8 space-y-4">
                       <Code className="w-10 h-10 text-amber-500" />
                       <h4 className="font-bold dark:text-white">API Health</h4>
-                      <p className="text-sm text-slate-900">Monitor your integration performance 24/7.</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">Monitor your integration performance 24/7.</p>
                    </Card>
                    <Card className="p-8 space-y-4 mt-12">
                       <Smartphone className="w-10 h-10 text-purple-500" />
                       <h4 className="font-bold dark:text-white">Mobile Tracking</h4>
-                      <p className="text-sm text-slate-900">Real-time alerts for you and your customers.</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">Real-time alerts for you and your customers.</p>
                    </Card>
                 </div>
                 <div className="absolute -inset-10 bg-primary-500/5 blur-3xl rounded-full -z-10" />
@@ -176,7 +176,7 @@ export const MerchantSolutionsPage = () => {
                       Ready to integrate <br />
                       <span className="text-primary-400">OmorfiHub?</span>
                    </h2>
-                   <p className="text-xl text-slate-800 leading-relaxed">
+                   <p className="text-xl text-slate-300 leading-relaxed">
                       Our API is built by developers, for developers. Get up and running in minutes with our comprehensive SDKs and documentation.
                    </p>
                    <div className="space-y-4">
@@ -198,7 +198,7 @@ export const MerchantSolutionsPage = () => {
                          <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
                          <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
                       </div>
-                      <span className="text-slate-900 text-xs">Merchant Integration</span>
+                      <span className="text-slate-400 text-xs">Merchant Integration</span>
                    </div>
                    <pre className="text-primary-400 overflow-x-auto">
                       <code>{`// Initialize OmorfiHub

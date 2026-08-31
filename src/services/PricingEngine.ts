@@ -17,9 +17,29 @@ export class PricingEngine {
       isTransfer?: boolean;
     }
   ): Promise<PricingBreakdown> {
-    const rule = await pricingRuleRepository.getActiveRuleByCountry(params.country);
+    let rule = await pricingRuleRepository.getActiveRuleByCountry(params.country);
     if (!rule) {
-      throw new Error(`No active pricing rules found for country: ${params.country}`);
+      rule = {
+        id: 'fallback-rule-ng',
+        name: 'Default Pricing Rule',
+        country: params.country || 'Nigeria',
+        maxWeightKg: 100,
+        currency: 'NGN',
+        basePrice: 500,
+        pricePerKg: 200,
+        dimensionMultiplier: 100,
+        distanceBasePrice: 200,
+        pricePerKm: 50,
+        serviceMultipliers: { STANDARD: 1, EXPRESS: 1.5, SAME_DAY: 2 },
+        transferDiscountPercentage: 10,
+        minPrice: 500,
+        taxesPercentage: 7.5,
+        commissions: { platformPercentage: 10, hubPointPercentage: 20, logisticsPercentage: 70 },
+        isActive: true,
+        version: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
     }
 
     // 1. Base Price
