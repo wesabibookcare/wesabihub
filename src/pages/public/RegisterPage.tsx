@@ -91,21 +91,12 @@ const formatAuthError = (err: any): string => {
 };
 
 export const RegisterPage: React.FC = () => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('CUSTOMER');
-  const [logisticsSubRole, setLogisticsSubRole] = useState<UserRole>('LOGISTICS_COMPANY');
-  const [inviteCode, setInviteCode] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [guarantors, setGuarantors] = useState([
-    { fullName: '', phoneNumber: '', relationship: '' },
-    { fullName: '', phoneNumber: '', relationship: '' },
-  ]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const navigate = useNavigate();
@@ -125,35 +116,22 @@ export const RegisterPage: React.FC = () => {
     setError(null);
 
     try {
-      const roleToRegister = selectedRole;
-      const extraData: any = {};
+      // Every user registers with standard Customer access by default
+      const newUser = await userEngine.register(email, password, name, 'CUSTOMER', {});
 
-      if (roleToRegister === 'DISPATCH_RIDER') {
-        extraData.guarantors = guarantors;
-      }
-
-      // 1. Call User Engine for registration
-      // Note: We use registerUser directly or a workflow if it's complex
-      const newUser = await userEngine.register(email, password, name, roleToRegister, extraData);
-
-      if (extraData.invitationId) {
-        await invitationEngine.acceptInvitation(extraData.invitationId, newUser.uid);
-      }
-
-      // 3. Record Consent via Compliance Engine for mandatory policies
-      const mandatoryPolicies = await complianceEngine.getRequiredPoliciesForRole(newUser.role, newUser.country || 'NG');
+      // Record Consent via Compliance Engine for mandatory policies
+      const mandatoryPolicies = await complianceEngine.getRequiredPoliciesForRole('CUSTOMER', newUser.country || 'NG');
       for (const policyKey of mandatoryPolicies) {
         const latest = await complianceEngine.getLatestPolicy(policyKey);
         await complianceEngine.recordConsent(newUser.uid, policyKey, latest?.version || '1.0.0', {
           country: newUser.country,
-          accountType: newUser.role,
+          accountType: 'CUSTOMER',
           registrationMethod: 'EMAIL'
         });
       }
 
       setError(null);
-      const redirectPath = ROLE_REDIRECTS[newUser.role] || '/dashboard';
-      navigate(redirectPath, { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       setError(formatAuthError(err));
       setLoading(false);
@@ -170,19 +148,11 @@ export const RegisterPage: React.FC = () => {
     try {
       const user = await userEngine.signInWithGoogle();
       if (user) {
-        if (selectedRole && selectedRole !== 'CUSTOMER') {
-          const hasRole = user.roles?.includes(selectedRole) || user.role === selectedRole;
-          const isPendingThisRole = (user.requestedRole === selectedRole || user.pendingRoleApplication);
-          if (!hasRole && !isPendingThisRole) {
-            navigate('/profile-completion', { state: { role: selectedRole } });
-            return;
-          }
-        }
         setError(null);
         const redirectPath = ROLE_REDIRECTS[user.role] || '/dashboard';
         navigate(redirectPath, { replace: true });
       } else {
-        navigate('/role-selection');
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(formatAuthError(err));
@@ -194,23 +164,14 @@ export const RegisterPage: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Role-aware background */}
       <div className="absolute inset-0 -z-10 bg-slate-950">
-        <AnimatePresence mode="sync">
-          <motion.div
-            key={selectedRole}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-            className="absolute inset-0"
-          >
-            <img
-              src={ROLE_BACKGROUNDS[selectedRole] || ROLE_BACKGROUNDS.CUSTOMER}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-slate-950/70" />
-          </motion.div>
-        </AnimatePresence>
+        <div className="absolute inset-0">
+          <img
+            src={ROLE_BACKGROUNDS.CUSTOMER}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-slate-950/70" />
+        </div>
       </div>
 
       <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
@@ -251,87 +212,6 @@ export const RegisterPage: React.FC = () => {
                 </Alert>
               )}
 
-              {/* Role Selection Step */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-900 block">Select Your Role</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {roles.map((r) => {
-                    const Icon = r.icon;
-                    const isSelected = selectedRole === r.id;
-                    return (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => setSelectedRole(r.id)}
-                        className={cn(
-                          "p-3 rounded-xl border text-left flex flex-col justify-between h-24 transition-all duration-200 w-full",
-                          isSelected
-                            ? "border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/10"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50 text-slate-800"
-                        )}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <Icon className={cn("w-5 h-5", isSelected ? "text-white" : "text-slate-900")} />
-                          {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
-                        <div>
-                          <div className={cn("text-xs font-semibold", isSelected ? "text-white" : "text-slate-900")}>{r.label}</div>
-                          <div className={cn("text-[10px] truncate leading-tight mt-0.5", isSelected ? "text-slate-300" : "text-slate-900")}>{r.desc}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-
-              {/* Dispatch Rider Guarantors */}
-              {selectedRole === 'DISPATCH_RIDER' && (
-                <div className="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <label className="text-sm font-medium text-slate-900 block text-center border-b pb-2 mb-2">Guarantor Information</label>
-                  {guarantors.map((g, idx) => (
-                    <div key={idx} className="space-y-2 pb-2 border-b border-slate-200 last:border-0 last:pb-0">
-                      <div className="text-[10px] font-bold text-slate-800 uppercase">Guarantor {idx + 1}</div>
-                      <Input
-                        placeholder="Full Name"
-                        value={g.fullName}
-                        onChange={(e) => {
-                          const newG = [...guarantors];
-                          newG[idx].fullName = e.target.value;
-                          setGuarantors(newG);
-                        }}
-                        required
-                        className="h-8 text-xs"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="Phone Number"
-                          inputMode="numeric"
-                          value={g.phoneNumber}
-                          onChange={(e) => {
-                            const newG = [...guarantors];
-                            newG[idx].phoneNumber = e.target.value.replace(/\D/g, '').slice(0, 15);
-                            setGuarantors(newG);
-                          }}
-                          required
-                          className="h-8 text-xs"
-                        />
-                        <Input
-                          placeholder="Relationship"
-                          value={g.relationship}
-                          onChange={(e) => {
-                            const newG = [...guarantors];
-                            newG[idx].relationship = e.target.value;
-                            setGuarantors(newG);
-                          }}
-                          required
-                          className="h-8 text-xs"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
 
               <div className="space-y-1">
                 <label className="text-sm font-bold text-slate-900 uppercase tracking-tight">Full Name</label>
