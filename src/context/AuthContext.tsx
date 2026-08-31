@@ -45,13 +45,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    if (user && user.roles && user.roles.length > 0) {
-        const savedRole = localStorage.getItem('activeRole');
-        if (savedRole && user.roles.includes(savedRole as UserRole)) {
-            setActiveRoleState(savedRole as UserRole);
-        } else {
-            setActiveRoleState(user.roles[0]);
-        }
+    if (user) {
+      const userRoles = Array.from(new Set([
+        ...(user.roles || [user.role || 'CUSTOMER']),
+        'CUSTOMER' as UserRole
+      ]));
+      const savedRole = localStorage.getItem('activeRole');
+      if (savedRole && userRoles.includes(savedRole as UserRole)) {
+        setActiveRoleState(savedRole as UserRole);
+      } else {
+        const defaultRole = user.role || userRoles[0] || 'CUSTOMER';
+        setActiveRoleState(defaultRole);
+        localStorage.setItem('activeRole', defaultRole);
+      }
+    } else {
+      setActiveRoleState(null);
+      setImpersonatedRole(null);
+      localStorage.removeItem('activeRole');
     }
   }, [user]);
 
@@ -169,8 +179,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } else {
         setUser(null);
+        setFbUser(null);
         setProfileMissing(false);
         setLoading(false);
+        setActiveRoleState(null);
+        setImpersonatedRole(null);
+        localStorage.removeItem('activeRole');
       }
     });
 
@@ -196,6 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const effectiveRole = impersonatedRole || user?.role || null;
+  const isSuperAdminUser = (Array.isArray(user?.roles) && user?.roles.includes('SUPER_ADMIN')) || user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'wesabibookcare@gmail.com';
 
   const value = {
     user,
@@ -205,7 +220,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     impersonatedRole,
     activeRole,
     setActiveRole,
-    isAdmin: effectiveRole === 'SUPER_ADMIN' || effectiveRole === 'OPERATIONS_MANAGER',
+    isAdmin: isSuperAdminUser || effectiveRole === 'SUPER_ADMIN' || effectiveRole === 'OPERATIONS_MANAGER',
     isMerchant: effectiveRole === 'MERCHANT' || effectiveRole === 'CENTER_OWNER',
     logout,
     hasRole,

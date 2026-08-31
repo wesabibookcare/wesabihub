@@ -58,26 +58,87 @@ export const ApprovalWorkflowTab: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
+    let rawApps: RoleApplication[] = [];
+    let pendingUsersList: any[] = [];
+
+    const mergeApplications = (appsList: RoleApplication[], usersList: any[]) => {
+      const existingUserIds = new Set(appsList.map((a) => a.userId));
+      const syntheticApps: RoleApplication[] = usersList
+        .filter(
+          (u) =>
+            u.uid &&
+            !existingUserIds.has(u.uid) &&
+            (u.pendingRoleApplication === true ||
+              (u.status &&
+                ['PENDING', 'SUBMITTED', 'UNDER_REVIEW', 'EMAIL_UNVERIFIED'].includes(
+                  u.status
+                )) ||
+              (u.requestedRole && u.requestedRole !== 'CUSTOMER') ||
+              (u.role && u.role !== 'CUSTOMER'))
+        )
+        .map((u) => {
+          const docs = Object.keys(u)
+            .filter((k) => k.startsWith('document_'))
+            .map((k) => (u as any)[k]);
+          return {
+            id: `APP-USER-${u.uid}`,
+            userId: u.uid,
+            role: u.requestedRole || u.role || 'MERCHANT',
+            status:
+              u.status === 'UNDER_REVIEW'
+                ? 'UNDER_REVIEW'
+                : u.status === 'REJECTED'
+                ? 'REJECTED'
+                : 'SUBMITTED',
+            data: {
+              email: u.email,
+              displayName: u.displayName,
+              phone: u.phoneNumber || u.phone || '',
+              address: u.address || '',
+              city: u.city || '',
+              state: u.state || '',
+              nin: u.nin || '',
+              cac: u.cac || '',
+              ...u
+            },
+            documents: docs,
+            submittedAt: u.createdAt || new Date().toISOString(),
+            createdAt: u.createdAt || new Date().toISOString(),
+            updatedAt: u.updatedAt || new Date().toISOString()
+          } as RoleApplication;
+        });
+
+      setApplications([...appsList, ...syntheticApps]);
+      setLoading(false);
+    };
+
     // Subscribe to role applications
-    const unsubscribe = roleApplicationRepository.subscribeToQuery([], (allApps) => {
-      setApplications(allApps);
+    const unsubscribeApps = roleApplicationRepository.subscribeToQuery([], (allApps) => {
+      rawApps = allApps;
+      mergeApplications(rawApps, pendingUsersList);
+    });
+
+    // Subscribe to users collection to capture all pending applicants
+    const unsubscribeUsers = userRepository.subscribeToQuery([], (users) => {
+      pendingUsersList = users;
+      mergeApplications(rawApps, pendingUsersList);
     });
 
     // Subscribe to ID Verifications
     const unsubscribeIdScans = idVerificationRepository.subscribeToQuery([], (scans) => {
       setIdScans(scans);
-      setLoading(false);
     });
 
     // Fetch dynamic requirements to humanize document labels
-    documentRequirementRepository.getAll().then(data => {
+    documentRequirementRepository.getAll().then((data) => {
       setDocReqs(data);
     });
 
     fetchProfileChanges();
 
     return () => {
-      unsubscribe();
+      unsubscribeApps();
+      unsubscribeUsers();
       unsubscribeIdScans();
     };
   }, []);
@@ -114,10 +175,18 @@ export const ApprovalWorkflowTab: React.FC = () => {
   const handleSaveNotes = async () => {
     if (!selectedApp) return;
     try {
-      await roleApplicationRepository.update(selectedApp.id, {
-        reviewNotes: internalNotes,
-        updatedAt: new Date().toISOString()
-      });
+      if (selectedApp.id.startsWith('APP-USER-')) {
+        await roleApplicationRepository.create(selectedApp.id, {
+          ...selectedApp,
+          reviewNotes: internalNotes,
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        await roleApplicationRepository.update(selectedApp.id, {
+          reviewNotes: internalNotes,
+          updatedAt: new Date().toISOString()
+        });
+      }
       setSelectedApp(prev => prev ? { ...prev, reviewNotes: internalNotes } : null);
       toast.success('Internal review notes saved');
     } catch (err) {
@@ -129,11 +198,20 @@ export const ApprovalWorkflowTab: React.FC = () => {
   const handleApprove = async (app: RoleApplication) => {
     setProcessingId(app.id);
     try {
-      await roleApplicationRepository.update(app.id, {
-        status: 'APPROVED',
-        reviewNotes: internalNotes,
-        updatedAt: new Date().toISOString()
-      });
+      if (app.id.startsWith('APP-USER-')) {
+        await roleApplicationRepository.create(app.id, {
+          ...app,
+          status: 'APPROVED',
+          reviewNotes: internalNotes,
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        await roleApplicationRepository.update(app.id, {
+          status: 'APPROVED',
+          reviewNotes: internalNotes,
+          updatedAt: new Date().toISOString()
+        });
+      }
 
       const isDispatch = app.role === 'DISPATCH_RIDER';
       const isLogisticsCompany = app.role === 'LOGISTICS_COMPANY';
@@ -211,11 +289,20 @@ export const ApprovalWorkflowTab: React.FC = () => {
     }
     setProcessingId(app.id);
     try {
-      await roleApplicationRepository.update(app.id, {
-        status: 'REJECTED',
-        reviewNotes: `${internalNotes}\n[Rejection Reason]: ${rejectionReason}`,
-        updatedAt: new Date().toISOString()
-      });
+      if (app.id.startsWith('APP-USER-')) {
+        await roleApplicationRepository.create(app.id, {
+          ...app,
+          status: 'REJECTED',
+          reviewNotes: `${internalNotes}\n[Rejection Reason]: ${rejectionReason}`,
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        await roleApplicationRepository.update(app.id, {
+          status: 'REJECTED',
+          reviewNotes: `${internalNotes}\n[Rejection Reason]: ${rejectionReason}`,
+          updatedAt: new Date().toISOString()
+        });
+      }
 
       // Only downgrade the account itself if this application was the
       // gate on their initial access (status still UNDER_REVIEW). An

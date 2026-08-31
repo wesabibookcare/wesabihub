@@ -165,6 +165,13 @@ class AuthService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+
+      await updateDoc(doc(db, 'users', fbUser.uid), {
+        pendingRoleApplication: true,
+        requestedRole: safeRole,
+        status: 'PENDING',
+        updatedAt: serverTimestamp()
+      }).catch(e => console.warn('Failed to update pending flag on user:', e));
     }
 
     await sendEmailVerification(fbUser);
@@ -405,6 +412,24 @@ class AuthService {
 
   async logout(): Promise<void> {
     const uid = auth.currentUser?.uid;
+    // Clear all account-specific session items from localStorage to prevent state collisions across logins
+    try {
+      localStorage.removeItem('activeRole');
+      localStorage.removeItem('selected_hub');
+      localStorage.removeItem('queued_parcel_releases');
+      Object.keys(localStorage).forEach((key) => {
+        if (
+          key.toLowerCase().includes('wesabi') ||
+          key.toLowerCase().includes('omorfi') ||
+          key.toLowerCase().includes('role')
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.warn('Failed to clear localStorage on logout:', e);
+    }
+
     await signOut(auth);
     if (uid) {
       await this.logAudit(uid, 'LOGOUT');
