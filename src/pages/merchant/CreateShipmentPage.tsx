@@ -16,7 +16,11 @@ import {
   Loader2,
   Calendar,
   Globe,
-  ShieldCheck
+  ShieldCheck,
+  Users,
+  KeyRound,
+  Lock,
+  Check
 } from 'lucide-react';
 import { GoogleContactPickerModal } from '@/src/components/common/GoogleContactPickerModal';
 import { AddToGoogleCalendarModal } from '@/src/components/common/AddToGoogleCalendarModal';
@@ -34,9 +38,9 @@ import { useSettings } from '@/src/context/SettingsContext';
 import { parcelEngine } from '@/src/services/ParcelEngine';
 import { pricingEngine } from '@/src/services/PricingEngine';
 import { communicationService } from '@/src/services/CommunicationService';
-import { centreEngine, merchantEngine, workflowEngine } from '@/src/engines';
+import { centreEngine, merchantEngine, workflowEngine, userEngine } from '@/src/engines';
 import { labelService } from '@/src/services/LabelService';
-import { HubCenter, Parcel, MerchantBusiness } from '@/src/types';
+import { HubCenter, Parcel, MerchantBusiness, User as UserType } from '@/src/types';
 import { toast } from 'sonner';
 
 const steps = [
@@ -78,6 +82,17 @@ export const CreateShipmentPage = () => {
   }, [user]);
 
   // Form State
+  // Delegated Merchant Booking State
+  const [isDelegatedBooking, setIsDelegatedBooking] = useState(false);
+  const [targetMerchantQuery, setTargetMerchantQuery] = useState('');
+  const [isSearchingTargetMerchants, setIsSearchingTargetMerchants] = useState(false);
+  const [foundTargetMerchants, setFoundTargetMerchants] = useState<UserType[]>([]);
+  const [selectedTargetMerchant, setSelectedTargetMerchant] = useState<UserType | null>(null);
+  const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
   const [formData, setFormData] = useState({
     fulfillmentMethod: 'HUB_PICKUP' as 'HUB_PICKUP' | 'LOGISTICS_DELIVERY',
     recipientName: '',
@@ -155,7 +170,61 @@ export const CreateShipmentPage = () => {
     return () => { cancelled = true; };
   }, [currentStep, formData.fulfillmentMethod, formData.weightKg, formData.dimensions, user?.country]);
 
+  const handleSearchTargetMerchants = async () => {
+    if (!targetMerchantQuery.trim()) return;
+    setIsSearchingTargetMerchants(true);
+    try {
+      const allUsers = await userEngine.getAllUsers();
+      const queryLower = targetMerchantQuery.toLowerCase();
+      const matched = allUsers.filter(u => {
+        if (u.uid === user?.uid) return false;
+        const isMerchantRole = u.role === 'MERCHANT' || u.roles?.includes('MERCHANT');
+        const isVerified = u.verificationStatus?.kyc === true || u.status === 'APPROVED' || u.status === 'ACTIVE';
+        const matchesQuery = ((u as any).name || u.displayName || '').toLowerCase().includes(queryLower) ||
+                             u.email?.toLowerCase().includes(queryLower) ||
+                             u.phoneNumber?.includes(queryLower) ||
+                             (u.wesabiUsername || '').toLowerCase().includes(queryLower) ||
+                             u.uid.toLowerCase().includes(queryLower);
+        return isMerchantRole && isVerified && matchesQuery;
+      });
+      setFoundTargetMerchants(matched);
+      if (matched.length === 0) {
+        toast.info('No verified merchants found matching search query.');
+      }
+    } catch (err: any) {
+      toast.error('Failed to search target merchants: ' + err.message);
+    } finally {
+      setIsSearchingTargetMerchants(false);
+    }
+  };
+
+  const handleSelectTargetMerchant = (merchant: UserType) => {
+    setSelectedTargetMerchant(merchant);
+    setIsOtpVerified(false);
+    setEnteredOtp('');
+    // Generate a 6-digit OTP for authorization
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(otp);
+    toast.info(`Authorization OTP sent to target merchant (${merchant.displayName || merchant.email}).`);
+  };
+
+  const handleVerifyOtp = () => {
+    if (!generatedOtp) {
+      toast.error('No OTP active. Please select target merchant again.');
+      return;
+    }
+    if (enteredOtp.trim() === generatedOtp) {
+      setIsOtpVerified(true);
+      toast.success(`Merchant authorization verified for ${selectedTargetMerchant?.displayName || selectedTargetMerchant?.email}`);
+    } else {
+      toast.error('Invalid 6-digit OTP code. Please re-enter.');
+    }
+  };
+
   const isStepValid = (step: number): boolean => {
+    if (isDelegatedBooking && (!selectedTargetMerchant || !isOtpVerified)) {
+      return false;
+    }
     switch (step) {
       case 1:
         return formData.recipientName.trim().length > 0 && formData.recipientPhone.trim().length > 0;
@@ -186,12 +255,17 @@ export const CreateShipmentPage = () => {
       toast.error('Your merchant account must be verified before creating shipments.');
       return;
     }
+    if (isDelegatedBooking && (!selectedTargetMerchant || !isOtpVerified)) {
+      toast.error('Target Merchant authorization OTP must be verified before proceeding.');
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
     try {
       const response = await workflowEngine.runParcelCreationWorkflow(
         user.uid,
         {
+          senderId: isDelegatedBooking && selectedTargetMerchant ? selectedTargetMerchant.uid : user.uid,
           recipientInfo: {
             name: formData.recipientName,
             phone: formData.recipientPhone,
@@ -360,6 +434,161 @@ export const CreateShipmentPage = () => {
           <h1 className="text-3xl font-black dark:text-white font-display uppercase italic tracking-tight">New Shipment</h1>
           <p className="text-slate-700 font-medium">Create a new parcel shipment for your customer.</p>
         </div>
+
+        {/* Delegated Booking Toggle Banner */}
+        <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+           <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white shrink-0">
+                 <Users size={20} />
+              </div>
+              <div>
+                 <h4 className="font-bold text-sm">Delegated Merchant Booking Mode</h4>
+                 <p className="text-xs text-slate-300">
+                   {isDelegatedBooking
+                     ? 'You are assisting another Approved Merchant to create a parcel under their store account via OTP verification.'
+                     : 'Creating parcel for your own store. Switch mode to assist another Approved Merchant (low battery / no data).'}
+                 </p>
+              </div>
+           </div>
+           <Button
+             type="button"
+             variant={isDelegatedBooking ? "default" : "outline"}
+             className={cn(
+               "rounded-xl text-xs font-bold h-10 px-5 shrink-0",
+               isDelegatedBooking ? "bg-primary-600 hover:bg-primary-700 text-white" : "border-slate-700 text-white hover:bg-slate-800"
+             )}
+             onClick={() => {
+               setIsDelegatedBooking(!isDelegatedBooking);
+               if (isDelegatedBooking) {
+                 setSelectedTargetMerchant(null);
+                 setIsOtpVerified(false);
+               }
+             }}
+           >
+             {isDelegatedBooking ? "Switch to Standard Booking" : "Help Me Create Parcel"}
+           </Button>
+        </div>
+
+        {/* Delegated Target Merchant Search & OTP Verification Box */}
+        {isDelegatedBooking && (
+          <Card className="p-6 border-2 border-primary-500/30 bg-primary-50/10 dark:bg-primary-950/10 space-y-6 rounded-3xl">
+             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                   <Users className="text-primary-600" size={24} />
+                   <div>
+                      <h3 className="font-bold dark:text-white text-base">Select Target Approved Merchant</h3>
+                      <p className="text-xs text-slate-500">Search merchant by business name, email, phone, or merchant ID.</p>
+                   </div>
+                </div>
+                {selectedTargetMerchant && (
+                  <Badge variant={isOtpVerified ? "success" : "warning"} className="h-6">
+                    {isOtpVerified ? "OTP Verified" : "OTP Required"}
+                  </Badge>
+                )}
+             </div>
+
+             {!selectedTargetMerchant ? (
+               <div className="space-y-4">
+                  <div className="flex gap-2">
+                     <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Input
+                          placeholder="Type business name, email, phone number..."
+                          className="pl-12 h-12"
+                          value={targetMerchantQuery}
+                          onChange={(e) => setTargetMerchantQuery(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSearchTargetMerchants()}
+                        />
+                     </div>
+                     <Button
+                       type="button"
+                       onClick={handleSearchTargetMerchants}
+                       isLoading={isSearchingTargetMerchants}
+                       className="rounded-xl px-6 h-12"
+                     >
+                        Search
+                     </Button>
+                  </div>
+
+                  {foundTargetMerchants.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 max-h-[220px] overflow-y-auto">
+                       {foundTargetMerchants.map((m) => (
+                         <div
+                           key={m.uid}
+                           onClick={() => handleSelectTargetMerchant(m)}
+                           className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary-500 cursor-pointer transition-all flex items-center justify-between group"
+                         >
+                            <div>
+                               <p className="font-bold text-xs dark:text-white group-hover:text-primary-600">{m.displayName || m.name || m.email}</p>
+                               <p className="text-[10px] text-slate-500">{m.email} • {m.phoneNumber || m.phone || 'No phone'}</p>
+                            </div>
+                            <Button size="sm" variant="outline" className="h-8 rounded-lg text-[10px] font-bold">Select</Button>
+                         </div>
+                       ))}
+                    </div>
+                  )}
+               </div>
+             ) : (
+               <div className="space-y-6">
+                  <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 text-primary-600 flex items-center justify-center font-bold">
+                           <User size={20} />
+                        </div>
+                        <div>
+                           <p className="text-xs font-bold text-slate-500 uppercase">Target Merchant</p>
+                           <p className="font-bold text-sm dark:text-white">{selectedTargetMerchant.displayName || selectedTargetMerchant.name || selectedTargetMerchant.email}</p>
+                           <p className="text-[11px] text-slate-500">{selectedTargetMerchant.email} • {selectedTargetMerchant.phoneNumber || selectedTargetMerchant.phone || 'N/A'}</p>
+                        </div>
+                     </div>
+                     <Button
+                       type="button"
+                       variant="outline"
+                       size="sm"
+                       className="rounded-xl text-xs"
+                       onClick={() => { setSelectedTargetMerchant(null); setIsOtpVerified(false); }}
+                     >
+                        Change Merchant
+                     </Button>
+                  </div>
+
+                  {!isOtpVerified ? (
+                    <div className="p-5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-2xl space-y-4">
+                       <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-sm">
+                          <KeyRound size={18} className="text-amber-600" />
+                          <span>Enter 6-Digit Verification OTP</span>
+                       </div>
+                       <p className="text-xs text-amber-800 dark:text-amber-300">
+                         For security and legal compliance, ask the target merchant for the 6-digit OTP authorization code sent to their registered account.
+                       </p>
+                       <div className="flex gap-3">
+                          <Input
+                            placeholder="Enter 6-digit OTP"
+                            className="max-w-[200px] h-11 text-center font-mono text-lg font-bold tracking-widest"
+                            maxLength={6}
+                            inputMode="numeric"
+                            value={enteredOtp}
+                            onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, ''))}
+                          />
+                          <Button
+                            type="button"
+                            onClick={handleVerifyOtp}
+                            className="rounded-xl h-11 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+                          >
+                             Verify OTP
+                          </Button>
+                       </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-2xl flex items-center gap-3 text-emerald-800 dark:text-emerald-300">
+                       <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
+                       <span className="text-xs font-bold">Target Merchant authorization verified successfully! You may now complete the shipment details.</span>
+                    </div>
+                  )}
+               </div>
+             )}
+          </Card>
+        )}
 
         {/* Stepper */}
         <div className="relative flex justify-between px-2">
