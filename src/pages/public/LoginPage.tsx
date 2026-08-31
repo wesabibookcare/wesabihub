@@ -143,10 +143,10 @@ export const LoginPage: React.FC = () => {
             <Package className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white font-sans drop-shadow">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-slate-900 dark:text-white font-sans drop-shadow">
           Welcome Back
         </h2>
-        <p className="mt-2 text-center text-sm text-slate-200 font-medium drop-shadow">
+        <p className="mt-2 text-center text-sm text-slate-700 dark:text-slate-200 font-medium drop-shadow">
           Sign in to your OmorfiHub account
         </p>
       </div>
