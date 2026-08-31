@@ -249,7 +249,7 @@ export const CustomerDashboard = () => {
                              </div>
                           </div>
                           <div className="text-right hidden sm:block">
-                             <p className="text-xs text-slate-800 mb-1">{new Date(shipment.createdAt).toLocaleDateString()}</p>
+                             <p className="text-xs text-slate-700 dark:text-slate-300 mb-1">{new Date(shipment.createdAt).toLocaleDateString()}</p>
                              <Badge
                                variant={
                                  shipment.status === 'DELIVERED' ? 'success' :
