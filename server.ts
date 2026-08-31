@@ -1903,6 +1903,22 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
+  // Universal Automated Government ID Document Scanning & Cross-Referencing
+  app.post("/api/ai/scan-id", requireAuth(), async (req, res) => {
+    try {
+      const { mediaBase64, mimeType, expectedName } = req.body;
+      if (!mediaBase64) {
+        return res.status(400).json({ error: "mediaBase64 is required." });
+      }
+      const callerName = req.authUser!.displayName || expectedName || "";
+      const result = await scanIdDocument({ mediaBase64, mimeType: mimeType || "image/jpeg", expectedName: callerName, db: getDb() });
+      res.json(result);
+    } catch (error: any) {
+      console.error("AI ID document scan failed:", error);
+      res.status(500).json({ error: error.message || "ID scan failed" });
+    }
+  });
+
   // Universal Gemini AI Image Generation with Aspect Ratio
   app.post("/api/ai/generate-image", requireAuth(), async (req, res) => {
     try {
