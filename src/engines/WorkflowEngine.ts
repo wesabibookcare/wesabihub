@@ -127,6 +127,11 @@ class WorkflowEngine {
       const isHubOwner = user.role === 'CENTER_OWNER' || (user.role as string) === 'HUB_OWNER' || user.roles?.includes('CENTER_OWNER');
       const isHubStaff = user.role === 'CENTER_STAFF' || (user.role as string) === 'POINT_STAFF' || user.roles?.includes('CENTER_STAFF');
       const isHub = isHubOwner || isHubStaff;
+      const isMerchantCreator = user.role === 'MERCHANT' || user.roles?.includes('MERCHANT');
+      const isAdminUser = user.role === 'SUPER_ADMIN' || user.roles?.includes('SUPER_ADMIN');
+
+      // Delegated merchant booking: if senderId is specified and differs from creator's UID
+      const targetMerchantId = parcelData.senderId && parcelData.senderId !== user.uid ? parcelData.senderId : null;
 
       if (isHub) {
         if (isHubStaff) {
@@ -136,7 +141,7 @@ class WorkflowEngine {
           }
         }
 
-        const merchantId = parcelData.senderId;
+        const merchantId = targetMerchantId || parcelData.senderId;
         if (!merchantId) {
           return createWOSResponse(false, 'Merchant senderId is required when a Hub creates a shipment on behalf of a merchant.');
         }
@@ -153,18 +158,30 @@ class WorkflowEngine {
         }
         senderUser = merchant;
       } else {
-        const isMerchant = user.role === 'MERCHANT' || user.roles?.includes('MERCHANT');
-        const isAdminUser = user.role === 'SUPER_ADMIN' || user.roles?.includes('SUPER_ADMIN');
-
-        if (!isMerchant && !isAdminUser) {
+        if (!isMerchantCreator && !isAdminUser) {
           return createWOSResponse(false, 'Only verified Merchants or authorized Hub Points (on behalf of Merchants) can create shipments.');
         }
 
-        if (isMerchant) {
+        if (isMerchantCreator) {
           const isMerchantVerified = user.verificationStatus?.kyc === true || user.status === 'APPROVED' || user.status === 'ACTIVE';
           if (!isMerchantVerified) {
             return createWOSResponse(false, 'Your merchant account must be verified before you can create a shipment.');
           }
+        }
+
+        if (targetMerchantId) {
+          const merchant = await userEngine.getUser(targetMerchantId);
+          if (!merchant) {
+            return createWOSResponse(false, 'Target Merchant account not found.');
+          }
+          if (merchant.role !== 'MERCHANT' && !merchant.roles?.includes('MERCHANT')) {
+            return createWOSResponse(false, 'Delegated booking is strictly reserved for verified Merchants. Target account is not a Merchant.');
+          }
+          const isMerchantVerified = merchant.verificationStatus?.kyc === true || merchant.status === 'APPROVED' || merchant.status === 'ACTIVE';
+          if (!isMerchantVerified) {
+            return createWOSResponse(false, 'The target Merchant profile is not verified or active.');
+          }
+          senderUser = merchant;
         }
       }
 
