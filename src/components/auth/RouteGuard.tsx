@@ -51,6 +51,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
 export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { fbUser, user, activeRole, loading, profileMissing } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -68,8 +69,11 @@ export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ child
       }
       return <Navigate to="/role-selection" replace />;
     }
+
+    const isSuperAdminUser = (Array.isArray(user?.roles) && user?.roles.includes('SUPER_ADMIN')) || user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'wesabibookcare@gmail.com';
+
     const redirectPath =
-      activeRole === 'SUPER_ADMIN' || activeRole === 'OPERATIONS_MANAGER' ? '/admin' :
+      isSuperAdminUser || activeRole === 'SUPER_ADMIN' || activeRole === 'OPERATIONS_MANAGER' ? '/admin' :
       activeRole === 'MERCHANT' ? '/merchant/dashboard' :
       activeRole === 'CENTER_OWNER' || activeRole === 'CENTER_STAFF' ? '/point/dashboard/owner' :
       activeRole === 'LOGISTICS_OWNER' || activeRole === 'LOGISTICS_COMPANY' || activeRole === 'DRIVER' ? '/logistics/dashboard/owner' :
@@ -105,7 +109,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   }
 
   // Super Admin account or active Super Admin impersonation bypasses restriction checks
-  const isSuperAdminUser = (Array.isArray(user.roles) && user.roles.includes('SUPER_ADMIN')) || user.role === 'SUPER_ADMIN' || user.email === 'wesabibookcare@gmail.com';
+  const isSuperAdminUser = (Array.isArray(user.roles) && user.roles.includes('SUPER_ADMIN')) || user.role === 'SUPER_ADMIN' || user.email?.toLowerCase() === 'wesabibookcare@gmail.com';
   if (isSuperAdminUser || (impersonatedRole && isSuperAdminUser)) {
     return <>{children}</>;
   }

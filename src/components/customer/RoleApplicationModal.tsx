@@ -4,6 +4,7 @@ import { Button } from '@/src/components/ui/Button';
 import { Input } from '@/src/components/ui/Input';
 import { useAuth } from '@/src/context/AuthContext';
 import { roleApplicationRepository } from '@/src/services/db/RoleApplicationRepository';
+import { userRepository } from '@/src/services/db/UserRepository';
 import { RoleApplication, UserRole } from '@/src/types';
 import { toast } from 'sonner';
 import { cn } from '@/src/lib/utils';
@@ -245,6 +246,12 @@ export const RoleApplicationModal: React.FC<RoleApplicationModalProps> = ({
       } as RoleApplication;
 
       await roleApplicationRepository.create(appId, application);
+      await userRepository.update(userId, {
+        pendingRoleApplication: true,
+        requestedRole: role,
+        status: 'UNDER_REVIEW',
+        updatedAt: new Date().toISOString()
+      });
       toast.success('Application submitted! We will notify you once it has been reviewed.');
       onSubmitted();
       onClose();

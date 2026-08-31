@@ -12,14 +12,29 @@ export const ProfileMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleRoleSwitch = (role: UserRole) => {
     setActiveRole(role);
     import('@/src/services/db/AuditRepository').then(({ auditRepository }) => {
+      if (user?.id) {
         auditRepository.logAction(
-          user!.id,
+          user.id,
           'ROLE_SWITCH',
           { targetRole: role },
           'auth'
         );
+      }
     });
-  }
+
+    const redirectPath =
+      role === 'SUPER_ADMIN' || role === 'OPERATIONS_MANAGER' ? '/admin' :
+      role === 'MERCHANT' ? '/merchant/dashboard' :
+      role === 'CENTER_OWNER' ? '/point/dashboard/owner' :
+      role === 'CENTER_STAFF' ? '/point/dashboard/staff' :
+      role === 'LOGISTICS_COMPANY' || role === 'LOGISTICS_OWNER' ? '/logistics/dashboard/owner' :
+      role === 'DRIVER' ? '/logistics/dashboard/staff' :
+      role === 'DISPATCH_RIDER' ? '/dispatch/dashboard' :
+      '/dashboard';
+
+    navigate(redirectPath);
+    onClose();
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -86,15 +101,18 @@ export const ProfileMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <HelpCircle size={16} /> Help
         </Button>
 
-        {user?.roles && user.roles.length > 1 && (
-            <div className="border-t mt-1 pt-1">
-                <p className="text-[10px] text-slate-500 px-3 py-1 font-black uppercase tracking-wider">Switch Role</p>
-                {user.roles.map(role => (
-                    <Button key={role} variant={activeRole === role ? 'secondary' : 'ghost'} className="w-full justify-start gap-2 text-xs" onClick={() => handleRoleSwitch(role)}>
-                        {role}
-                    </Button>
-                ))}
-            </div>
+        {user && (
+          <div className="border-t mt-1 pt-1">
+            <p className="text-[10px] text-slate-500 px-3 py-1 font-black uppercase tracking-wider">Switch Role</p>
+            {Array.from(new Set([
+              ...(user.roles || [user.role || 'CUSTOMER']),
+              'CUSTOMER' as UserRole
+            ])).map(role => (
+              <Button key={role} variant={activeRole === role ? 'secondary' : 'ghost'} className="w-full justify-start gap-2 text-xs" onClick={() => handleRoleSwitch(role)}>
+                {role === 'DISPATCH_RIDER' ? 'SendOmorfi' : role.replace(/_/g, ' ')}
+              </Button>
+            ))}
+          </div>
         )}
 
         {impersonatedRole && (
