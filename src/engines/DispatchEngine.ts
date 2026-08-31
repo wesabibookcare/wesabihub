@@ -44,6 +44,24 @@ class DispatchEngine {
     const riders = await userRepository.getByRole('DISPATCH_RIDER');
     return riders.filter(r => r.status === 'ACTIVE' && r.isAvailable);
   }
+
+  /**
+   * Calculates dynamic payout for a SendOmorfi rider based on delivery base fare
+   * and admin-configured transit mode payout multipliers.
+   */
+  calculatePayout(baseFare: number, transitMode?: string, rates?: { onFootMultiplier?: number; bicycleMultiplier?: number; otherVehiclesMultiplier?: number }): number {
+    const validBaseFare = Math.max(0, baseFare || 0);
+    const mode = transitMode || 'On foot';
+
+    let multiplier = rates?.onFootMultiplier ?? 1.0;
+    if (mode === 'Bicycle') {
+      multiplier = rates?.bicycleMultiplier ?? 1.25;
+    } else if (mode === 'Other Vehicles') {
+      multiplier = rates?.otherVehiclesMultiplier ?? 1.6;
+    }
+
+    return Math.round(validBaseFare * multiplier);
+  }
 }
 
 export const dispatchEngine = DispatchEngine.getInstance();

@@ -180,10 +180,10 @@ export const BecomeDispatchPartnerPage = () => {
 
                 <div className="space-y-6">
                   {[
-                    { title: '1. Register & Submit Application', desc: 'Create your account and apply for the Dispatch Rider role.' },
-                    { title: '2. Complete Core KYC Checklist', desc: 'Provide your vehicle documents, emergency contacts, guarantors declaration, national ID, and Class-A riders license.' },
-                    { title: '3. Verification & Academy Training', desc: 'Our regional operations managers review your files. Take mandatory courses inside the Training Academy.' },
-                    { title: '4. Sign Partner Agreement', desc: 'E-sign the latest OmorfiHubDispatch Partner Agreement v2.4 to generate your digital ID card with secure field QR code verification.' }
+                    { title: '1. Register & Submit Application', desc: 'Create your account and select SendOmorfi as your role with your preferred transit mode (On foot, Bicycle, or Other Vehicles).' },
+                    { title: '2. Complete Core Verification & Live Face Scan', desc: 'Provide compulsory NIN or Voters Card, live camera face scan, guarantor details, and driver license/vehicle plate numbers if using motorized vehicles.' },
+                    { title: '3. Verification & Academy Training', desc: 'Our regional verification team reviews your documents. Complete brief training modules inside your SendOmorfi Terminal.' },
+                    { title: '4. Digital ID Activation & Earnings', desc: 'Receive your verified SendOmorfi Digital ID card with QR code, access available hub delivery routes, and earn payout settlements.' }
                   ].map((step, sIdx) => (
                     <div key={sIdx} className="flex gap-4">
                       <div className="shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white font-black text-xs flex items-center justify-center">
@@ -191,7 +191,7 @@ export const BecomeDispatchPartnerPage = () => {
                       </div>
                       <div>
                         <h4 className="font-bold text-slate-900 dark:text-white text-base">{step.title}</h4>
-                        <p className="text-xs text-slate-900 font-medium mt-1">{step.desc}</p>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-1">{step.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -205,13 +205,13 @@ export const BecomeDispatchPartnerPage = () => {
 
                 <div className="space-y-4">
                   {[
-                    'Government-issued National Identity Number (NIN)',
-                    'Valid Rider Driver Licence (Class A Minimum)',
-                    'Vehicle Roadworthiness & Ownership Documents',
-                    'Signed Guarantor Declaration Verification Form',
+                    'Compulsory Live Face Camera Scan (All transit modes)',
+                    'Government-issued NIN or Voters Card (All transit modes)',
+                    'Primary & Secondary Guarantor Details (All transit modes)',
                     'Active Commercial Bank Settlement Account details',
-                    'Smartphone with GPS and scanning camera functionality',
-                    'Zero operational violations record'
+                    'Driver Licence & Plate Registration (Required ONLY for Motorized Vehicles)',
+                    'Smartphone with GPS and camera capability',
+                    'Clean delivery record'
                   ].map((req, rIdx) => (
                     <div key={rIdx} className="flex items-center gap-3">
                       <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
