@@ -293,18 +293,73 @@ export async function getChatResponse(
       }
   }
 
-  // 3. Fetch Super Admin real-time snapshot if applicable
+  // 3. Fetch dynamic parcel live tracking information if a tracking code is mentioned
+  let liveParcelContext = "";
+  if (db && message) {
+    const trackingMatch = message.match(/(?:WSH|LOG|SP)-[A-Za-z0-9-]+/i);
+    if (trackingMatch) {
+      const trackingCode = trackingMatch[0].toUpperCase();
+      try {
+        const [shipmentSnap, trackingEventsSnap] = await Promise.all([
+          db.collection('shipments').where('trackingNumber', '==', trackingCode).limit(1).get(),
+          db.collection('trackingEvents').where('parcelId', '==', trackingCode).get().catch(() => null)
+        ]);
+
+        if (!shipmentSnap.empty) {
+          const parcelData = shipmentSnap.docs[0].data();
+          const userId = context?.user?.uid || '';
+          const userPhone = context?.user?.phone || '';
+          const userEmail = verifiedEmail || context?.user?.email || '';
+
+          // Verify access rights: Customer can only view parcels belonging to them
+          const isSender = parcelData.senderId === userId || parcelData.senderEmail === userEmail;
+          const isRecipient = parcelData.recipientInfo?.email === userEmail || parcelData.recipientInfo?.phone === userPhone;
+          const isStaff = ['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'OPERATIONS_ADMIN', 'CENTER_OWNER', 'CENTER_STAFF', 'DISPATCH_RIDER'].includes(verifiedRole);
+
+          if (isStaff || isSender || isRecipient) {
+            let latestEvent = "Package registered and awaiting drop-off.";
+            if (trackingEventsSnap && !trackingEventsSnap.empty) {
+              const events = trackingEventsSnap.docs.map((d: any) => d.data());
+              events.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+              if (events[0]) {
+                latestEvent = `[${events[0].status}] ${events[0].remarks || ''} at ${events[0].location || 'Hub'} (${new Date(events[0].timestamp).toLocaleTimeString()})`;
+              }
+            }
+            liveParcelContext = `
+              --- LIVE DATABASE PARCEL TRACKING FOUND ---
+              Tracking Number: ${parcelData.trackingNumber || trackingCode}
+              Status: ${parcelData.status}
+              Origin Hub: ${parcelData.originCenterId || 'N/A'}
+              Destination Hub: ${parcelData.destinationCenterId || 'N/A'}
+              Recipient Name: ${parcelData.recipientInfo?.name || 'Customer'}
+              Latest Event: ${latestEvent}
+            `;
+          } else {
+            liveParcelContext = `
+              --- TRACKING SECURITY RESTRICTION ---
+              Tracking number ${trackingCode} was found, but it belongs to another account. You must politely decline providing details to unauthorized callers for privacy and security.
+            `;
+          }
+        }
+      } catch (err) {
+        console.warn("[LIVE PARCEL LOOKUP] Error querying parcel context:", err);
+      }
+    }
+  }
+
+  // 4. Fetch Super Admin real-time snapshot if applicable
   let adminContextSummary = "";
   if ((verifiedRole === 'SUPER_ADMIN' || verifiedRole === 'OPERATIONS_MANAGER') && db) {
     adminContextSummary = await getSuperAdminSystemSummary(db);
   }
 
-  // 4. Build prompt -- role-based identity/authorization instruction comes first.
+  // 5. Build prompt -- role-based identity/authorization instruction comes first.
   const roleInstruction = getRoleSystemInstruction(verifiedRole, verifiedEmail);
   let prompt = `
     ${roleInstruction}
 
     ${adminContextSummary}
+    ${liveParcelContext}
 
     Persona name for this conversation: ${persona.name}.
     Context: ${JSON.stringify(context)}
@@ -331,6 +386,21 @@ export async function getChatResponse(
       `;
   }
 
+  // Proactively detect frustration / severe parcel issue / human handoff intent
+  const lowerMsg = message.toLowerCase();
+  const isFrustratedOrIssue = lowerMsg.includes('damaged') || lowerMsg.includes('broken') || lowerMsg.includes('lost') || lowerMsg.includes('refund') || lowerMsg.includes('stolen') || lowerMsg.includes('agent') || lowerMsg.includes('human') || lowerMsg.includes('ticket');
+
+  let ticketIdCreated: string | null = null;
+  if ((isFrustratedOrIssue || feedback === 'no' || feedback === 'still-unsolved') && db) {
+    ticketIdCreated = await createSupportTicket(db, context?.user?.uid || 'GUEST', message, context, 'HIGH');
+  }
+
+  if (ticketIdCreated) {
+    prompt += `
+      CRITICAL HANDOFF NOTICE: An official high-priority Support Ticket (#${ticketIdCreated}) HAS ALREADY BEEN CREATED in the database for this issue. Inform the user politely that ticket #${ticketIdCreated} has been logged and assigned to our human support staff in the Admin Control Center.
+    `;
+  }
+
   prompt += `
     Do NOT mention "AI", "Artificial Intelligence", "Chatbot", or "Virtual Assistant". Always refer to yourself as Omorfi.
 
@@ -345,8 +415,10 @@ export async function getChatResponse(
   const ai = await getAiInstance(db);
   if (!ai) {
     return {
-      text: "The Omorfi AI assistant is currently offline because the Gemini API key is not configured in environment variables or Settings. Please set your GEMINI_API_KEY to activate intelligent chat.",
-      ticketCreated: false
+      text: ticketIdCreated
+        ? `I have registered Support Ticket #${ticketIdCreated} for our support team. The Omorfi AI assistant is currently offline because the Gemini API key is not configured in settings.`
+        : "The Omorfi AI assistant is currently offline because the Gemini API key is not configured in environment variables or Settings. Please set your GEMINI_API_KEY to activate intelligent chat.",
+      ticketCreated: !!ticketIdCreated
     };
   }
 
@@ -358,11 +430,11 @@ export async function getChatResponse(
 
     const text = response.text || "I'm sorry, I'm having trouble assisting you right now. Let me escalate this to our support team.";
 
-    // 5. Escalate?
-    let ticketCreated = false;
-    if (text.includes('support ticket') || text.includes('escalate') || feedback === 'still-unsolved') {
-      await createSupportTicket(db, context?.user?.uid || 'GUEST', message, context, 'HIGH');
-      ticketCreated = true;
+    // 5. Escalate if not already created
+    let ticketCreated = !!ticketIdCreated;
+    if (!ticketCreated && (text.includes('support ticket') || text.includes('escalate'))) {
+      const newTkt = await createSupportTicket(db, context?.user?.uid || 'GUEST', message, context, 'HIGH');
+      if (newTkt) ticketCreated = true;
     }
 
     return { text, ticketCreated };
