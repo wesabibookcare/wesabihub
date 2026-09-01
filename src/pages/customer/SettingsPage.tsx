@@ -170,18 +170,33 @@ export const SettingsPage = () => {
                             <div className="space-y-4">
                                <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">Delivery Channels</h3>
                                {[
-                                 { id: 'push', icon: Smartphone, title: 'Push Notifications' },
-                                 { id: 'email', icon: Bell, title: 'In-App Notifications' },
-                                 { id: 'smsAlerts', icon: Globe, title: 'SMS Alerts' },
+                                 { id: 'push', icon: Smartphone, title: 'Push Notifications', status: 'Available' },
+                                 { id: 'email', icon: Bell, title: 'In-App Notifications', status: 'Available' },
+                                 { id: 'telegram', icon: Globe, title: 'Telegram Alerts', status: user?.telegramChatId ? 'Connected' : 'Not Connected', linkable: true },
+                                 { id: 'whatsapp', icon: Smartphone, title: 'WhatsApp Notifications', status: 'Unconfigured / Disabled', disabled: true },
+                                 { id: 'smsAlerts', icon: Globe, title: 'SMS Fallback', status: 'Configured for Critical Alerts' },
                                ].map((pref, i) => (
-                                 <div key={i} className="flex items-center justify-between">
+                                 <div key={i} className="flex items-center justify-between py-1">
                                     <div className="flex items-center gap-3">
                                        <pref.icon size={18} className="text-slate-600 dark:text-slate-400" />
-                                       <p className="font-bold text-sm dark:text-white">{pref.title}</p>
+                                       <div>
+                                         <p className="font-bold text-sm dark:text-white flex items-center gap-2">
+                                           {pref.title}
+                                           {pref.disabled && (
+                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                               {pref.status}
+                                             </span>
+                                           )}
+                                         </p>
+                                         {!pref.disabled && (
+                                           <span className="text-xs text-slate-500 dark:text-slate-400">{pref.status}</span>
+                                         )}
+                                       </div>
                                     </div>
                                     <motion.div whileTap={{ scale: 0.9 }}>
                                       <Switch
-                                        checked={prefs[pref.id]}
+                                        disabled={pref.disabled}
+                                        checked={!pref.disabled && (prefs[pref.id] !== false)}
                                         onChange={(e) => handlePrefChange(pref.id, e.target.checked)}
                                       />
                                     </motion.div>

@@ -759,6 +759,55 @@ export const PlatformOperationsPage = () => {
                   </div>
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Target Audience</label>
+                  <select
+                    value={annForm.targetAudience || 'ALL'}
+                    onChange={(e) => setAnnForm({...annForm, targetAudience: e.target.value as any})}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs rounded-lg font-bold"
+                  >
+                    <option value="ALL">Everyone / General Public</option>
+                    <option value="CUSTOMER">Customers Only</option>
+                    <option value="MERCHANT">Merchants Only</option>
+                    <option value="CENTER_OWNER">Hub Owners Only</option>
+                    <option value="CENTER_STAFF">Hub Staff Only</option>
+                    <option value="DISPATCH_RIDER">SendOmorfi Riders Only</option>
+                    <option value="LOGISTICS_COMPANY">Logistics Partners Only</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Distribution Channels</label>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {[
+                      { id: 'IN_APP', label: 'In-App Center', enabled: true },
+                      { id: 'TELEGRAM', label: 'Telegram Bot', enabled: true },
+                      { id: 'WHATSAPP', label: 'WhatsApp (Unconfigured)', enabled: false },
+                      { id: 'SMS', label: 'SMS Fallback (Critical Only)', enabled: true },
+                    ].map((ch) => {
+                      const currentChannels = annForm.channels || ['IN_APP', 'TELEGRAM'];
+                      const isChecked = currentChannels.includes(ch.id as any);
+                      return (
+                        <label key={ch.id} className={cn("flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 cursor-pointer", !ch.enabled && "opacity-50 cursor-not-allowed")}>
+                          <input
+                            type="checkbox"
+                            disabled={!ch.enabled}
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const updated = e.target.checked
+                                ? [...currentChannels, ch.id as any]
+                                : currentChannels.filter(c => c !== ch.id);
+                              setAnnForm({ ...annForm, channels: updated });
+                            }}
+                            className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="font-bold text-slate-700 dark:text-slate-300">{ch.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Start Date & Time</label>

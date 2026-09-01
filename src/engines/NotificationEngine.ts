@@ -59,27 +59,37 @@ class NotificationEngine {
     category: Notification['category'] = 'SYSTEM',
     recipientContact?: { email?: string; phone?: string }
   ): Promise<void> {
-    // 1. Deliver standard In-App Notification
-    await notificationService.send(userId, title, message, type, link, category);
+    try {
+      // 1. Deliver standard In-App Notification (Primary delivery guaranteed)
+      await notificationService.send(userId, title, message, type, link, category);
 
-    // 2. High-Integrity Propagation Rule:
-    // Critical alert categories (e.g., PAYMENT, SECURITY) or urgent types (WARNING)
-    // automatically trigger Telegram alerts, SMS, or Emails depending on configuration.
-    const isCritical = category === 'PAYMENT' || category === 'SECURITY' || type === 'WARNING';
+      // 2. Server-Authoritative Multi-Channel Intelligent Routing
+      const isCritical = category === 'PAYMENT' || category === 'SECURITY' || category === 'DISPUTE' || type === 'WARNING' || type === 'ERROR';
+      const isOperational = category === 'SHIPMENT' || category === 'STORAGE' || category === 'RETURN' || category === 'APPROVAL';
 
-    if (isCritical) {
-      // Propagation A: Telegram Operational Alerts
-      await this.sendTelegram('SYSTEM_TELEGRAM_RECIPIENT', `[${category}] ${title}`, message, category);
-
-      // Propagation B: Email (if a recipient email address is provided or resolved)
-      if (recipientContact?.email) {
-        await this.sendEmail(userId, recipientContact.email, title, message, category);
+      // Propagation A: Telegram Alerts (High efficiency, zero marginal SMS cost)
+      if (isCritical || isOperational) {
+        await this.sendTelegram(userId, `[${category}] ${title}`, message, category).catch(err => {
+          console.warn('Telegram propagation non-critical failure:', err?.message || err);
+        });
       }
 
-      // Propagation C: SMS (if recipient phone number is provided or resolved)
-      if (recipientContact?.phone) {
-        await this.sendSMS(userId, recipientContact.phone, `${title}: ${message.substring(0, 100)}`, category);
+      // Propagation B: Email (for critical or explicit contacts)
+      if ((isCritical || recipientContact?.email) && recipientContact?.email) {
+        await this.sendEmail(userId, recipientContact.email, title, message, category).catch(err => {
+          console.warn('Email propagation non-critical failure:', err?.message || err);
+        });
       }
+
+      // Propagation C: SMS (Used strategically for critical security/payment alerts only to minimize external costs)
+      if (isCritical && recipientContact?.phone) {
+        await this.sendSMS(userId, recipientContact.phone, `${title}: ${message.substring(0, 100)}`, category).catch(err => {
+          console.warn('SMS propagation non-critical failure:', err?.message || err);
+        });
+      }
+    } catch (err) {
+      // Fail-safe wrapper: Notification failures MUST NEVER block underlying platform transactions
+      console.error('NotificationEngine.send safe error capture:', err);
     }
   }
 

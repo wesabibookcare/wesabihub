@@ -843,7 +843,14 @@ export interface SystemSettings extends BaseEntity {
   telegramConfig?: {
     botToken: string;
     chatId: string;
+    botUsername?: string;
     enabled: boolean;
+  };
+  whatsappConfig?: {
+    enabled: boolean;
+    provider?: string;
+    apiKey?: string;
+    phoneNumberId?: string;
   };
   smsConfig?: {
     provider: 'TWILIO' | 'INFOBIP' | 'FALLBACK';
@@ -1536,6 +1543,8 @@ export interface Announcement extends BaseEntity {
   imageUrl?: string;
   buttonText?: string;
   destinationUrl?: string;
+  targetAudience?: 'ALL' | 'CUSTOMER' | 'MERCHANT' | 'CENTER_OWNER' | 'CENTER_STAFF' | 'DISPATCH_RIDER' | 'LOGISTICS_COMPANY';
+  channels?: Array<'IN_APP' | 'TELEGRAM' | 'WHATSAPP' | 'SMS' | 'EMAIL'>;
   priority: 'EMERGENCY' | 'HIGH' | 'NORMAL' | 'INFO';
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   startDate: string;
