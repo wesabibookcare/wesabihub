@@ -2626,36 +2626,41 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       const db = getDb();
       if (!db) return res.status(500).json({ error: "Database offline" });
 
-      const docRef = db.collection('paymentProtections').doc(paymentProtectionId);
-      const docSnap = await docRef.get();
+      let finalRefundAmount = 0;
+      await db.runTransaction(async (transaction) => {
+        const docRef = db.collection('paymentProtections').doc(paymentProtectionId);
+        const docSnap = await transaction.get(docRef);
 
-      if (!docSnap.exists) {
-        return res.status(404).json({ error: "Record not found." });
-      }
+        if (!docSnap.exists) {
+          throw new Error("Record not found.");
+        }
 
-      const record = docSnap.data();
+        const record = docSnap.data()!;
 
-      // State check
-      if (['PAYMENT_RELEASED', 'REFUND_APPROVED', 'TRANSACTION_CLOSED'].includes(record.status)) {
-        return res.status(400).json({ error: "Cannot refund already finalized or closed payments." });
-      }
+        // Atomic State check to prevent concurrent refund double-processing
+        if (['PAYMENT_RELEASED', 'REFUND_APPROVED', 'TRANSACTION_CLOSED'].includes(record.status)) {
+          throw new Error("Cannot refund already finalized or closed payments.");
+        }
 
-      const finalRefundAmount = refundAmount ? Number(refundAmount) : record.amount;
+        finalRefundAmount = refundAmount ? Number(refundAmount) : record.amount;
+
+        transaction.update(docRef, {
+          status: 'REFUND_APPROVED',
+          refundAmount: finalRefundAmount,
+          updatedAt: new Date().toISOString()
+        });
+
+        transaction.update(db.collection('shipments').doc(record.shipmentId), {
+          status: 'REFUND_PENDING',
+          updatedAt: new Date().toISOString()
+        });
+      });
+
+      const recordRef = await db.collection('paymentProtections').doc(paymentProtectionId).get();
+      const record = recordRef.data()!;
 
       // Call the authoritative paymentEngine
       await paymentEngine.refundExternalPayment(record.flutterwaveRef || record.id, finalRefundAmount);
-
-      await docRef.update({
-        status: 'REFUND_APPROVED',
-        refundAmount: finalRefundAmount,
-        updatedAt: new Date().toISOString()
-      });
-
-      // Update Shipment Status
-      await db.collection('shipments').doc(record.shipmentId).update({
-        status: 'REFUND_PENDING',
-        updatedAt: new Date().toISOString()
-      });
 
       // Log transaction refund
       const txId = `TX-${Date.now()}`;
@@ -2682,7 +2687,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       res.json({ success: true, message: "Refund successfully processed.", refundAmount: finalRefundAmount });
     } catch (e: any) {
       console.error("Refund error:", e);
-      res.status(500).json({ error: e.message });
+      res.status(400).json({ error: e.message || "Failed to process refund" });
     }
   });
 
@@ -2730,14 +2735,15 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         return res.status(400).json({ error: "This parcel isn't awaiting payment." });
       }
 
-      const amount = shipment?.pricing?.total || 0;
-      if (amount <= 0) return res.status(400).json({ error: "Invalid parcel amount." });
+      // Authoritatively derive total amount from shipment pricing breakdown or PricingEngine
+      const totalAmount = Number(shipment?.pricing?.total || 0);
+      if (totalAmount <= 0) return res.status(400).json({ error: "Invalid parcel amount calculated on server." });
 
       const txRef = `WSH-SHIP-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
       const effectiveRedirectUrl = redirectUrl || `${req.protocol}://${req.get('host')}/customer/payment/${parcelId}`;
 
       const initResponse = await paymentEngine.initiateExternalPayment({
-        amount: Number(amount),
+        amount: totalAmount,
         currency: "NGN",
         email: customerEmail,
         reference: txRef,
@@ -2751,10 +2757,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         txRef,
         parcelId,
         payerId,
-        amount: Number(amount),
+        amount: totalAmount,
         currency: "NGN",
         status: "PENDING",
         provider: initResponse.provider || 'FLUTTERWAVE',
+        pricingSnapshot: shipment?.pricing || {},
         createdAt: new Date().toISOString()
       });
 
@@ -2817,67 +2824,66 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       const db = getDb();
       if (!db) return res.status(500).json({ error: "Database offline" });
 
-      const docRef = db.collection('paymentProtections').doc(paymentProtectionId);
-      const docSnap = await docRef.get();
+      let recordToRelease: any = null;
 
-      if (!docSnap.exists) {
-        return res.status(404).json({ error: "Record not found" });
-      }
+      // Run Firestore atomic transaction lock to prevent duplicate concurrent releases
+      await db.runTransaction(async (transaction) => {
+        const docRef = db.collection('paymentProtections').doc(paymentProtectionId);
+        const docSnap = await transaction.get(docRef);
 
-      const record = docSnap.data();
+        if (!docSnap.exists) {
+          throw new Error("Record not found");
+        }
 
-      const isOwningCustomer = record.customerId === actorId;
-      if (!isOwningCustomer && !userHasAnyRole(req.authUser!, FINANCE_ROLES)) {
-        await logAuthFailure(req, 'AUTHORIZATION_FAILURE', 'Caller is neither the owning customer nor finance staff for payment-protection/release', actorId);
-        return res.status(403).json({ error: "Forbidden: You are not authorized to release this payment." });
-      }
+        const record = docSnap.data()!;
+        recordToRelease = record;
 
-      if (['PAYMENT_RELEASED', 'REFUND_APPROVED', 'TRANSACTION_CLOSED'].includes(record.status)) {
-        return res.status(400).json({ error: "Funds are already finalized or closed." });
-      }
+        const isOwningCustomer = record.customerId === actorId;
+        if (!isOwningCustomer && !userHasAnyRole(req.authUser!, FINANCE_ROLES)) {
+          throw new Error("Forbidden: You are not authorized to release this payment.");
+        }
 
-      // Finance/support staff can release on the customer's behalf (e.g. to
-      // resolve a support ticket) without having recorded a video themselves,
-      // but the customer releasing their own payment must have recorded their
-      // unboxing/inspection evidence first -- this is the actual enforcement
-      // point (client-side button state is just a UX convenience and can't be
-      // trusted on its own).
-      if (isOwningCustomer && !record.metadata?.buyerEvidenceVideo) {
-        return res.status(400).json({ error: "Please record your unboxing/inspection video in WeSabiChat before releasing payment." });
-      }
+        if (['PAYMENT_RELEASED', 'REFUND_APPROVED', 'TRANSACTION_CLOSED'].includes(record.status)) {
+          throw new Error("Funds are already finalized or closed.");
+        }
+
+        // Customer self-service release requires buyer evidence video in chat; finance/support staff can override
+        if (isOwningCustomer && !record.metadata?.buyerEvidenceVideo) {
+          throw new Error("Please record your unboxing/inspection video in WeSabiChat before releasing payment.");
+        }
+
+        transaction.update(docRef, {
+          status: 'PAYMENT_RELEASED',
+          paymentReleasedAt: new Date().toISOString(),
+          releasedBy: actorId,
+          updatedAt: new Date().toISOString()
+        });
+
+        transaction.update(db.collection('shipments').doc(record.shipmentId), {
+          status: 'COMPLETED',
+          updatedAt: new Date().toISOString()
+        });
+      });
 
       // Call authoritative releasePayment in PaymentEngine
-      await paymentEngine.releaseExternalPayment(record.flutterwaveRef || record.id);
-
-      await docRef.update({
-        status: 'PAYMENT_RELEASED',
-        paymentReleasedAt: new Date().toISOString(),
-        releasedBy: actorId,
-        updatedAt: new Date().toISOString()
-      });
-
-      // Update Shipment Status
-      await db.collection('shipments').doc(record.shipmentId).update({
-        status: 'COMPLETED',
-        updatedAt: new Date().toISOString()
-      });
+      await paymentEngine.releaseExternalPayment(recordToRelease.flutterwaveRef || recordToRelease.id);
 
       // Add payout to merchant's wallet
       const txId = `TX-${Date.now()}`;
       await db.collection('transactions').doc(txId).set({
         id: txId,
-        walletId: record.merchantId,
-        amount: record.amount,
+        walletId: recordToRelease.merchantId,
+        amount: recordToRelease.amount,
         type: 'PAYOUT',
         status: 'SUCCESS',
-        description: `Secure funds released to wallet for shipment tracking #${record.trackingNumber}`,
+        description: `Secure funds released to wallet for shipment tracking #${recordToRelease.trackingNumber}`,
         timestamp: new Date().toISOString()
       });
 
       // Dispatch Webhook
-      await dispatchWebhook(db, record.merchantId, 'payment.released', {
-        shipmentId: record.shipmentId,
-        amount: record.amount,
+      await dispatchWebhook(db, recordToRelease.merchantId, 'payment.released', {
+        shipmentId: recordToRelease.shipmentId,
+        amount: recordToRelease.amount,
         status: 'PAYMENT_RELEASED'
       });
 
@@ -2885,7 +2891,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         userId: actorId,
         userRole: req.authUser!.role || undefined,
         action: 'PAYMENT_PROTECTION_RELEASE_APPROVED',
-        details: { paymentProtectionId, amount: record.amount, shipmentId: record.shipmentId },
+        details: { paymentProtectionId, amount: recordToRelease.amount, shipmentId: recordToRelease.shipmentId },
         result: 'SUCCESS',
         ipAddress: req.ip,
         deviceInfo: req.get('user-agent')
@@ -2894,7 +2900,8 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       res.json({ success: true, message: "Protected payment funds successfully released to merchant's wallet." });
     } catch (e: any) {
       console.error("Release error:", e);
-      res.status(500).json({ error: e.message });
+      const isForbidden = e.message?.includes("Forbidden");
+      res.status(isForbidden ? 403 : 400).json({ error: e.message || "Release failed" });
     }
   });
 
@@ -3150,10 +3157,10 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   // 3. Initialize Platform Registration Fee
   app.post("/api/platform/pay-registration", requireAuth(), async (req, res) => {
     try {
-      const { amount, email, role, paymentMethod } = req.body;
+      const { email, role, paymentMethod } = req.body;
       const userId = req.authUser!.uid; // A user can only pay their own registration fee.
-      if (!userId || !amount || !email || !role) {
-        return res.status(400).json({ error: "Missing required fields: amount, email, role" });
+      if (!userId || !email || !role) {
+        return res.status(400).json({ error: "Missing required fields: email, role" });
       }
 
       const methodUpper = String(paymentMethod || '').toUpperCase();
@@ -3171,11 +3178,22 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       const db = getDb();
       if (!db) return res.status(500).json({ error: "Database offline" });
 
+      // Look up authoritative registration fee from role application config or fallback rules
+      let feeAmount = 0;
+      const roleConfigSnap = await db.collection('roleApplicationConfigs').where('role', '==', role).limit(1).get();
+      if (!roleConfigSnap.empty) {
+        feeAmount = Number(roleConfigSnap.docs[0].data()?.registrationFee || 0);
+      }
+      if (feeAmount <= 0) {
+        // Fallback default registration fee per role if unconfigured in roleApplicationConfigs
+        feeAmount = role === 'MERCHANT' ? 5000 : role === 'CENTER_OWNER' ? 10000 : role === 'LOGISTICS_COMPANY' ? 15000 : 2500;
+      }
+
       const txRef = `WSH-REG-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
       // Call PaymentEngine to initiate the platform fee payment
       const initResponse = await paymentEngine.initiateExternalPayment({
-        amount: Number(amount),
+        amount: feeAmount,
         currency: "NGN",
         email,
         reference: txRef,
@@ -3196,13 +3214,14 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       await db.collection('platformPayments').doc(txRef).set({
         id: txRef,
         userId,
-        amount: Number(amount),
+        amount: feeAmount,
         currency: "NGN",
         type: "REGISTRATION_FEE",
         role,
         status: "PENDING_PAYMENT",
         provider: initResponse.provider || "PAYSTACK",
         isSandbox,
+        ruleSnapshot: { feeAmount, role },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -3211,7 +3230,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       await auditEngine.logEvent({
         userId,
         action: 'REGISTRATION_PAYMENT_INITIALIZED',
-        details: { txRef, amount, role, provider: initResponse.provider, isSandbox },
+        details: { txRef, amount: feeAmount, role, provider: initResponse.provider, isSandbox },
         result: 'SUCCESS',
         ipAddress: req.ip,
         deviceInfo: req.get('user-agent')
