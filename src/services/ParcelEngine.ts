@@ -168,7 +168,10 @@ export class ParcelEngine {
         if (nextStatus === 'IN_TRANSIT') {
           await paymentProtectionEngine.markInTransit(pp.id, actorId);
         } else if (nextStatus === 'DELIVERED') {
-          await paymentProtectionEngine.triggerDelivery(pp.id, actorId);
+          // Require recipient OTP verification before advancing SafePay to inspection
+          if (parcel.pickupPinVerified) {
+            await paymentProtectionEngine.triggerDelivery(pp.id, actorId);
+          }
         }
       }
     } catch (ppErr) {

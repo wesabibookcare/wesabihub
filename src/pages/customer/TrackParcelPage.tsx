@@ -246,6 +246,10 @@ export const TrackParcelPage = () => {
     navigate('/customer/chat');
   };
 
+  const [otpInput, setOtpInput] = useState('');
+  const [isConfirmingOtp, setIsConfirmingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
+
   const [isExtending, setIsExtending] = useState(false);
   const handleRequestExtension = async () => {
     const protectionId = paymentProtectionRecord?.paymentProtectionId || paymentProtectionRecord?.id;
@@ -409,6 +413,63 @@ export const TrackParcelPage = () => {
                             Your parcel is ready for pickup at <strong>{hubs.find(h => h.id === realShipment.destinationCenterId)?.name || 'the Hub'}</strong>.
                             Please bring your Pickup PIN and valid ID.
                           </p>
+                        </div>
+                      )}
+
+                      {/* Recipient Self-Service Delivery Confirmation */}
+                      {!isDelivered && realShipment.status !== 'COLLECTED' && (
+                        <div className="p-5 rounded-xl bg-slate-900 text-white space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                            <CheckCircle2 size={18} /> Confirm Delivery Self-Service
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            If your external courier has handed over your package, enter your 6-digit PIN to confirm delivery and activate SafePay protection.
+                          </p>
+                          <div className="flex gap-2 pt-1">
+                            <input
+                              type="text"
+                              maxLength={6}
+                              value={otpInput}
+                              onChange={(e) => {
+                                setOtpInput(e.target.value.replace(/\D/g, ''));
+                                setOtpError('');
+                              }}
+                              placeholder="Enter 6-digit PIN"
+                              className="flex-1 bg-black/50 border border-slate-700 rounded-xl px-4 py-2.5 text-center font-mono text-xl tracking-[0.2em] font-bold text-white outline-none focus:border-emerald-400"
+                            />
+                            <Button
+                              disabled={otpInput.length !== 6 || isConfirmingOtp}
+                              isLoading={isConfirmingOtp}
+                              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 rounded-xl"
+                              onClick={async () => {
+                                setIsConfirmingOtp(true);
+                                setOtpError('');
+                                try {
+                                  const res: any = await apiFetch(fbUser, '/api/parcels/confirm-recipient-otp', {
+                                    method: 'POST',
+                                    body: { parcelId: realShipment.id || realShipment.shipmentId, enteredPin: otpInput }
+                                  });
+                                  if (res?.success) {
+                                    toast.success('Delivery confirmed successfully!');
+                                    setOtpInput('');
+                                    await handleSearchInternal(trackingNumber);
+                                  }
+                                } catch (err: any) {
+                                  setOtpError(err.message || 'OTP verification failed');
+                                  toast.error(err.message || 'OTP verification failed');
+                                } finally {
+                                  setIsConfirmingOtp(false);
+                                }
+                              }}
+                            >
+                              Confirm
+                            </Button>
+                          </div>
+                          {otpError && (
+                            <p className="text-xs text-rose-400 font-medium flex items-center gap-1">
+                              <AlertCircle size={12} /> {otpError}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
