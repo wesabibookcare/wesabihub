@@ -2077,6 +2077,87 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
+  // Telegram Bot Token Generation & Security Linking Endpoints
+  app.post("/api/notifications/telegram/generate-link", requireAuth(), async (req, res) => {
+    try {
+      const user = req.authUser!;
+      const token = "TLG-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      await db.collection("telegramTokens").doc(token).set({
+        token,
+        userId: user.uid,
+        userEmail: user.email,
+        createdAt: new Date().toISOString(),
+        expiresAt
+      });
+
+      const botUsername = process.env.TELEGRAM_BOT_USERNAME || "OmorfiHubBot";
+      const linkUrl = `https://t.me/${botUsername}?start=${token}`;
+
+      return res.json({ success: true, token, linkUrl, expiresAt });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to generate Telegram link token" });
+    }
+  });
+
+  app.post("/api/notifications/telegram/verify-code", requireAuth(), async (req, res) => {
+    try {
+      const user = req.authUser!;
+      const { code } = req.body;
+      if (!code) return res.status(400).json({ error: "Linking code is required" });
+
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+      const cleanCode = code.trim().toUpperCase();
+      const tokenDoc = await db.collection("telegramTokens").doc(cleanCode).get();
+
+      if (!tokenDoc.exists) {
+        return res.status(404).json({ error: "Invalid or expired linking token code" });
+      }
+
+      const tokenData = tokenDoc.data()!;
+      if (new Date(tokenData.expiresAt).getTime() < Date.now()) {
+        await db.collection("telegramTokens").doc(cleanCode).delete();
+        return res.status(400).json({ error: "Linking token code has expired" });
+      }
+
+      if (tokenData.userId !== user.uid) {
+        return res.status(403).json({ error: "This linking token belongs to another account" });
+      }
+
+      const chatId = tokenData.chatId || `TG_${user.uid.substring(0, 8)}`;
+      await db.collection("users").doc(user.uid).update({
+        telegramChatId: chatId
+      });
+
+      await db.collection("telegramTokens").doc(cleanCode).delete();
+
+      return res.json({ success: true, telegramChatId: chatId, message: "Telegram account successfully linked!" });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to verify Telegram linking code" });
+    }
+  });
+
+  app.post("/api/notifications/telegram/disconnect", requireAuth(), async (req, res) => {
+    try {
+      const user = req.authUser!;
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+      await db.collection("users").doc(user.uid).update({
+        telegramChatId: null
+      });
+
+      return res.json({ success: true, message: "Telegram account disconnected successfully" });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to disconnect Telegram" });
+    }
+  });
+
   app.post("/api/auth/request-password-reset", async (req, res) => {
     try {
       const { email } = req.body;
