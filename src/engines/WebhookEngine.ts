@@ -11,6 +11,7 @@ import { monitoringEngine } from './MonitoringEngine';
  */
 class WebhookEngine {
   private static instance: WebhookEngine;
+  private processedWebhookIds: Set<string> = new Set();
 
   private constructor() {}
 
@@ -29,12 +30,31 @@ class WebhookEngine {
       // 1. Signature Validation
       this.validateSignature(req, provider, signature as string);
 
-      // 2. Normalize and Deduplicate
+      // 2. Normalize Event
       const event = this.normalizeEvent(payload, provider);
       if (!event) return { ignored: true };
 
-      // 3. Process via authoritative business engine
+      // 3. Idempotency Check (prevent duplicate delivery processing)
+      const webhookId = `${provider}_${event.event}_${event.data.reference}_${event.data.id || event.data.gatewayId || ''}`;
+      if (this.processedWebhookIds.has(webhookId)) {
+        await auditEngine.logEvent({
+          userId: 'SYSTEM',
+          action: 'WEBHOOK_DUPLICATE_REJECTED',
+          details: { provider, webhookId, reference: event.data.reference },
+          result: 'SUCCESS'
+        });
+        return { duplicate: true, ignored: true };
+      }
+
+      // 4. Process via authoritative business engine
       const result = await paymentEngine.handleWebhookEvent(event);
+      this.processedWebhookIds.add(webhookId);
+
+      // Keep in-memory cache size manageable
+      if (this.processedWebhookIds.size > 5000) {
+        const idsArray = Array.from(this.processedWebhookIds);
+        this.processedWebhookIds = new Set(idsArray.slice(2500));
+      }
 
       await auditEngine.logEvent({
         userId: 'SYSTEM',
