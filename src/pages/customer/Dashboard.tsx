@@ -156,17 +156,27 @@ export const CustomerDashboard = () => {
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
                    {canSend ? (
-                     <Button className="rounded-xl px-6 h-12" asChild>
-                        <Link to="/customer/send">Send Parcel</Link>
-                     </Button>
+                     <>
+                       <Button className="rounded-xl px-6 h-12" asChild>
+                          <Link to="/customer/send">Send Parcel</Link>
+                       </Button>
+                       <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-700 text-white hover:bg-slate-800" asChild>
+                          <Link to="/customer/track">Track Parcel</Link>
+                       </Button>
+                     </>
                    ) : (
-                     <Button className="rounded-xl px-6 h-12 bg-amber-600 hover:bg-amber-700 text-white font-bold" asChild>
-                        <Link to="/customer/settings?tab=roles&apply=MERCHANT">Send Parcels (Apply as Merchant)</Link>
-                     </Button>
+                     <>
+                       <Button className="rounded-xl px-6 h-12 bg-primary-600 hover:bg-primary-700 text-white font-bold" asChild>
+                          <Link to="/customer/track">Track Parcel</Link>
+                       </Button>
+                       <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-700 text-white hover:bg-slate-800" asChild>
+                          <Link to="/customer/receive">Receive Parcel</Link>
+                       </Button>
+                       <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-700 text-white hover:bg-slate-800" asChild>
+                          <Link to="/customer/hubs">Find Hub Point</Link>
+                       </Button>
+                     </>
                    )}
-                   <Button variant="outline" className="rounded-xl px-6 h-12 border-slate-700 text-white hover:bg-slate-800" asChild>
-                      <Link to="/customer/track">Track Parcel</Link>
-                   </Button>
                 </div>
               </div>
               <div className="hidden lg:block shrink-0">
@@ -181,11 +191,12 @@ export const CustomerDashboard = () => {
         {/* Quick Actions */}
         <motion.div variants={item} className="space-y-6">
            <h2 className="text-2xl font-bold font-display dark:text-white">Quick Actions</h2>
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+           <div className={cn(
+             "grid grid-cols-1 sm:grid-cols-2 gap-6",
+             canSend ? "lg:grid-cols-4" : "lg:grid-cols-3"
+           )}>
               {[
-                canSend
-                  ? { icon: Send, label: 'Send Parcel', color: 'bg-blue-50 text-blue-600', hover: 'hover:border-blue-500', href: '/customer/send' }
-                  : { icon: Send, label: 'Send Parcels (Apply as Merchant)', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/customer/settings?tab=roles&apply=MERCHANT' },
+                ...(canSend ? [{ icon: Send, label: 'Send Parcel', color: 'bg-blue-50 text-blue-600', hover: 'hover:border-blue-500', href: '/customer/send' }] : []),
                 { icon: Search, label: 'Track Parcel', color: 'bg-amber-50 text-amber-600', hover: 'hover:border-amber-500', href: '/customer/track' },
                 { icon: MapPin, label: 'Find Hub Point', color: 'bg-emerald-50 text-emerald-600', hover: 'hover:border-emerald-500', href: '/customer/hubs' },
                 { icon: Download, label: 'Receive Parcel', color: 'bg-purple-50 text-purple-600', hover: 'hover:border-purple-500', href: '/customer/receive' },
@@ -214,43 +225,61 @@ export const CustomerDashboard = () => {
            </div>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Merchant Card */}
-              <Card className="p-6 bg-gradient-to-br from-indigo-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4">
-                 <div className="space-y-2">
-                    <span className="text-2xl">📦</span>
+              <Card className="p-6 bg-gradient-to-br from-indigo-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4 overflow-hidden relative group">
+                 <div className="space-y-3">
+                    <div className="w-full h-36 rounded-xl overflow-hidden bg-indigo-950/50 flex items-center justify-center border border-indigo-500/20">
+                       <img
+                         src="/assets/images/roles/merchant.png"
+                         alt="Merchant Workspace"
+                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                       />
+                    </div>
                     <h3 className="text-xl font-bold">Want to sell or send high-volume shipments?</h3>
                     <p className="text-xs text-indigo-200">Unlock bulk parcel tools, storefront integration & verified merchant badges.</p>
                  </div>
                  <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl h-11" asChild>
                     <Link to="/customer/settings?tab=roles&apply=MERCHANT">
-                       👉 ACTIVATE MERCHANT WORKSPACE
+                       ACTIVATE MERCHANT WORKSPACE
                     </Link>
                  </Button>
               </Card>
 
               {/* Hub Owner Card */}
-              <Card className="p-6 bg-gradient-to-br from-amber-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4">
-                 <div className="space-y-2">
-                    <span className="text-2xl">⛽️</span>
+              <Card className="p-6 bg-gradient-to-br from-amber-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4 overflow-hidden relative group">
+                 <div className="space-y-3">
+                    <div className="w-full h-36 rounded-xl overflow-hidden bg-amber-950/50 flex items-center justify-center border border-amber-500/20">
+                       <img
+                         src="/assets/images/roles/center_owner.png"
+                         alt="OmorfiHub Center Owner Workspace"
+                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                       />
+                    </div>
                     <h3 className="text-xl font-bold">Have a physical shop or filling station?</h3>
                     <p className="text-xs text-amber-200">Earn steady commissions per parcel processed at your physical location.</p>
                  </div>
                  <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl h-11" asChild>
                     <Link to="/customer/settings?tab=roles&apply=CENTER_OWNER">
-                       👉 Apply as OmorfiHub Center Owner
+                       Apply as Hub Center Owner
                     </Link>
                  </Button>
               </Card>
 
               {/* SendOmorfi Rider Card */}
-              <Card className="p-6 bg-gradient-to-br from-emerald-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4">
-                 <div className="space-y-2">
-                    <span className="text-2xl">🚗</span>
+              <Card className="p-6 bg-gradient-to-br from-emerald-900 to-slate-900 border-none text-white flex flex-col justify-between space-y-4 overflow-hidden relative group">
+                 <div className="space-y-3">
+                    <div className="w-full h-36 rounded-xl overflow-hidden bg-emerald-950/50 flex items-center justify-center border border-emerald-500/20">
+                       <img
+                         src="/assets/images/roles/dispatch_rider.png"
+                         alt="SendOmorfi Dispatch Fleet"
+                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                       />
+                    </div>
                     <h3 className="text-xl font-bold">Have a bicycle, vehicle or can walk?</h3>
                     <p className="text-xs text-emerald-200">Join our flexible last-mile dispatch fleet with live face scan verification.</p>
                  </div>
                  <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl h-11" asChild>
                     <Link to="/customer/settings?tab=roles&apply=DISPATCH_RIDER">
-                       👉 JOIN SendOmorfi Dispatch fleet
+                       Join SendOmorfi Dispatch
                     </Link>
                  </Button>
               </Card>
@@ -386,17 +415,31 @@ export const CustomerDashboard = () => {
               {/* Latest Notification */}
               <motion.div variants={item} className="space-y-6">
                  <h2 className="text-xl font-bold font-display dark:text-white">Latest Update</h2>
-                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0">
-                       <ShieldCheck size={20} />
-                    </div>
-                    <div className="space-y-1">
-                       <p className="text-sm font-bold text-emerald-600">Security Alert</p>
-                       <p className="text-xs text-emerald-600/80 leading-relaxed">
-                          Your pickup code for WSH-102-441 has been generated and sent to your email.
-                       </p>
-                    </div>
-                 </div>
+                 {shipments.length > 0 ? (
+                   <div className="p-4 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white shrink-0">
+                         <Package size={20} />
+                      </div>
+                      <div className="space-y-1">
+                         <p className="text-sm font-bold text-primary-600 dark:text-primary-400">Active Shipment #{shipments[0].trackingNumber}</p>
+                         <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                            Status: <span className="font-semibold capitalize">{shipments[0].status.replace(/_/g, ' ')}</span>. Updated {new Date(shipments[0].createdAt).toLocaleDateString()}.
+                         </p>
+                      </div>
+                   </div>
+                 ) : (
+                   <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0">
+                         <ShieldCheck size={20} />
+                      </div>
+                      <div className="space-y-1">
+                         <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Account Secured</p>
+                         <p className="text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                            Your OmorfiHub single-account profile is active and fully protected by SafePay.
+                         </p>
+                      </div>
+                   </div>
+                 )}
               </motion.div>
 
               {/* AI Delivery Estimator */}
