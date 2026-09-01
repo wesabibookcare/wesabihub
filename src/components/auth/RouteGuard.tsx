@@ -115,11 +115,17 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   }
 
   const userRoles = Array.from(new Set([
-    ...(Array.isArray(user.roles) ? user.roles : [user.role].filter(Boolean)),
-    ...(user.requestedRole ? [user.requestedRole] : [])
+    ...(Array.isArray(user.roles) ? user.roles : [user.role].filter(Boolean))
   ]));
 
-  if (allowedRoles && !userRoles.some(role => allowedRoles.includes(role)) && !allowedRoles.includes(activeRole as UserRole)) {
+  // Only allow access if one of the user's assigned/approved roles matches allowedRoles,
+  // or if activeRole matches allowedRoles provided activeRole is actually in the user's assigned roles.
+  const hasAllowedRole = allowedRoles && (
+    userRoles.some(role => allowedRoles.includes(role)) ||
+    (activeRole && userRoles.includes(activeRole as UserRole) && allowedRoles.includes(activeRole as UserRole))
+  );
+
+  if (allowedRoles && !hasAllowedRole) {
     return <>{fallback}</>;
   }
 

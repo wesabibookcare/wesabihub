@@ -1078,14 +1078,9 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   });
 
   // Secure Parcel Release & Verification Endpoints
-  app.post("/api/parcels/verify-pin", async (req, res) => {
+  app.post("/api/parcels/verify-pin", requireRole(HUB_RELEASE_STAFF_ROLES), async (req, res) => {
     const { parcelId, enteredPin } = req.body;
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    const token = authHeader.substring(7);
+    const staffId = req.authUser!.uid;
 
     const db = getDb();
     if (!db || !adminApp) {
@@ -1093,9 +1088,6 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
 
     try {
-      const auth = getAuth(adminApp);
-      const decodedToken = await auth.verifyIdToken(token);
-      const staffId = decodedToken.uid;
 
       if (!parcelId || !enteredPin) {
         return res.status(400).json({ error: "Missing required parameters: parcelId, and enteredPin are required." });
@@ -1177,14 +1169,9 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
-  app.post("/api/parcels/release", async (req, res) => {
+  app.post("/api/parcels/release", requireRole(HUB_RELEASE_STAFF_ROLES), async (req, res) => {
     const { parcelId, collectionDetails, enteredPin } = req.body;
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    const token = authHeader.substring(7);
+    const staffId = req.authUser!.uid;
 
     const db = getDb();
     if (!db || !adminApp) {
@@ -1192,9 +1179,6 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
 
     try {
-      const auth = getAuth(adminApp);
-      const decodedToken = await auth.verifyIdToken(token);
-      const staffId = decodedToken.uid;
 
       if (!parcelId || !collectionDetails) {
         return res.status(400).json({ error: "Missing required parameters: parcelId, and collectionDetails are required." });
