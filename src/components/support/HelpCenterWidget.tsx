@@ -587,26 +587,51 @@ export const HelpCenterWidget = () => {
                     {/* Chat Messages */}
                     <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                       {messages.length === 0 && (
-                        <div className="text-center py-10">
-                          <div className="w-14 h-14 rounded-full overflow-hidden mx-auto mb-4 border-2 border-primary-200">
+                        <div className="text-center py-6 space-y-4">
+                          <div className="w-14 h-14 rounded-full overflow-hidden mx-auto border-2 border-primary-200 shadow-md">
                             <video
                               src="/assets/brand/omorfi-avatar.mp4"
                               autoPlay loop muted playsInline
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <p className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                            {Array.isArray(personas) && personas.find(p => p.id === selectedPersonaId)?.profilePictureUrl && (
-                                <img src={personas.find(p => p.id === selectedPersonaId)?.profilePictureUrl} className="w-6 h-6 rounded-full" />
-                            )}
-                            {Array.isArray(personas) ? (personas.find(p => p.id === selectedPersonaId)?.name || 'Support Assistant') : 'Support Assistant'}
-                          </p>
-                          <p className="text-xs text-slate-500 max-w-xs mx-auto mt-2">
-                            {chatMode === 'general' && 'A robust support bot optimized for payment protection, rules, and general operations.'}
-                            {chatMode === 'thinking' && 'Executes extremely deep reasoning for legal disputes or financial audit checks.'}
-                            {chatMode === 'maps' && 'Perfect to search geographical coordinates, hub locations, and route states.'}
-                            {chatMode === 'low-latency' && 'Provides instant answers for simple queries.'}
-                          </p>
+                          <div>
+                            <p className="text-sm font-bold text-slate-800 dark:text-white flex items-center justify-center gap-2">
+                              {Array.isArray(personas) && personas.find(p => p.id === selectedPersonaId)?.profilePictureUrl && (
+                                  <img src={personas.find(p => p.id === selectedPersonaId)?.profilePictureUrl} className="w-6 h-6 rounded-full" />
+                              )}
+                              {Array.isArray(personas) ? (personas.find(p => p.id === selectedPersonaId)?.name || 'Support Assistant') : 'Support Assistant'}
+                            </p>
+                            <p className="text-xs text-slate-500 max-w-xs mx-auto mt-1">
+                              {chatMode === 'general' && 'A robust support bot optimized for payment protection, rules, and general operations.'}
+                              {chatMode === 'thinking' && 'Executes extremely deep reasoning for legal disputes or financial audit checks.'}
+                              {chatMode === 'maps' && 'Perfect to search geographical coordinates, hub locations, and route states.'}
+                              {chatMode === 'low-latency' && 'Provides instant answers for simple queries.'}
+                            </p>
+                          </div>
+
+                          {/* Quick Action Suggestion Pills */}
+                          <div className="pt-2 max-w-xs mx-auto space-y-1.5">
+                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider text-center">Suggested Quick Questions</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {[
+                                'How does SafePay work?',
+                                'Track my parcel',
+                                'Find nearest OmorfiHub',
+                                'Check delivery fees'
+                              ].map((suggestion, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => {
+                                    setMessage(suggestion);
+                                  }}
+                                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-all text-left shadow-xs"
+                                >
+                                  ✨ {suggestion}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       )}
 
