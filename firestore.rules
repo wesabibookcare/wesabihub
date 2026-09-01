@@ -87,12 +87,19 @@ service cloud.firestore {
         && (data.status is string && data.status.size() <= 64);
     }
 
+    function getUserHubId(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)) && 'hubId' in getUserData(uid)
+        ? getUserData(uid).hubId
+        : (exists(/databases/$(database)/documents/users/$(uid)) && 'centerId' in getUserData(uid) ? getUserData(uid).centerId : null);
+    }
+
     function isVerifiedMerchant(uid) {
       return exists(/databases/$(database)/documents/users/$(uid)) && (
         get(/databases/$(database)/documents/users/$(uid)).data.role == 'MERCHANT' ||
         ('roles' in getUserData(uid) && 'MERCHANT' in getUserData(uid).roles)
       ) && (
-        getUserData(uid).status in ['APPROVED', 'ACTIVE'] ||
+        getUserData(uid).status == 'APPROVED' ||
+        (getUserData(uid).status == 'ACTIVE' && (!('pendingRoleApplication' in getUserData(uid)) || getUserData(uid).pendingRoleApplication != true)) ||
         ('verificationStatus' in getUserData(uid) && getUserData(uid).verificationStatus.kyc == true)
       );
     }
@@ -128,7 +135,8 @@ service cloud.firestore {
                         (!incoming().roles.hasAny(['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN']) &&
                          !(incoming().role in ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN']))
                       )) || (isAdmin() && isValidId(userId));
-      allow update: if (isOwner(userId) && isValidId(userId))
+      allow update: if (isOwner(userId) && isValidId(userId)
+                        && !incoming().diff(existing()).affectedKeys().hasAny(['role', 'roles', 'status', 'verificationStatus', 'assignedRoles', 'customPermissions', 'requestedRole', 'pendingRoleApplication']))
                     || (isAdmin() && isValidId(userId) && isValidUser(incoming(), true)
                         && !('SUPER_ADMIN' in existing().roles)
                         && !('SUPER_ADMIN' in incoming().roles)
@@ -211,7 +219,12 @@ service cloud.firestore {
 
     match /pointEmployees/{empId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin() || hasRole('CENTER_OWNER') || hasRole('OPERATIONS_MANAGER');
+      allow write: if isAdmin() || hasRole('OPERATIONS_MANAGER') || (
+        hasRole('CENTER_OWNER') && (
+          (resource == null || resource.data.hubOwnerId == request.auth.uid || resource.data.centerOwnerId == request.auth.uid || resource.data.ownerId == request.auth.uid) &&
+          (incoming().hubOwnerId == request.auth.uid || incoming().centerOwnerId == request.auth.uid || incoming().ownerId == request.auth.uid)
+        )
+      );
     }
 
     match /merchantBusinesses/{busId} {
