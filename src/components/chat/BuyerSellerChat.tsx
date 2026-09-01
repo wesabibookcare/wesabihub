@@ -1152,6 +1152,22 @@ export const BuyerSellerChat = () => {
                                         <video src={att.url} controls className="w-full h-auto max-h-[300px]" />
                                       </div>
                                     )}
+                                    {att.type === 'VOICE' && (
+                                      <div className={`p-2.5 rounded-xl border flex flex-col gap-1.5 w-full max-w-[260px] ${
+                                        isMyMessage ? 'bg-primary-700 border-primary-500 text-white' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100'
+                                      }`}>
+                                        <div className="flex items-center gap-2">
+                                          <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isMyMessage ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                                            <Phone size={14} className={isMyMessage ? 'text-white' : 'text-primary-600'} />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-bold truncate">{att.name || 'Voice Note'}</p>
+                                            {att.size && <p className="text-[8px] opacity-70 font-mono">{(att.size / 1024).toFixed(1)} KB</p>}
+                                          </div>
+                                        </div>
+                                        <audio controls src={att.url} className="w-full h-8 max-w-full rounded mt-1" />
+                                      </div>
+                                    )}
                                     {att.type === 'FILE' && (
                                       <a href={att.url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-2 rounded-xl transition-all border ${isMyMessage ? 'bg-primary-700 hover:bg-primary-800 border-primary-500' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white border-slate-200 dark:border-slate-700'}`}>
                                         <FileText size={16} className={isMyMessage ? "text-white" : "text-primary-600"} />
@@ -1272,6 +1288,30 @@ export const BuyerSellerChat = () => {
                   })}
                   </AnimatePresence>
                 )}
+
+                {/* In-Timeline Typing Indicator Bubble */}
+                {activeConv && Object.entries(activeConv.typingStatus || {}).some(([uid, typing]) => uid !== currentUserId && typing) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="flex items-center gap-2 mr-auto my-2"
+                  >
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-none px-3.5 py-2 flex items-center gap-1.5 shadow-sm">
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                        {(activeConv.type === 'USERNAME'
+                          ? (activeConv.participantNames?.[activeConv.participants.find(id => id !== currentUserId) || ''] || 'User')
+                          : (activeConv.sellerId === currentUserId ? activeConv.buyerName : activeConv.sellerName))} is typing
+                      </span>
+                      <div className="flex gap-1 ml-1">
+                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
                 <div ref={chatEndRef} />
               </div>
 

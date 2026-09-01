@@ -493,31 +493,39 @@ export const TrackParcelPage = () => {
              </div>
 
              <div className="space-y-8">
-                {/* Map Section */}
+                {/* Map Section - Focused PUDO view (Map only shown when active SendOmorfi rider delivery is live) */}
+                {isOutForDelivery ? (
                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
                        <h3 className="font-bold dark:text-white font-display flex items-center gap-2">
                           <Globe size={18} className="text-primary-600" />
-                          Live Tracking Map
+                          SendOmorfi Live Rider Map
                        </h3>
-                       {isOutForDelivery && (
-                          <Badge variant="success" className="animate-pulse">Live Now</Badge>
-                       )}
+                       <Badge variant="success" className="animate-pulse">Live Delivery</Badge>
                     </div>
-                    <Card className="h-[400px] border-slate-200 dark:border-slate-800 relative overflow-hidden group p-0">
+                    <Card className="h-[350px] border-slate-200 dark:border-slate-800 relative overflow-hidden group p-0 shadow-lg">
                        <ShipmentTrackerMap
                           apiKey={GOOGLE_MAPS_API_KEY}
                           origin={LAGOS_HUB}
                           destination={ABUJA_WUSE}
-                          isOutForDelivery={isOutForDelivery}
+                          isOutForDelivery={true}
                        />
                     </Card>
-                    {!isOutForDelivery && !isDelivered && (
-                       <p className="text-[10px] text-slate-900 font-bold uppercase tracking-widest text-center">
-                          Map tracking will activate when rider is out for delivery
-                       </p>
-                    )}
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest text-center">
+                       Real-Time Rider GPS & ETA Active
+                    </p>
                  </div>
+                ) : (
+                 <Card className="p-5 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 rounded-2xl text-center space-y-2">
+                    <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-950/30 text-primary-600 flex items-center justify-center mx-auto">
+                       <Building2 size={20} />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Standard PUDO Hub Delivery</p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                       This parcel is moving securely between verified OmorfiHub centers. Detailed events and shelf/collection status are logged in the timeline.
+                    </p>
+                 </Card>
+                )}
 
                 {/* Latest Activity */}
                 <Card className="p-6 border-slate-200 dark:border-slate-800 space-y-4">
