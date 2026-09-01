@@ -41,6 +41,9 @@ export const ReceiveParcelPage = () => {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [merchantNames, setMerchantNames] = useState<Record<string, string>>({});
   const [hubNames, setHubNames] = useState<Record<string, string>>({});
+  const [otpInput, setOtpInput] = useState('');
+  const [isConfirmingOtp, setIsConfirmingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
 
   useEffect(() => {
     const fetchIncoming = async () => {
@@ -287,6 +290,67 @@ export const ReceiveParcelPage = () => {
                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
                                   <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Backup Pickup PIN</p>
                                   <p className="text-3xl font-black text-emerald-400 font-mono tracking-[0.2em]">{selectedParcel.pickupPin}</p>
+                               </div>
+                             )}
+
+                             {/* Self-Service OTP Delivery Confirmation for External Logistics Deliveries */}
+                             {selectedParcel.status !== 'DELIVERED' && selectedParcel.status !== 'COLLECTED' && selectedParcel.status !== 'COMPLETED' && (
+                               <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-left space-y-3">
+                                 <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                                   <ShieldCheck size={16} className="text-emerald-400" /> Confirm Delivery Self-Service
+                                 </div>
+                                 <p className="text-xs text-slate-300">
+                                   If your courier delivered this parcel, enter your 6-digit PIN below to confirm receipt.
+                                 </p>
+                                 <div className="flex gap-2">
+                                   <input
+                                     type="text"
+                                     maxLength={6}
+                                     value={otpInput}
+                                     onChange={(e) => {
+                                       setOtpInput(e.target.value.replace(/\D/g, ''));
+                                       setOtpError('');
+                                     }}
+                                     placeholder="Enter 6-digit PIN"
+                                     className="flex-1 bg-black/40 border border-white/20 rounded-xl px-3 py-2 text-center text-white font-mono text-lg font-bold outline-none focus:border-emerald-400"
+                                   />
+                                   <Button
+                                     size="sm"
+                                     disabled={otpInput.length !== 6 || isConfirmingOtp}
+                                     isLoading={isConfirmingOtp}
+                                     className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 rounded-xl"
+                                     onClick={async () => {
+                                       setIsConfirmingOtp(true);
+                                       setOtpError('');
+                                       try {
+                                         const { apiFetch } = await import('@/src/lib/apiClient');
+                                         const auth = (window as any).firebaseAuth || (await import('@/src/lib/firebase')).auth;
+                                         const currentFbUser = auth?.currentUser;
+                                         const res: any = await apiFetch(currentFbUser, '/api/parcels/confirm-recipient-otp', {
+                                           method: 'POST',
+                                           body: { parcelId: selectedParcel.id, enteredPin: otpInput }
+                                         });
+                                         if (res?.success) {
+                                           const updated = { ...selectedParcel, status: 'DELIVERED' as const, pickupPinVerified: true };
+                                           setSelectedParcel(updated);
+                                           setParcels(prev => prev.map(p => p.id === updated.id ? updated : p));
+                                           setOtpInput('');
+                                         }
+                                       } catch (err: any) {
+                                         setOtpError(err.message || 'Verification failed');
+                                       } finally {
+                                         setIsConfirmingOtp(false);
+                                       }
+                                     }}
+                                   >
+                                     Confirm
+                                   </Button>
+                                 </div>
+                                 {otpError && (
+                                   <p className="text-xs text-rose-400 font-medium flex items-center gap-1">
+                                     <AlertCircle size={12} /> {otpError}
+                                   </p>
+                                 )}
                                </div>
                              )}
 

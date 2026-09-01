@@ -1169,6 +1169,151 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     }
   });
 
+  // Recipient Self-Service Delivery Confirmation Endpoint
+  app.post("/api/parcels/confirm-recipient-otp", requireAuth(), async (req, res) => {
+    const { parcelId, enteredPin } = req.body;
+    const caller = req.authUser!;
+
+    const db = getDb();
+    if (!db) {
+      return res.status(500).json({ error: "Firebase Admin is not configured." });
+    }
+
+    try {
+      if (!parcelId || !enteredPin) {
+        return res.status(400).json({ error: "Missing required parameters: parcelId and enteredPin are required." });
+      }
+
+      const shipmentRef = db.collection('shipments').doc(parcelId);
+      const shipmentSnap = await shipmentRef.get();
+      if (!shipmentSnap.exists) {
+        return res.status(404).json({ error: "Parcel not found." });
+      }
+      const shipment = shipmentSnap.data();
+
+      // Ensure caller is the intended recipient (matching phone, email, or user ID)
+      const recipientPhone = shipment?.recipientInfo?.phone || '';
+      const recipientEmail = shipment?.recipientInfo?.email || '';
+      const callerPhone = caller.phone || caller.phoneNumber || '';
+      const callerEmail = caller.email || '';
+
+      const isMatchingPhone = recipientPhone && callerPhone && (recipientPhone.replace(/\D/g, '') === callerPhone.replace(/\D/g, ''));
+      const isMatchingEmail = recipientEmail && callerEmail && (recipientEmail.toLowerCase() === callerEmail.toLowerCase());
+      const isRecipientId = shipment?.recipientId && shipment.recipientId === caller.uid;
+
+      if (!isMatchingPhone && !isMatchingEmail && !isRecipientId) {
+        return res.status(403).json({ error: "Forbidden: You are not authorized as the intended recipient for this parcel." });
+      }
+
+      // Check if already consumed
+      if (shipment?.pickupPinVerified === true || shipment?.status === 'DELIVERED' || shipment?.status === 'COLLECTED' || shipment?.status === 'COMPLETED') {
+        return res.status(400).json({ error: "This OTP has already been verified and consumed." });
+      }
+
+      // Retrieve security settings
+      const settingsSnap = await db.collection('systemSettings').doc('global').get();
+      const settings = settingsSnap.exists ? settingsSnap.data() : null;
+      const parcelVerification = settings?.parcelVerification || {};
+      const maxAttempts = parcelVerification.maxVerificationAttempts || 3;
+
+      // Lock check
+      if ((shipment?.pickupPinAttempts || 0) >= maxAttempts || shipment?.isLocked === true) {
+        return res.status(400).json({ error: "Verification locked due to repeated failed attempts.", isLocked: true });
+      }
+
+      // Expiry check
+      if (shipment?.pickupPinExpiry) {
+        if (Date.now() > new Date(shipment.pickupPinExpiry).getTime()) {
+          return res.status(400).json({ error: "Pickup PIN has expired.", isExpired: true });
+        }
+      }
+
+      // Compare PIN
+      if (enteredPin.trim() !== shipment?.pickupPin) {
+        const newAttempts = (shipment?.pickupPinAttempts || 0) + 1;
+        const isLocked = newAttempts >= maxAttempts;
+
+        await shipmentRef.update({
+          pickupPinAttempts: newAttempts,
+          ...(isLocked ? { isLocked: true } : {})
+        });
+
+        const auditLogId = crypto.randomUUID();
+        await db.collection('auditLogs').doc(auditLogId).set({
+          id: auditLogId,
+          userId: caller.uid,
+          action: 'RECIPIENT_OTP_VERIFICATION_FAILED',
+          details: { parcelId, reason: 'PIN_MISMATCH', remarks: `Incorrect recipient OTP entered. Attempt ${newAttempts}/${maxAttempts}` },
+          result: 'FAILURE',
+          targetId: parcelId,
+          timestamp: new Date().toISOString()
+        });
+
+        return res.status(400).json({ verified: false, attemptsRemaining: Math.max(0, maxAttempts - newAttempts), isLocked, error: "Invalid PIN entered." });
+      }
+
+      // Success - Mark OTP verified and transition parcel status to DELIVERED
+      const now = new Date().toISOString();
+      await shipmentRef.update({
+        pickupPinVerified: true,
+        pickupPinAttempts: 0,
+        status: 'DELIVERED',
+        deliveredAt: now,
+        confirmedByRecipient: caller.uid,
+        updatedAt: now
+      });
+
+      // Add Tracking Event
+      const trackingId = crypto.randomUUID();
+      await db.collection('trackingEvents').doc(trackingId).set({
+        id: trackingId,
+        parcelId: parcelId,
+        status: 'DELIVERED',
+        actorId: caller.uid,
+        location: 'Recipient Self-Service Portal',
+        remarks: 'Parcel delivery confirmed by recipient using 6-digit OTP.',
+        timestamp: now,
+        isDeleted: false
+      });
+
+      // Audit Log
+      const auditLogId = crypto.randomUUID();
+      await db.collection('auditLogs').doc(auditLogId).set({
+        id: auditLogId,
+        userId: caller.uid,
+        action: 'RECIPIENT_OTP_CONFIRMED_DELIVERY',
+        details: { parcelId, recipientUid: caller.uid },
+        result: 'SUCCESS',
+        targetId: parcelId,
+        timestamp: now
+      });
+
+      // Check for active SafePay / Payment Protection record and trigger inspection window
+      const ppSnap = await db.collection('paymentProtections').where('shipmentId', '==', parcelId).get();
+      if (!ppSnap.empty) {
+        const ppDoc = ppSnap.docs[0];
+        const pp = ppDoc.data();
+        const settingsSnap = await db.collection('systemSettings').doc('global').get();
+        const settings = settingsSnap.exists ? settingsSnap.data() : null;
+        const inspectionHours = settings?.paymentProtection?.defaultInspectionPeriodHours || 24;
+        const expiresAt = new Date(Date.now() + inspectionHours * 60 * 60 * 1000).toISOString();
+
+        await db.collection('paymentProtections').doc(ppDoc.id).update({
+          status: 'DELIVERED_AWAITING_CONFIRMATION',
+          inspectionStartedAt: now,
+          inspectionExpiresAt: expiresAt,
+          updatedAt: now
+        });
+      }
+
+      return res.status(200).json({ success: true, verified: true, message: "Delivery confirmed and parcel status updated to DELIVERED." });
+
+    } catch (err: any) {
+      console.error("[RECIPIENT OTP VERIFY] Failed:", err);
+      return res.status(500).json({ error: err.message || "Failed to confirm delivery with OTP." });
+    }
+  });
+
   app.post("/api/parcels/release", requireRole(HUB_RELEASE_STAFF_ROLES), async (req, res) => {
     const { parcelId, collectionDetails, enteredPin } = req.body;
     const staffId = req.authUser!.uid;
