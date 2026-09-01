@@ -241,7 +241,7 @@ service cloud.firestore {
     }
 
     match /drivers/{driverId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (isOwner(driverId) || hasRole('LOGISTICS_OWNER') || isStaff());
       allow create: if hasRole('LOGISTICS_OWNER') || isAdmin();
       allow update: if isOwner(driverId) || hasRole('LOGISTICS_OWNER') || isAdmin();
     }
@@ -284,7 +284,7 @@ service cloud.firestore {
     match /auditLogs/{logId} {
       allow get: if isAdmin() || hasRole('OPERATIONS_MANAGER') || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow list: if isAdmin() || hasRole('OPERATIONS_MANAGER') || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow create: if isSignedIn();
+      allow create: if false; // Server SDK only — prevents client forgery
       allow update, delete: if false;
     }
 
@@ -442,7 +442,7 @@ service cloud.firestore {
       allow update: if isSignedIn() && (
         !(existing().status in ['PAYMENT_RELEASED', 'REFUND_APPROVED', 'PARTIAL_REFUND_APPROVED', 'TRANSACTION_CLOSED']) && (
           ((existing().customerId == request.auth.uid || existing().merchantId == request.auth.uid) &&
-           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'disputeId', 'metadata'])) ||
+           incoming().diff(existing()).affectedKeys().hasOnly(['disputeId', 'metadata'])) ||
           isStaff()
         )
       );
@@ -558,7 +558,7 @@ service cloud.firestore {
 
     match /wesabiPointAuditLogs/{id} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
-      allow write: if isSignedIn();
+      allow write: if isStaff();
     }
 
     match /wesabiTrustFactors/{id} {
@@ -599,7 +599,8 @@ service cloud.firestore {
     }
 
     match /operational_notifications/{id} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
+      allow write: if isStaff();
     }
 
     match /paymentMethods/{id} {
