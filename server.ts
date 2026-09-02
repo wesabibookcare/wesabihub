@@ -16,6 +16,8 @@ declare global {
 interface AuthenticatedUser {
   uid: string;
   email?: string;
+  phone?: string;
+  phoneNumber?: string;
   role: string | null;
   roles: string[];
   status: string | null;
@@ -1174,6 +1176,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     const { parcelId, enteredPin } = req.body;
     const caller = req.authUser!;
 
+    // Rate limiting per user for OTP confirmation (10 attempts per minute)
+    if (isRateLimited(`otp_confirm_${caller.uid}`, 10)) {
+      return res.status(429).json({ error: "Too many verification attempts. Please wait a minute before trying again." });
+    }
+
     const db = getDb();
     if (!db) {
       return res.status(500).json({ error: "Firebase Admin is not configured." });
@@ -2035,6 +2042,12 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
   // Universal Automated Government ID Document Scanning & Cross-Referencing
   app.post("/api/ai/scan-id", requireAuth(), async (req, res) => {
     try {
+      const caller = req.authUser!;
+      // Rate limiting per user for AI ID scan (5 scans per minute)
+      if (isRateLimited(`ai_scan_id_${caller.uid}`, 5)) {
+        return res.status(429).json({ error: "Rate limit exceeded for document scanning. Please wait a minute." });
+      }
+
       const { mediaBase64, mimeType, expectedName } = req.body;
       if (!mediaBase64) {
         return res.status(400).json({ error: "mediaBase64 is required." });
