@@ -37,6 +37,7 @@ import { getPersonas, getChatResponse } from "./server/ChatEngine.js";
 import { runAIChat, analyzeMedia, generateAIImage, scanIdDocument, estimateDelivery } from "./server/AIEngine.js";
 import { generateDisputePreAssessment } from "./server/DisputeEngine.js";
 import { paymentEngine } from "./src/engines/PaymentEngine.js";
+import { dispatchEngine } from "./src/engines/DispatchEngine.js";
 import { webhookEngine } from "./src/engines/WebhookEngine.js";
 import { configurationEngine } from "./src/engines/ConfigurationEngine.js";
 import { flyerEngine } from "./src/engines/FlyerEngine.js";
@@ -936,11 +937,24 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
       // Calculate effective distance. Zero out distance and logistics fees for Hub Pickup.
       const isHubPickup = fulfillmentMethod === 'HUB_PICKUP';
-      const effectiveDistance = isHubPickup ? 0 : (Number(distance) || 0);
+      let effectiveDistance = isHubPickup ? 0 : (Number(distance) || 0);
 
-      // Calculate pre-tax subtotal
-      let subtotal = rule.minFee || 500;
-      subtotal += (weight * (rule.pricePerKg || 100));
+      // Server-side distance validation if coordinates are supplied in query/body
+      const { originCoords, destinationCoords } = req.body;
+      if (!isHubPickup && originCoords?.lat && originCoords?.lng && destinationCoords?.lat && destinationCoords?.lng) {
+        const calculatedKm = getDistanceKm(
+          Number(originCoords.lat),
+          Number(originCoords.lng),
+          Number(destinationCoords.lat),
+          Number(destinationCoords.lng)
+        );
+        effectiveDistance = Math.max(effectiveDistance, Math.round(calculatedKm * 10) / 10);
+      }
+
+      // Calculate pre-tax subtotal - enforce minimum fare floor of ₦500
+      const minFee = Math.max(500, Number(rule.minFee) || 500);
+      let subtotal = minFee;
+      subtotal += ((Number(weight) || 0) * (rule.pricePerKg || 100));
       subtotal += (effectiveDistance * (rule.distancePricePerKm || 50));
 
       if (serviceType === 'express') {
@@ -1311,6 +1325,47 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
           inspectionExpiresAt: expiresAt,
           updatedAt: now
         });
+      }
+
+      // Automatic Rider Earnings Crediting for SendOmorfi Delivery Partners
+      const assignedRiderId = shipment?.assignedRiderId || shipment?.driverId || shipment?.assignedDriverId || shipment?.assignedRider;
+      if (assignedRiderId) {
+        try {
+          const baseFare = shipment?.pricing?.subtotal || shipment?.pricing?.baseFee || 500;
+          const transitMode = shipment?.transitMode || shipment?.riderTransitMode || 'On foot';
+
+          // Get Admin SendOmorfi rate multipliers if configured
+          const rulesSnap = await db.collection('pricingRules')
+            .where('country', '==', shipment?.originCountry || 'Nigeria')
+            .where('isActive', '==', true)
+            .limit(1)
+            .get();
+          const ruleData = rulesSnap.empty ? null : rulesSnap.docs[0].data();
+          const sendOmorfiRates = ruleData?.sendOmorfiRates;
+
+          const riderPayout = dispatchEngine.calculatePayout(baseFare, transitMode, sendOmorfiRates);
+
+          if (riderPayout > 0) {
+            const txRef = `TX-RIDER-PAYOUT-${parcelId}`;
+            await paymentEngine.creditWallet(
+              assignedRiderId,
+              riderPayout,
+              `SendOmorfi delivery earnings for parcel tracking #${shipment.trackingNumber || parcelId}`,
+              txRef,
+              'PAYOUT'
+            );
+
+            await auditEngine.logEvent({
+              userId: assignedRiderId,
+              userRole: 'DISPATCH_RIDER',
+              action: 'RIDER_DELIVERY_EARNING_CREDITED',
+              details: { parcelId, riderPayout, transitMode, baseFare, txRef },
+              result: 'SUCCESS'
+            });
+          }
+        } catch (riderPayoutErr) {
+          console.error("Failed to process automatic rider payout:", riderPayoutErr);
+        }
       }
 
       return res.status(200).json({ success: true, verified: true, message: "Delivery confirmed and parcel status updated to DELIVERED." });
