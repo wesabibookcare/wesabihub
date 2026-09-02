@@ -3065,7 +3065,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
       let recordToRelease: any = null;
 
-      // Run Firestore atomic transaction lock to prevent duplicate concurrent releases
+      // 1. Transaction check & state transition lock to PROCESSING
       await db.runTransaction(async (transaction) => {
         const docRef = db.collection('paymentProtections').doc(paymentProtectionId);
         const docSnap = await transaction.get(docRef);
@@ -3082,7 +3082,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
           throw new Error("Forbidden: You are not authorized to release this payment.");
         }
 
-        if (['PAYMENT_RELEASED', 'REFUND_APPROVED', 'TRANSACTION_CLOSED'].includes(record.status)) {
+        if (record.payoutStatus === 'SUCCESS' || ['PAYMENT_RELEASED', 'REFUND_APPROVED', 'TRANSACTION_CLOSED'].includes(record.status)) {
           throw new Error("Funds are already finalized or closed.");
         }
 
@@ -3092,51 +3092,82 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
         }
 
         transaction.update(docRef, {
-          status: 'PAYMENT_RELEASED',
-          paymentReleasedAt: new Date().toISOString(),
+          payoutStatus: 'PROCESSING',
+          releaseRequestedAt: new Date().toISOString(),
           releasedBy: actorId,
           updatedAt: new Date().toISOString()
         });
+      });
 
-        transaction.update(db.collection('shipments').doc(record.shipmentId), {
+      // 2. Perform external payment release & credit merchant wallet
+      const txRef = `TX-RELEASE-${paymentProtectionId}`;
+      try {
+        await paymentEngine.releaseExternalPayment(recordToRelease.flutterwaveRef || recordToRelease.id);
+
+        // Credit merchant wallet with protection release funds safely and idempotently
+        await paymentEngine.creditWallet(
+          recordToRelease.merchantId,
+          recordToRelease.amount,
+          `SafePay protected funds released to wallet for shipment tracking #${recordToRelease.trackingNumber}`,
+          txRef,
+          'PROTECTION_RELEASE'
+        );
+
+        // Mark record as PAYMENT_RELEASED & SUCCESS
+        await db.collection('paymentProtections').doc(paymentProtectionId).update({
+          status: 'PAYMENT_RELEASED',
+          payoutStatus: 'SUCCESS',
+          paymentReleasedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+
+        await db.collection('shipments').doc(recordToRelease.shipmentId).update({
           status: 'COMPLETED',
           updatedAt: new Date().toISOString()
         });
-      });
 
-      // Call authoritative releasePayment in PaymentEngine
-      await paymentEngine.releaseExternalPayment(recordToRelease.flutterwaveRef || recordToRelease.id);
+        // Dispatch Webhook
+        await dispatchWebhook(db, recordToRelease.merchantId, 'payment.released', {
+          shipmentId: recordToRelease.shipmentId,
+          amount: recordToRelease.amount,
+          status: 'PAYMENT_RELEASED'
+        });
 
-      // Add payout to merchant's wallet
-      const txId = `TX-${Date.now()}`;
-      await db.collection('transactions').doc(txId).set({
-        id: txId,
-        walletId: recordToRelease.merchantId,
-        amount: recordToRelease.amount,
-        type: 'PAYOUT',
-        status: 'SUCCESS',
-        description: `Secure funds released to wallet for shipment tracking #${recordToRelease.trackingNumber}`,
-        timestamp: new Date().toISOString()
-      });
+        await auditEngine.logEvent({
+          userId: actorId,
+          userRole: req.authUser!.role || undefined,
+          action: 'PAYMENT_PROTECTION_RELEASE_APPROVED',
+          details: { paymentProtectionId, amount: recordToRelease.amount, shipmentId: recordToRelease.shipmentId },
+          result: 'SUCCESS',
+          ipAddress: req.ip,
+          deviceInfo: req.get('user-agent')
+        });
 
-      // Dispatch Webhook
-      await dispatchWebhook(db, recordToRelease.merchantId, 'payment.released', {
-        shipmentId: recordToRelease.shipmentId,
-        amount: recordToRelease.amount,
-        status: 'PAYMENT_RELEASED'
-      });
+        res.json({ success: true, message: "Protected payment funds successfully released to merchant's wallet." });
+      } catch (payoutErr: any) {
+        console.error("External payout release failed:", payoutErr);
 
-      await auditEngine.logEvent({
-        userId: actorId,
-        userRole: req.authUser!.role || undefined,
-        action: 'PAYMENT_PROTECTION_RELEASE_APPROVED',
-        details: { paymentProtectionId, amount: recordToRelease.amount, shipmentId: recordToRelease.shipmentId },
-        result: 'SUCCESS',
-        ipAddress: req.ip,
-        deviceInfo: req.get('user-agent')
-      });
+        // Record payout failure state to allow retry
+        await db.collection('paymentProtections').doc(paymentProtectionId).update({
+          payoutStatus: 'FAILED',
+          payoutError: payoutErr.message || 'External gateway release failed',
+          updatedAt: new Date().toISOString()
+        });
 
-      res.json({ success: true, message: "Protected payment funds successfully released to merchant's wallet." });
+        await auditEngine.logEvent({
+          userId: actorId,
+          userRole: req.authUser!.role || undefined,
+          action: 'PAYMENT_PROTECTION_RELEASE_FAILED',
+          details: { paymentProtectionId, error: payoutErr.message },
+          result: 'FAILURE',
+          ipAddress: req.ip,
+          deviceInfo: req.get('user-agent')
+        });
+
+        res.status(500).json({
+          error: `Failed to complete external payment payout: ${payoutErr.message}. Release status recorded as FAILED for retry.`
+        });
+      }
     } catch (e: any) {
       console.error("Release error:", e);
       const isForbidden = e.message?.includes("Forbidden");
