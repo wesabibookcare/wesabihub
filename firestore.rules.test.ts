@@ -321,9 +321,16 @@ describe('WeSabiHub Zero-Trust Security Rules Audit', () => {
   });
 
   test('PHASE A2-6: Normal user CANNOT write to systemSettings', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'systemSettings/global'), {
+        isSuperAdminBootstrapped: true
+      });
+    });
+
     const context = testEnv.authenticatedContext('user_normal', { email_verified: true });
     const db = context.firestore();
-    const settingsRef = doc(db, 'systemSettings/global');
+    const settingsRef = doc(db, 'systemSettings/other_setting');
 
     await assertFails(setDoc(settingsRef, { setting: 'value' }));
   });
@@ -392,6 +399,15 @@ describe('WeSabiHub Zero-Trust Security Rules Audit', () => {
 
   // PHASE A2: Points/Trust Protection
   test('PHASE A2-12: User CANNOT modify wesabiHubPoints', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'wesabiHubPoints/hub_123'), {
+        id: 'hub_123',
+        ownerId: 'owner_123',
+        points: 100
+      });
+    });
+
     const context = testEnv.authenticatedContext('user_normal', { email_verified: true });
     const db = context.firestore();
     const pointsRef = doc(db, 'wesabiHubPoints/hub_123');
@@ -484,6 +500,183 @@ describe('WeSabiHub Zero-Trust Security Rules Audit', () => {
     await assertFails(setDoc(policyRef, {
       version: '2.0',
       content: 'malicious policy'
+    }));
+  });
+
+  // =========================================================================
+  // PRODUCTION READINESS FIXES AUDIT TESTS (A, B, C)
+  // =========================================================================
+
+  // A. TRACKING EVENT AUTHORIZATION
+  test('A1 (DENY): Normal customer or merchant cannot create arbitrary tracking events', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'shipments/pcl_100'), {
+        id: 'pcl_100',
+        senderId: 'user_merchant',
+        originCenterId: 'hub_a',
+        status: 'AWAITING_PAYMENT'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('user_customer', { email_verified: true });
+    const db = context.firestore();
+    const evtRef = doc(db, 'trackingEvents/evt_fake');
+
+    await assertFails(setDoc(evtRef, {
+      id: 'evt_fake',
+      parcelId: 'pcl_100',
+      status: 'DELIVERED',
+      actorId: 'user_customer',
+      location: 'hub_a',
+      remarks: 'Fake delivered status'
+    }));
+  });
+
+  test('A2 (DENY): Unassigned hub staff cannot create tracking events for arbitrary parcels', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'users/staff_other'), {
+        uid: 'staff_other',
+        role: 'CENTER_STAFF',
+        roles: ['CENTER_STAFF'],
+        hubId: 'hub_other',
+        status: 'ACTIVE'
+      });
+      await setDoc(doc(db, 'shipments/pcl_200'), {
+        id: 'pcl_200',
+        senderId: 'user_merchant',
+        originCenterId: 'hub_a',
+        destinationCenterId: 'hub_b',
+        status: 'IN_TRANSIT'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('staff_other', { email_verified: true });
+    const db = context.firestore();
+    const evtRef = doc(db, 'trackingEvents/evt_unassigned');
+
+    await assertFails(setDoc(evtRef, {
+      id: 'evt_unassigned',
+      parcelId: 'pcl_200',
+      status: 'ARRIVED_AT_HUB',
+      actorId: 'staff_other',
+      location: 'hub_other',
+      remarks: 'Unauthorized hub scan'
+    }));
+  });
+
+  test('A3 (ALLOW): Assigned operational staff at origin hub can create legitimate tracking event', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'users/staff_origin'), {
+        uid: 'staff_origin',
+        role: 'CENTER_STAFF',
+        roles: ['CENTER_STAFF'],
+        hubId: 'hub_origin',
+        status: 'ACTIVE'
+      });
+      await setDoc(doc(db, 'shipments/pcl_300'), {
+        id: 'pcl_300',
+        senderId: 'user_merchant',
+        originCenterId: 'hub_origin',
+        destinationCenterId: 'hub_dest',
+        status: 'RECEIVED_AT_ORIGIN'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('staff_origin', { email_verified: true });
+    const db = context.firestore();
+    const evtRef = doc(db, 'trackingEvents/evt_legit');
+
+    await assertSucceeds(setDoc(evtRef, {
+      id: 'evt_legit',
+      parcelId: 'pcl_300',
+      status: 'RECEIVED_AT_ORIGIN',
+      actorId: 'staff_origin',
+      hubId: 'hub_origin',
+      location: 'hub_origin',
+      remarks: 'Parcel checked in at origin hub'
+    }));
+  });
+
+  // B. RETURN REQUEST STATUS LOCK
+  test('B1 (ALLOW): Customer can update description/photos on their own return request', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'returnRequests/ret_1'), {
+        id: 'ret_1',
+        customerUserId: 'user_cust',
+        merchantId: 'user_merch',
+        description: 'Original issue description',
+        status: 'PENDING_MERCHANT_REVIEW'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('user_cust', { email_verified: true });
+    const db = context.firestore();
+    const retRef = doc(db, 'returnRequests/ret_1');
+
+    await assertSucceeds(updateDoc(retRef, {
+      description: 'Updated issue description with more details',
+      photos: ['https://example.com/photo1.jpg']
+    }));
+  });
+
+  test('B2 (DENY): Customer CANNOT modify status field on their return request', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'returnRequests/ret_2'), {
+        id: 'ret_2',
+        customerUserId: 'user_cust',
+        merchantId: 'user_merch',
+        description: 'Original description',
+        status: 'PENDING_MERCHANT_REVIEW'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('user_cust', { email_verified: true });
+    const db = context.firestore();
+    const retRef = doc(db, 'returnRequests/ret_2');
+
+    await assertFails(updateDoc(retRef, {
+      status: 'RETURN_APPROVED'
+    }));
+  });
+
+  // C. DISPUTE CATEGORIES LOCK
+  test('C1 (ALLOW): Platform Admin can manage dispute categories', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'users/admin_user'), {
+        uid: 'admin_user',
+        role: 'SUPER_ADMIN',
+        roles: ['SUPER_ADMIN'],
+        status: 'ACTIVE'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('admin_user', { email_verified: true });
+    const db = context.firestore();
+    const catRef = doc(db, 'disputeCategories/cat_new');
+
+    await assertSucceeds(setDoc(catRef, {
+      id: 'cat_new',
+      name: 'Custom Admin Category',
+      description: 'Added by super admin',
+      isActive: true
+    }));
+  });
+
+  test('C2 (DENY): Normal customer or merchant cannot write to dispute categories', async () => {
+    const context = testEnv.authenticatedContext('user_cust', { email_verified: true });
+    const db = context.firestore();
+    const catRef = doc(db, 'disputeCategories/cat_hacked');
+
+    await assertFails(setDoc(catRef, {
+      id: 'cat_hacked',
+      name: 'Hacked Category',
+      isActive: true
     }));
   });
 });

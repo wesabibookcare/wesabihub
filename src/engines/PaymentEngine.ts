@@ -346,6 +346,14 @@ class PaymentEngine {
   }
 
   async creditWallet(userId: string, amount: number, description: string, reference: string, category: 'SHIPMENT_PAYMENT' | 'PAYOUT' | 'COMMISSION' | 'REFUND' | 'PROTECTION_RELEASE' | 'WALLET_FUNDING' | 'REGISTRATION_FEE' | 'PLATFORM_CHARGE' = 'WALLET_FUNDING'): Promise<Transaction> {
+    // Check for existing transaction to enforce idempotency
+    if (reference) {
+      const existingTx = await transactionRepository.getById(reference).catch(() => null);
+      if (existingTx && existingTx.status === 'COMPLETED') {
+        return existingTx;
+      }
+    }
+
     let wallet = await this.getWallet(userId);
 
     // Auto-create wallet if it doesn't exist for the user
@@ -383,7 +391,7 @@ class PaymentEngine {
     });
 
     // Create transaction record
-    const transactionId = `TX-${Date.now()}`;
+    const transactionId = reference || `TX-${Date.now()}`;
     const transaction: Transaction = {
       id: transactionId,
       walletId: wallet.id,
