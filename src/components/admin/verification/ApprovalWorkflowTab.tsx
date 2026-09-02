@@ -42,7 +42,8 @@ export const ApprovalWorkflowTab: React.FC = () => {
   const [applications, setApplications] = useState<RoleApplication[]>([]);
   const [profileChanges, setProfileChanges] = useState<ProfileChangeRecord[]>([]);
   const [idScans, setIdScans] = useState<IdVerification[]>([]);
-  const [activeSubTab, setActiveSubTab] = useState<'PENDING' | 'SUSPENDED' | 'RE_UPLOAD_REQUESTED' | 'ID_SCANS' | 'UPDATES'>('PENDING');
+  const [activeSubTab, setActiveSubTab] = useState<'PENDING' | 'APPROVED' | 'SUSPENDED' | 'RE_UPLOAD_REQUESTED' | 'ID_SCANS' | 'UPDATES'>('PENDING');
+  const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RoleApplication | null>(null);
@@ -389,6 +390,32 @@ export const ApprovalWorkflowTab: React.FC = () => {
     }
   };
 
+  const handleDelete = async (app: RoleApplication) => {
+    if (!window.confirm(`Are you sure you want to delete application ${app.id}?`)) return;
+    setProcessingId(app.id);
+    try {
+      if (!app.id.startsWith('APP-USER-')) {
+        await roleApplicationRepository.delete(app.id);
+      }
+      const applicant = await userRepository.getById(app.userId);
+      if (applicant && applicant.pendingRoleApplication) {
+        await userRepository.update(app.userId, {
+          pendingRoleApplication: false,
+          requestedRole: undefined,
+          updatedAt: new Date().toISOString()
+        });
+      }
+      setApplications(prev => prev.filter(a => a.id !== app.id));
+      setSelectedApp(null);
+      toast.success(`Application deleted successfully`);
+    } catch (err) {
+      console.error('Delete failed:', err);
+      toast.error('Failed to delete application.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const handleRequestReUpload = async (app: RoleApplication) => {
     if (!reUploadTarget) {
       toast.error('Please specify which document needs a re-upload');
@@ -447,50 +474,88 @@ export const ApprovalWorkflowTab: React.FC = () => {
 
   // Categorize applications for rendering tabs
   const pendingApps = applications.filter(app => !app.status || app.status === 'SUBMITTED' || app.status === 'PENDING');
+  const approvedApps = applications.filter(app => app.status === 'APPROVED');
   const suspendedApps = applications.filter(app => app.status === 'UNDER_REVIEW');
   const reUploadRequestedApps = applications.filter(app => app.status === 'RE_UPLOAD_REQUESTED' || app.status === 'MORE_INFORMATION_REQUIRED');
 
-  const filteredApps =
+  const rawFilteredApps =
     activeSubTab === 'PENDING' ? pendingApps :
+    activeSubTab === 'APPROVED' ? approvedApps :
     activeSubTab === 'SUSPENDED' ? suspendedApps :
     activeSubTab === 'RE_UPLOAD_REQUESTED' ? reUploadRequestedApps : [];
+
+  const filteredApps = rawFilteredApps.filter(app => {
+    if (roleFilter === 'ALL') return true;
+    return app.role === roleFilter;
+  });
 
   return (
     <div className="space-y-6">
       {/* Sub tabs inside workflow */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-2">
-        <div className="flex gap-2">
-          {[
-            { id: 'PENDING', label: 'Pending Queue', count: pendingApps.length },
-            { id: 'SUSPENDED', label: 'Suspended Review', count: suspendedApps.length },
-            { id: 'ID_SCANS', label: 'ID Verification Scans', count: idScans.filter(s => s.status === 'PENDING').length },
-            { id: 'UPDATES', label: 'Profile Updates', count: profileChanges.length }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveSubTab(tab.id as any)}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition flex items-center gap-2 ${
-                activeSubTab === tab.id
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <span>{tab.label}</span>
-              {tab.count > 0 && (
-                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
-                  activeSubTab === tab.id ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-800'
-                }`}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
+      <div className="flex flex-col gap-3 border-b pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 'PENDING', label: 'Pending Queue', count: pendingApps.length },
+              { id: 'APPROVED', label: 'Approved Applications', count: approvedApps.length },
+              { id: 'SUSPENDED', label: 'Suspended Review', count: suspendedApps.length },
+              { id: 'ID_SCANS', label: 'ID Verification Scans', count: idScans.filter(s => s.status === 'PENDING').length },
+              { id: 'UPDATES', label: 'Profile Updates', count: profileChanges.length }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSubTab(tab.id as any)}
+                className={`px-4 py-2 text-xs font-bold rounded-xl transition flex items-center gap-2 ${
+                  activeSubTab === tab.id
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                    activeSubTab === tab.id ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-800'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {activeSubTab === 'UPDATES' && profileChanges.length > 0 && (
+            <Button size="sm" variant="outline" onClick={handleClearChanges} className="rounded-xl font-bold">
+              Mark all updates as seen
+            </Button>
+          )}
         </div>
 
-        {activeSubTab === 'UPDATES' && profileChanges.length > 0 && (
-          <Button size="sm" variant="outline" onClick={handleClearChanges} className="rounded-xl font-bold">
-            Mark all updates as seen
-          </Button>
+        {/* Role categorization filter buttons */}
+        {(activeSubTab === 'PENDING' || activeSubTab === 'APPROVED' || activeSubTab === 'SUSPENDED') && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1">
+              <Filter size={12} /> Filter by Role:
+            </span>
+            {[
+              { id: 'ALL', label: 'All Roles' },
+              { id: 'MERCHANT', label: 'Merchant Pending/Approved' },
+              { id: 'DISPATCH_RIDER', label: 'SendOmorfi Rider' },
+              { id: 'CENTER_OWNER', label: 'Hub Center Owner' },
+              { id: 'LOGISTICS_COMPANY', label: 'Logistics Company' }
+            ].map(r => (
+              <button
+                key={r.id}
+                onClick={() => setRoleFilter(r.id)}
+                className={`px-3 py-1 text-[11px] font-bold rounded-lg border transition ${
+                  roleFilter === r.id
+                    ? 'bg-primary-600 border-primary-600 text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -503,21 +568,25 @@ export const ApprovalWorkflowTab: React.FC = () => {
         <div className="grid grid-cols-1 gap-4">
 
           {/* Display lists based on active tab */}
-          {(activeSubTab === 'PENDING' || activeSubTab === 'SUSPENDED' || activeSubTab === 'RE_UPLOAD_REQUESTED') && (
+          {(activeSubTab === 'PENDING' || activeSubTab === 'APPROVED' || activeSubTab === 'SUSPENDED' || activeSubTab === 'RE_UPLOAD_REQUESTED') && (
             <>
               {filteredApps.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 p-8 space-y-3">
                   <ShieldCheck className="mx-auto text-emerald-500" size={48} />
                   <h4 className="font-bold text-slate-900 text-sm">Applications Queue Empty</h4>
-                  <p className="text-xs text-slate-400">All candidate documents have been reviewed.</p>
+                  <p className="text-xs text-slate-400">No applications match the current status and role filters.</p>
                 </div>
               ) : (
                 filteredApps.map((app, idx) => (
                   <Card key={app.id} className="p-5 border border-slate-200/60 shadow-sm rounded-3xl bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-black text-slate-900">{app.role.replace('_', ' ')}</h4>
-                        <Badge className="bg-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider">
+                        <h4 className="text-sm font-black text-slate-900">{app.role.replace(/_/g, ' ')}</h4>
+                        <Badge className={
+                          app.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 font-bold text-[9px] uppercase tracking-wider' :
+                          app.status === 'UNDER_REVIEW' ? 'bg-amber-100 text-amber-800 font-bold text-[9px] uppercase tracking-wider' :
+                          'bg-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider'
+                        }>
                           {app.status}
                         </Badge>
                       </div>
@@ -527,14 +596,26 @@ export const ApprovalWorkflowTab: React.FC = () => {
                         <span className="flex items-center gap-1"><FileText size={12} /> {Object.keys(app.data || {}).filter(k => k.startsWith('document_')).length} Documents</span>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleOpenReview(app)}
-                      className="bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold w-full md:w-auto"
-                    >
-                      Audit Credentials
-                      <ArrowRight size={14} className="ml-1" />
-                    </Button>
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                      <Button
+                        size="sm"
+                        onClick={() => handleOpenReview(app)}
+                        className="bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold flex-1 md:flex-initial"
+                      >
+                        Audit Credentials
+                        <ArrowRight size={14} className="ml-1" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => handleDelete(app)}
+                        disabled={processingId === app.id}
+                        className="rounded-xl text-xs font-bold"
+                        title="Delete Form Application"
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </Card>
                 ))
               )}
@@ -817,18 +898,28 @@ export const ApprovalWorkflowTab: React.FC = () => {
 
               </div>
 
-              <div className="p-5 border-t flex items-center justify-end gap-3 bg-slate-50 dark:bg-slate-950">
-                <Button variant="outline" onClick={() => setSelectedApp(null)} className="rounded-xl h-10">
-                  Dismiss Review
-                </Button>
+              <div className="p-5 border-t flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-950">
                 <Button
-                  onClick={() => handleApprove(selectedApp)}
+                  variant="danger"
+                  onClick={() => handleDelete(selectedApp)}
                   disabled={processingId === selectedApp.id}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold min-w-36 h-10"
+                  className="rounded-xl h-10 font-bold"
                 >
-                  {processingId === selectedApp.id ? <Loader2 size={16} className="animate-spin mr-1.5" /> : <FileCheck size={16} className="mr-1.5" />}
-                  Approve & Activate
+                  Delete Form
                 </Button>
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" onClick={() => setSelectedApp(null)} className="rounded-xl h-10">
+                    Dismiss Review
+                  </Button>
+                  <Button
+                    onClick={() => handleApprove(selectedApp)}
+                    disabled={processingId === selectedApp.id}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold min-w-36 h-10"
+                  >
+                    {processingId === selectedApp.id ? <Loader2 size={16} className="animate-spin mr-1.5" /> : <FileCheck size={16} className="mr-1.5" />}
+                    Approve & Activate
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>
