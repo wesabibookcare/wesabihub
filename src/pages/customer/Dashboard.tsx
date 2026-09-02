@@ -9,7 +9,8 @@ import { cn } from '@/src/lib/utils';
 import { useAuth } from '@/src/context/AuthContext';
 import { apiFetch } from '@/src/lib/apiClient';
 import { permissionService } from '@/src/services/permissionService';
-import { Parcel, HubCenter } from '@/src/types';
+import { roleApplicationRepository } from '@/src/services/db/RoleApplicationRepository';
+import { Parcel, HubCenter, RoleApplication } from '@/src/types';
 import {
   Send,
   Search,
@@ -40,6 +41,7 @@ export const CustomerDashboard = () => {
   const [shipments, setShipments] = useState<Parcel[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [userApplications, setUserApplications] = useState<RoleApplication[]>([]);
   const [nearestHub, setNearestHub] = useState<HubCenter | null>(null);
 
   // AI Delivery Estimator State
@@ -60,11 +62,13 @@ export const CustomerDashboard = () => {
     const fetchDashboardData = async () => {
       if (!user) return;
       try {
-        const [userShipments, allHubs] = await Promise.all([
+        const [userShipments, allHubs, apps] = await Promise.all([
           parcelEngine.parcels.listUserShipments(user.uid),
-          centreEngine.getAllHubs()
+          centreEngine.getAllHubs(),
+          roleApplicationRepository.getByUser(user.uid).catch(() => [])
         ]);
         setShipments(userShipments);
+        setUserApplications(apps || []);
 
         // Find nearest hub
         if (allHubs.length > 0) {
@@ -84,6 +88,22 @@ export const CustomerDashboard = () => {
     if (!nearestHub) return;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nearestHub.address + ', ' + nearestHub.city)}`;
     window.open(url, '_blank');
+  };
+
+  const getRoleStatus = (roleKey: 'MERCHANT' | 'CENTER_OWNER' | 'DISPATCH_RIDER') => {
+    const userRoles = user?.roles || (user?.role ? [user.role] : []);
+    const isApproved = userRoles.includes(roleKey) ||
+      (roleKey === 'MERCHANT' && (user?.status === 'APPROVED' || user?.status === 'ACTIVE') && user?.role === 'MERCHANT');
+
+    if (isApproved) return 'APPROVED';
+
+    const hasPendingApp = userApplications.some(
+      app => app.role === roleKey && (app.status === 'SUBMITTED' || app.status === 'PENDING' || app.status === 'UNDER_REVIEW')
+    ) || (user?.pendingRoleApplication && (user?.requestedRole === roleKey || user?.role === roleKey));
+
+    if (hasPendingApp) return 'PENDING';
+
+    return 'NONE';
   };
 
   const stats = {
@@ -229,7 +249,7 @@ export const CustomerDashboard = () => {
                  <div className="space-y-3">
                     <div className="w-full h-36 rounded-xl overflow-hidden bg-indigo-950/50 flex items-center justify-center border border-indigo-500/20">
                        <img
-                         src="/assets/images/roles/merchant.png"
+                         src="/assets/images/roles/dispatch_rider.png"
                          alt="Merchant Workspace"
                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                        />
@@ -237,11 +257,21 @@ export const CustomerDashboard = () => {
                     <h3 className="text-xl font-bold">Want to sell or send high-volume shipments?</h3>
                     <p className="text-xs text-indigo-200">Unlock bulk parcel tools, storefront integration & verified merchant badges.</p>
                  </div>
-                 <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl h-11" asChild>
-                    <Link to="/customer/settings?tab=roles&apply=MERCHANT">
-                       ACTIVATE MERCHANT WORKSPACE
-                    </Link>
-                 </Button>
+                 {getRoleStatus('MERCHANT') === 'APPROVED' ? (
+                    <Badge className="w-full py-3 text-center justify-center font-bold text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-xl">
+                       You are an Approved Merchant ✓
+                    </Badge>
+                 ) : getRoleStatus('MERCHANT') === 'PENDING' ? (
+                    <Badge className="w-full py-3 text-center justify-center font-bold text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl">
+                       Merchant Application Pending ⏳
+                    </Badge>
+                 ) : (
+                    <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl h-11" asChild>
+                       <Link to="/customer/settings?tab=roles&apply=MERCHANT">
+                          ACTIVATE MERCHANT WORKSPACE
+                       </Link>
+                    </Button>
+                 )}
               </Card>
 
               {/* Hub Owner Card */}
@@ -249,7 +279,7 @@ export const CustomerDashboard = () => {
                  <div className="space-y-3">
                     <div className="w-full h-36 rounded-xl overflow-hidden bg-amber-950/50 flex items-center justify-center border border-amber-500/20">
                        <img
-                         src="/assets/images/roles/center_owner.png"
+                         src="/assets/images/roles/merchant.png"
                          alt="OmorfiHub Center Owner Workspace"
                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                        />
@@ -257,11 +287,21 @@ export const CustomerDashboard = () => {
                     <h3 className="text-xl font-bold">Have a physical shop or filling station?</h3>
                     <p className="text-xs text-amber-200">Earn steady commissions per parcel processed at your physical location.</p>
                  </div>
-                 <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl h-11" asChild>
-                    <Link to="/customer/settings?tab=roles&apply=CENTER_OWNER">
-                       Apply as Hub Center Owner
-                    </Link>
-                 </Button>
+                 {getRoleStatus('CENTER_OWNER') === 'APPROVED' ? (
+                    <Badge className="w-full py-3 text-center justify-center font-bold text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-xl">
+                       You are an Approved Hub Center Owner ✓
+                    </Badge>
+                 ) : getRoleStatus('CENTER_OWNER') === 'PENDING' ? (
+                    <Badge className="w-full py-3 text-center justify-center font-bold text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl">
+                       Hub Owner Application Pending ⏳
+                    </Badge>
+                 ) : (
+                    <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl h-11" asChild>
+                       <Link to="/customer/settings?tab=roles&apply=CENTER_OWNER">
+                          Apply as Hub Center Owner
+                       </Link>
+                    </Button>
+                 )}
               </Card>
 
               {/* SendOmorfi Rider Card */}
@@ -269,7 +309,7 @@ export const CustomerDashboard = () => {
                  <div className="space-y-3">
                     <div className="w-full h-36 rounded-xl overflow-hidden bg-emerald-950/50 flex items-center justify-center border border-emerald-500/20">
                        <img
-                         src="/assets/images/roles/dispatch_rider.png"
+                         src="/assets/images/roles/center_owner.png"
                          alt="SendOmorfi Dispatch Fleet"
                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                        />
@@ -277,11 +317,21 @@ export const CustomerDashboard = () => {
                     <h3 className="text-xl font-bold">Have a bicycle, vehicle or can walk?</h3>
                     <p className="text-xs text-emerald-200">Join our flexible last-mile dispatch fleet with live face scan verification.</p>
                  </div>
-                 <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl h-11" asChild>
-                    <Link to="/customer/settings?tab=roles&apply=DISPATCH_RIDER">
-                       Join SendOmorfi Dispatch
-                    </Link>
-                 </Button>
+                 {getRoleStatus('DISPATCH_RIDER') === 'APPROVED' ? (
+                    <Badge className="w-full py-3 text-center justify-center font-bold text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-xl">
+                       You are an Approved SendOmorfi Rider ✓
+                    </Badge>
+                 ) : getRoleStatus('DISPATCH_RIDER') === 'PENDING' ? (
+                    <Badge className="w-full py-3 text-center justify-center font-bold text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl">
+                       SendOmorfi Application Pending ⏳
+                    </Badge>
+                 ) : (
+                    <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl h-11" asChild>
+                       <Link to="/customer/settings?tab=roles&apply=DISPATCH_RIDER">
+                          Join SendOmorfi Dispatch
+                       </Link>
+                    </Button>
+                 )}
               </Card>
            </div>
         </motion.div>

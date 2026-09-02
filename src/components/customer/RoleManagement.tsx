@@ -28,11 +28,14 @@ export const RoleManagement: React.FC = () => {
   useEffect(() => {
     if (autoApplyRole && (VALID_PUBLIC_ROLES as readonly string[]).includes(autoApplyRole)) {
       const roleObj = ROLES.find(r => r.id === autoApplyRole);
-      if (roleObj && !(user?.roles || []).includes(roleObj.id)) {
+      const isApproved = (user?.roles || []).includes(autoApplyRole) || (user?.role === autoApplyRole && (user?.status === 'APPROVED' || user?.status === 'ACTIVE'));
+      const hasPending = applications.some(app => app.role === autoApplyRole && (app.status === 'SUBMITTED' || app.status === 'PENDING' || app.status === 'UNDER_REVIEW')) || (user?.pendingRoleApplication && (user?.requestedRole === autoApplyRole || user?.role === autoApplyRole));
+
+      if (roleObj && !isApproved && !hasPending) {
         setApplyingForRole({ id: roleObj.id, title: roleObj.title });
       }
     }
-  }, [autoApplyRole, user?.roles]);
+  }, [autoApplyRole, user?.roles, user?.role, user?.status, user?.pendingRoleApplication, user?.requestedRole, applications]);
 
   useEffect(() => {
     if (userId) {
