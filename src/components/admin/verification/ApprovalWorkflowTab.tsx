@@ -398,10 +398,11 @@ export const ApprovalWorkflowTab: React.FC = () => {
         await roleApplicationRepository.delete(app.id);
       }
       const applicant = await userRepository.getById(app.userId);
-      if (applicant && applicant.pendingRoleApplication) {
+      if (applicant) {
         await userRepository.update(app.userId, {
           pendingRoleApplication: false,
           requestedRole: undefined,
+          status: applicant.status === 'UNDER_REVIEW' || applicant.status === 'REJECTED' || applicant.status === 'SUBMITTED' ? 'ACTIVE' : applicant.status,
           updatedAt: new Date().toISOString()
         });
       }

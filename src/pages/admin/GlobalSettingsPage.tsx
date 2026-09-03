@@ -91,27 +91,110 @@ export const GlobalSettingsPage = () => {
 
   useEffect(() => {
     if (globalSettings) {
-      const mergedSettings = {
+      const mergedSettings: SystemSettings = {
         ...globalSettings,
+        platformName: globalSettings.platformName || 'OmorfiHub',
+        tagline: globalSettings.tagline || 'Smarter SafePay Logistics & Peer-to-Peer Hub Services',
+        maintenanceMode: !!globalSettings.maintenanceMode,
+        branding: {
+          logoUrl: globalSettings.branding?.logoUrl || '',
+          logoDarkUrl: globalSettings.branding?.logoDarkUrl || '',
+          faviconUrl: globalSettings.branding?.faviconUrl || '',
+          appIconUrl: globalSettings.branding?.appIconUrl || '',
+          primaryColor: globalSettings.branding?.primaryColor || '#0F172A',
+          secondaryColor: globalSettings.branding?.secondaryColor || '#3B82F6',
+          typography: {
+            headingFont: globalSettings.branding?.typography?.headingFont || 'Inter',
+            bodyFont: globalSettings.branding?.typography?.bodyFont || 'Inter',
+          },
+          ...globalSettings.branding
+        },
+        landingPage: {
+          hero: {
+            title: globalSettings.landingPage?.hero?.title || 'Hyperlocal Logistics & SafePay Commerce',
+            subtitle: globalSettings.landingPage?.hero?.subtitle || 'Connect with verified merchants, hub centers, and dispatch riders.',
+            backgroundImageUrl: globalSettings.landingPage?.hero?.backgroundImageUrl || '',
+            ...globalSettings.landingPage?.hero
+          },
+          descriptions: {
+            networkSummary: globalSettings.landingPage?.descriptions?.networkSummary || '',
+            merchantValueProp: globalSettings.landingPage?.descriptions?.merchantValueProp || '',
+            logisticsValueProp: globalSettings.landingPage?.descriptions?.logisticsValueProp || '',
+            centerValueProp: globalSettings.landingPage?.descriptions?.centerValueProp || '',
+            ...globalSettings.landingPage?.descriptions
+          },
+          statistics: globalSettings.landingPage?.statistics || [
+            { id: '1', label: 'Registered Hubs', value: '150+' },
+            { id: '2', label: 'Successful Deliveries', value: '25,000+' },
+            { id: '3', label: 'Active Merchants', value: '1,200+' },
+            { id: '4', label: 'SafePay Protection Vol.', value: '₦50M+' }
+          ]
+        },
+        socialLinks: {
+          facebook: globalSettings.socialLinks?.facebook || '',
+          instagram: globalSettings.socialLinks?.instagram || '',
+          linkedin: globalSettings.socialLinks?.linkedin || '',
+          twitter: globalSettings.socialLinks?.twitter || '',
+          tiktok: globalSettings.socialLinks?.tiktok || '',
+          youtube: globalSettings.socialLinks?.youtube || '',
+          whatsapp: globalSettings.socialLinks?.whatsapp || '',
+          telegram: globalSettings.socialLinks?.telegram || '',
+          website: globalSettings.socialLinks?.website || '',
+          ...globalSettings.socialLinks
+        },
         companyPages: {
-          aboutUs: '',
-          howItWorks: '',
-          solutions: '',
-          forMerchants: '',
-          becomeHub: '',
-          pricing: '',
-          contactUs: '',
+          aboutUs: globalSettings.companyPages?.aboutUs || '',
+          howItWorks: globalSettings.companyPages?.howItWorks || '',
+          solutions: globalSettings.companyPages?.solutions || '',
+          merchants: globalSettings.companyPages?.merchants || '',
+          logistics: globalSettings.companyPages?.logistics || '',
+          hubs: globalSettings.companyPages?.hubs || '',
           ...globalSettings.companyPages
         },
+        countryConfig: {
+          defaultCountry: globalSettings.countryConfig?.defaultCountry || 'Nigeria',
+          defaultCurrency: globalSettings.countryConfig?.defaultCurrency || 'NGN',
+          defaultCurrencySymbol: globalSettings.countryConfig?.defaultCurrencySymbol || '₦',
+          defaultTimezone: globalSettings.countryConfig?.defaultTimezone || 'Africa/Lagos',
+          defaultPhoneCode: globalSettings.countryConfig?.defaultPhoneCode || '+234',
+          defaultDateFormat: globalSettings.countryConfig?.defaultDateFormat || 'DD/MM/YYYY',
+          defaultAddressFormat: globalSettings.countryConfig?.defaultAddressFormat || 'Street, City, State, Country',
+          consumerProtectionRules: globalSettings.countryConfig?.consumerProtectionRules || '',
+          taxSettings: {
+            enabled: globalSettings.countryConfig?.taxSettings?.enabled ?? true,
+            vatRate: globalSettings.countryConfig?.taxSettings?.vatRate ?? 7.5,
+            ...globalSettings.countryConfig?.taxSettings
+          },
+          ...globalSettings.countryConfig
+        },
+        policies: {
+          privacyPolicy: globalSettings.policies?.privacyPolicy || '',
+          termsOfService: globalSettings.policies?.termsOfService || '',
+          paymentProtectionPolicy: globalSettings.policies?.paymentProtectionPolicy || '',
+          returnsPolicy: globalSettings.policies?.returnsPolicy || '',
+          merchantPolicy: globalSettings.policies?.merchantPolicy || '',
+          communityGuidelines: globalSettings.policies?.communityGuidelines || '',
+          ...globalSettings.policies
+        },
         contactInfo: {
-          supportEmail: globalSettings.supportEmail || '',
-          supportPhone: globalSettings.supportPhone || '',
-          customerCareEmail: '',
-          officeAddresses: [],
-          businessHours: '',
+          supportEmail: globalSettings.supportEmail || globalSettings.contactInfo?.supportEmail || '',
+          supportPhone: globalSettings.supportPhone || globalSettings.contactInfo?.supportPhone || '',
+          whatsapp: globalSettings.contactInfo?.whatsapp || '',
+          address: globalSettings.contactInfo?.address || '',
+          workingHours: globalSettings.contactInfo?.workingHours || '',
+          customerCareEmail: globalSettings.contactInfo?.customerCareEmail || '',
+          officeAddresses: globalSettings.contactInfo?.officeAddresses || [],
+          businessHours: globalSettings.contactInfo?.businessHours || '',
           ...globalSettings.contactInfo
         },
         featureFlags: {
+          enableMerchantRegistration: globalSettings.featureFlags?.enableMerchantRegistration ?? true,
+          enableLogisticsOnboarding: globalSettings.featureFlags?.enableLogisticsOnboarding ?? true,
+          enableHubCenterApplications: globalSettings.featureFlags?.enableHubCenterApplications ?? true,
+          enablePublicMarketplace: globalSettings.featureFlags?.enablePublicMarketplace ?? true,
+          enableAIAssistant: globalSettings.featureFlags?.enableAIAssistant ?? true,
+          enableGlobalSearch: globalSettings.featureFlags?.enableGlobalSearch ?? true,
+          enableSafePay: globalSettings.featureFlags?.enableSafePay ?? true,
           paymentProtection: true,
           weSabiChat: true,
           qrVerification: true,
@@ -149,6 +232,7 @@ export const GlobalSettingsPage = () => {
           retryPolicy: {
             maxAttempts: 3,
             delaySeconds: 10,
+            ...globalSettings.communicationSettings?.retryPolicy
           },
           quietHoursStart: '22:00',
           quietHoursEnd: '06:00',
@@ -195,7 +279,8 @@ export const GlobalSettingsPage = () => {
           refundRules: ['FULL_REFUND', 'PARTIAL_REFUND_WITH_FEE'],
           isFlutterwaveEnabled: true,
           ...globalSettings.paymentConfig
-        }
+        },
+        footer: globalSettings.footer || { links: [] }
       };
       setSettings(JSON.parse(JSON.stringify(mergedSettings)));
     }

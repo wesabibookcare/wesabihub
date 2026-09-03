@@ -250,8 +250,8 @@ export const PricingRulesPage = () => {
                     <label className="text-[10px] font-bold text-slate-500 uppercase">Min Parcels</label>
                     <input
                       type="number"
-                      value={tier.minParcels}
-                      onChange={(e) => handleUpdateTier(tier.id, 'minParcels', parseInt(e.target.value) || 0)}
+                      value={tier.minParcels === 0 ? '' : tier.minParcels}
+                      onChange={(e) => handleUpdateTier(tier.id, 'minParcels', e.target.value === '' ? 0 : parseInt(e.target.value))}
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -260,8 +260,8 @@ export const PricingRulesPage = () => {
                     <label className="text-[10px] font-bold text-slate-500 uppercase">Max Parcels</label>
                     <input
                       type="number"
-                      value={tier.maxParcels}
-                      onChange={(e) => handleUpdateTier(tier.id, 'maxParcels', parseInt(e.target.value) || 99999)}
+                      value={tier.maxParcels === 0 ? '' : tier.maxParcels}
+                      onChange={(e) => handleUpdateTier(tier.id, 'maxParcels', e.target.value === '' ? 0 : parseInt(e.target.value))}
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -271,8 +271,8 @@ export const PricingRulesPage = () => {
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
-                        value={tier.hubPercentage}
-                        onChange={(e) => handleUpdateTier(tier.id, 'hubPercentage', parseFloat(e.target.value) || 0)}
+                        value={tier.hubPercentage === 0 ? '' : tier.hubPercentage}
+                        onChange={(e) => handleUpdateTier(tier.id, 'hubPercentage', e.target.value === '' ? 0 : parseFloat(e.target.value))}
                         className="w-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-600"
                       />
                       <span className="text-xs font-bold text-slate-400">% Hub / {tier.omorfiPercentage}% Omorfi</span>
@@ -309,8 +309,8 @@ export const PricingRulesPage = () => {
                   <Percent size={18} className="text-slate-400" />
                   <input
                     type="number"
-                    value={logisticsMarkup.markupPercentage}
-                    onChange={(e) => setLogisticsMarkup({ ...logisticsMarkup, markupPercentage: parseFloat(e.target.value) || 0 })}
+                    value={logisticsMarkup.markupPercentage === 0 ? '' : logisticsMarkup.markupPercentage}
+                    onChange={(e) => setLogisticsMarkup({ ...logisticsMarkup, markupPercentage: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                     className="bg-transparent border-none font-black text-lg w-full focus:outline-none"
                   />
                   <span className="text-xs font-bold text-slate-400">% added to rate</span>
@@ -323,8 +323,8 @@ export const PricingRulesPage = () => {
                   <span className="font-bold text-slate-400">₦</span>
                   <input
                     type="number"
-                    value={logisticsMarkup.minMarkupAmount}
-                    onChange={(e) => setLogisticsMarkup({ ...logisticsMarkup, minMarkupAmount: parseFloat(e.target.value) || 0 })}
+                    value={logisticsMarkup.minMarkupAmount === 0 ? '' : logisticsMarkup.minMarkupAmount}
+                    onChange={(e) => setLogisticsMarkup({ ...logisticsMarkup, minMarkupAmount: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                     className="bg-transparent border-none font-black text-lg w-full focus:outline-none"
                   />
                 </div>
@@ -352,8 +352,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Buyer SafePay Fee (%)</label>
                 <input
                   type="number"
-                  value={safePayConfig.buyerFeePercent}
-                  onChange={(e) => setSafePayConfig({ ...safePayConfig, buyerFeePercent: parseFloat(e.target.value) || 0 })}
+                  value={safePayConfig.buyerFeePercent === 0 ? '' : safePayConfig.buyerFeePercent}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, buyerFeePercent: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -362,8 +362,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Seller SafePay Fee (%)</label>
                 <input
                   type="number"
-                  value={safePayConfig.sellerFeePercent}
-                  onChange={(e) => setSafePayConfig({ ...safePayConfig, sellerFeePercent: parseFloat(e.target.value) || 0 })}
+                  value={safePayConfig.sellerFeePercent === 0 ? '' : safePayConfig.sellerFeePercent}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, sellerFeePercent: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -372,8 +372,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum SafePay Fee (₦)</label>
                 <input
                   type="number"
-                  value={safePayConfig.minEscrowFee}
-                  onChange={(e) => setSafePayConfig({ ...safePayConfig, minEscrowFee: parseFloat(e.target.value) || 0 })}
+                  value={safePayConfig.minEscrowFee === 0 ? '' : safePayConfig.minEscrowFee}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, minEscrowFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -382,8 +382,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Maximum Cap Fee (₦)</label>
                 <input
                   type="number"
-                  value={safePayConfig.maxEscrowFee}
-                  onChange={(e) => setSafePayConfig({ ...safePayConfig, maxEscrowFee: parseFloat(e.target.value) || 0 })}
+                  value={safePayConfig.maxEscrowFee === 0 ? '' : safePayConfig.maxEscrowFee}
+                  onChange={(e) => setSafePayConfig({ ...safePayConfig, maxEscrowFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -404,8 +404,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Minimum Shipping Fee (₦)</label>
                 <input
                   type="number"
-                  value={basePricing.minShippingFee}
-                  onChange={(e) => setBasePricing({ ...basePricing, minShippingFee: parseFloat(e.target.value) || 0 })}
+                  value={basePricing.minShippingFee === 0 ? '' : basePricing.minShippingFee}
+                  onChange={(e) => setBasePricing({ ...basePricing, minShippingFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -414,8 +414,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-primary-600 dark:text-primary-400 font-bold">Hub Center Rate per Kg (₦/kg)</label>
                 <input
                   type="number"
-                  value={basePricing.hubBaseRatePerKg || 300}
-                  onChange={(e) => setBasePricing({ ...basePricing, hubBaseRatePerKg: parseFloat(e.target.value) || 0 })}
+                  value={basePricing.hubBaseRatePerKg === 0 ? '' : basePricing.hubBaseRatePerKg}
+                  onChange={(e) => setBasePricing({ ...basePricing, hubBaseRatePerKg: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-primary-500 rounded-xl p-3 font-black text-base text-primary-600"
                 />
                 <p className="text-[10px] text-slate-500">Rate charged per kilogram for parcel processing across Hub Centers.</p>
@@ -425,8 +425,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Oversized Parcel Fee (₦)</label>
                 <input
                   type="number"
-                  value={basePricing.oversizedFee}
-                  onChange={(e) => setBasePricing({ ...basePricing, oversizedFee: parseFloat(e.target.value) || 0 })}
+                  value={basePricing.oversizedFee === 0 ? '' : basePricing.oversizedFee}
+                  onChange={(e) => setBasePricing({ ...basePricing, oversizedFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -435,8 +435,8 @@ export const PricingRulesPage = () => {
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Fragile Handling Fee (₦)</label>
                 <input
                   type="number"
-                  value={basePricing.fragileFee}
-                  onChange={(e) => setBasePricing({ ...basePricing, fragileFee: parseFloat(e.target.value) || 0 })}
+                  value={basePricing.fragileFee === 0 ? '' : basePricing.fragileFee}
+                  onChange={(e) => setBasePricing({ ...basePricing, fragileFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
               </div>
@@ -458,8 +458,8 @@ export const PricingRulesPage = () => {
                 <input
                   type="number"
                   step="0.05"
-                  value={sendOmorfiRates.onFootMultiplier}
-                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, onFootMultiplier: parseFloat(e.target.value) || 1.0 })}
+                  value={sendOmorfiRates.onFootMultiplier === 0 ? '' : sendOmorfiRates.onFootMultiplier}
+                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, onFootMultiplier: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
                 <p className="text-[10px] text-slate-500">Base rate payout multiplier for walking deliveries.</p>
@@ -470,8 +470,8 @@ export const PricingRulesPage = () => {
                 <input
                   type="number"
                   step="0.05"
-                  value={sendOmorfiRates.bicycleMultiplier}
-                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, bicycleMultiplier: parseFloat(e.target.value) || 1.0 })}
+                  value={sendOmorfiRates.bicycleMultiplier === 0 ? '' : sendOmorfiRates.bicycleMultiplier}
+                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, bicycleMultiplier: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-black text-base"
                 />
                 <p className="text-[10px] text-slate-500">Rate multiplier for cycling deliveries.</p>
@@ -482,8 +482,8 @@ export const PricingRulesPage = () => {
                 <input
                   type="number"
                   step="0.05"
-                  value={sendOmorfiRates.otherVehiclesMultiplier}
-                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, otherVehiclesMultiplier: parseFloat(e.target.value) || 1.0 })}
+                  value={sendOmorfiRates.otherVehiclesMultiplier === 0 ? '' : sendOmorfiRates.otherVehiclesMultiplier}
+                  onChange={(e) => setSendOmorfiRates({ ...sendOmorfiRates, otherVehiclesMultiplier: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   className="w-full bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 rounded-xl p-3 font-black text-base text-emerald-600"
                 />
                 <p className="text-[10px] text-emerald-700 dark:text-emerald-400">Higher pay rate for motorcycle, car, and van couriers.</p>
