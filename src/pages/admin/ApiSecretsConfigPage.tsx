@@ -263,7 +263,7 @@ export const ApiSecretsConfigPage = () => {
           <div className="text-xs text-amber-900 dark:text-amber-300 space-y-1">
             <p className="font-bold">Super Admin Vault Security Notice:</p>
             <p>
-              Values saved here are written directly to <code>systemSettings/secrets</code>. Client-side read access is strictly locked down via Firestore Security Rules so non-admin users cannot inspect these sensitive credentials. Changes take effect in real-time across the backend services without requiring a server redeployment.
+              Secret keys and service account credentials configured here are protected by Firestore Security Rules restricting client reads strictly to authenticated Super Admin sessions (<code>isPlatformAdmin()</code>). Private keys are masked by default to prevent shoulder-surfing.
             </p>
           </div>
         </div>

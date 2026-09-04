@@ -86,13 +86,14 @@ export const AdminDashboard = () => {
       toast.error("Access Denied: Only a Super Admin is authorized to purge or sanitize platform data.");
       return;
     }
-    if (!window.confirm("Are you sure you want to sanitize all demo data? This is irreversible.")) return;
+    const confirmation = window.prompt("CRITICAL ACTION: To purge platform demo data, type 'PURGE DATA' to confirm:");
+    if (confirmation !== "PURGE DATA") {
+      toast.error("Sanitization cancelled. Confirmation phrase did not match.");
+      return;
+    }
     try {
-
       await adminEngine.purgeAllData(user?.uid || 'admin');
-
-
-      toast.success("Demo data sanitized!");
+      toast.success("Demo data sanitized successfully!");
       setTimeout(() => window.location.reload(), 1500);
     } catch (e) {
       toast.error("Error sanitizing demo data");
@@ -230,7 +231,16 @@ export const AdminDashboard = () => {
               {impersonationOptions.map(option => (
                 <button
                   key={option.role}
-                  onClick={() => impersonate(option.role)}
+                  onClick={async () => {
+                    impersonate(option.role);
+                    await auditEngine.logEvent({
+                      userId: user?.uid || 'admin',
+                      action: 'START_IMPERSONATION' as any,
+                      details: { impersonatedRole: option.role },
+                      result: 'SUCCESS'
+                    });
+                    toast.info(`Switched preview mode to: ${option.label}`);
+                  }}
                   className="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-2xl hover:border-primary-500 hover:shadow-md transition-all group"
                 >
                   <option.icon size={20} className="text-slate-800 group-hover:text-primary-600 mb-2" />

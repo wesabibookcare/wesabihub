@@ -24,11 +24,7 @@ export const TrainingAcademyPage = () => {
   };
 
   const handleSave = async () => {
-      if(currentCourse.id) {
-
-      } else {
-          await trainingEngine.saveCourse(currentCourse as any, 'admin');
-      }
+      await trainingEngine.saveCourse(currentCourse as any, 'admin');
       setIsEditing(false);
       setCurrentCourse({});
       fetchCourses();

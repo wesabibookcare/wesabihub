@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { cn } from '@/src/lib/utils';
 import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 import { userRepository } from '@/src/services/db/UserRepository';
 import { auditEngine } from '@/src/engines/AuditEngine';
 import { adminEngine } from '@/src/engines/AdminEngine';
@@ -348,6 +349,20 @@ export const UsersPage = () => {
     }
   }, [authLoading]);
 
+  // Accessibility: Close active modals on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowAdminModal(false);
+        setShowRoleModal(false);
+        setShowDetailDrawer(null);
+        setShowPasswordReset(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const triggerToast = (type: 'success' | 'error', text: string) => {
     setActionMessage({ type, text });
     setTimeout(() => setActionMessage(null), 4000);
@@ -560,28 +575,30 @@ export const UsersPage = () => {
     if (!showPasswordReset) return;
     setLoading(true);
     try {
-      // In production we send a reset link, or update credentials.
-      // Here we log the reset event securely.
+      if (showPasswordReset.email) {
+        await authService.resetPassword(showPasswordReset.email);
+      }
+
       await auditEngine.logEvent({
         userId: currentUser?.uid || 'SYSTEM',
         userRole: currentUser?.role || 'SUPER_ADMIN',
         action: 'ADMIN_PASSWORD_RESET',
         targetId: showPasswordReset.uid,
-        details: { adminName: showPasswordReset.displayName, email: showPasswordReset.email, type: 'TEMPORARY_OVERRIDE' },
+        details: { adminName: showPasswordReset.displayName, email: showPasswordReset.email, type: 'OFFICIAL_RESET_EMAIL' },
         result: 'SUCCESS'
       });
 
       await notificationService.send(
         'SYSTEM_ADMIN_ALERT',
-        '🔑 Admin Password Reset Attempted',
-        `A password override reset was executed for ${showPasswordReset.displayName} by ${currentUser?.displayName}.`,
+        '🔑 Admin Password Reset Dispatched',
+        `A password reset link was sent to ${showPasswordReset.email} by ${currentUser?.displayName}.`,
         'INFO'
       );
 
-      triggerToast('success', `Password successfully reset. Copy the secure temporary credentials below.`);
+      triggerToast('success', `Password reset link dispatched to ${showPasswordReset.email}.`);
       setShowPasswordReset(null);
     } catch (err: any) {
-      triggerToast('error', err.message);
+      triggerToast('error', err.message || 'Failed to dispatch password reset');
     } finally {
       setLoading(false);
     }
