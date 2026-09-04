@@ -43,8 +43,10 @@ export const RevenueReportsPage = () => {
     totalRevenue: 0,
     platformEarnings: 0,
     centrePayouts: 0,
-    growth: '+12.5%'
+    awaitingSettlement: 0
   });
+  const [chartData, setChartData] = useState<{ name: string; revenue: number; earnings: number }[]>([]);
+  const [serviceMix, setServiceMix] = useState<{ label: string; value: number; percentage: number; color: string }[]>([]);
 
   useEffect(() => {
     fetchReports();
@@ -56,32 +58,71 @@ export const RevenueReportsPage = () => {
       const allRecords = await paymentEngine.getAllCommissions();
       setRecords(allRecords);
 
-      const total = allRecords.reduce((sum, r) => sum + r.totalFee, 0);
-      const platform = allRecords.reduce((sum, r) => sum + r.platformAmount, 0);
-      const centre = allRecords.reduce((sum, r) => sum + r.centreAmount, 0);
+      const total = allRecords.reduce((sum, r) => sum + (Number(r.totalFee) || 0), 0);
+      const platform = allRecords.reduce((sum, r) => sum + (Number(r.platformAmount) || 0), 0);
+      const centre = allRecords.reduce((sum, r) => sum + (Number(r.centreAmount) || 0), 0);
+      const awaiting = allRecords.filter(r => r.status === 'PENDING').reduce((sum, r) => sum + (Number(r.totalFee) || 0), 0);
 
       setStats({
         totalRevenue: total,
         platformEarnings: platform,
         centrePayouts: centre,
-        growth: '+14.2%'
+        awaitingSettlement: awaiting
       });
+
+      // Calculate dynamic chart data grouped by day of week
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayStats: Record<string, { revenue: number; earnings: number }> = {
+        Mon: { revenue: 0, earnings: 0 },
+        Tue: { revenue: 0, earnings: 0 },
+        Wed: { revenue: 0, earnings: 0 },
+        Thu: { revenue: 0, earnings: 0 },
+        Fri: { revenue: 0, earnings: 0 },
+        Sat: { revenue: 0, earnings: 0 },
+        Sun: { revenue: 0, earnings: 0 }
+      };
+
+      allRecords.forEach(r => {
+        let dateObj: Date | null = null;
+        if (r.timestamp?.toDate) {
+          dateObj = r.timestamp.toDate();
+        } else if (r.timestamp) {
+          dateObj = new Date(r.timestamp);
+        }
+        if (dateObj && !isNaN(dateObj.getTime())) {
+          const dayName = days[dateObj.getDay()];
+          if (dayStats[dayName]) {
+            dayStats[dayName].revenue += (Number(r.totalFee) || 0);
+            dayStats[dayName].earnings += (Number(r.platformAmount) || 0);
+          }
+        }
+      });
+
+      const dynamicChartData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
+        name: day,
+        revenue: dayStats[day].revenue,
+        earnings: dayStats[day].earnings
+      }));
+      setChartData(dynamicChartData);
+
+      // Calculate dynamic service mix breakdown
+      const standardAmt = allRecords.filter(r => r.serviceType === 'STANDARD' || !r.serviceType).reduce((sum, r) => sum + (Number(r.totalFee) || 0), 0);
+      const expressAmt = allRecords.filter(r => r.serviceType === 'EXPRESS').reduce((sum, r) => sum + (Number(r.totalFee) || 0), 0);
+      const sameDayAmt = allRecords.filter(r => r.serviceType === 'SAME_DAY').reduce((sum, r) => sum + (Number(r.totalFee) || 0), 0);
+
+      const mixTotal = total || 1; // avoid divide by zero
+      setServiceMix([
+        { label: 'Standard Delivery', value: standardAmt, percentage: total > 0 ? Math.round((standardAmt / mixTotal) * 100) : 0, color: 'bg-indigo-600' },
+        { label: 'Express Priority', value: expressAmt, percentage: total > 0 ? Math.round((expressAmt / mixTotal) * 100) : 0, color: 'bg-primary-600' },
+        { label: 'Same Day Hub', value: sameDayAmt, percentage: total > 0 ? Math.round((sameDayAmt / mixTotal) * 100) : 0, color: 'bg-emerald-500' }
+      ]);
+
     } catch (error) {
       console.error('Error fetching revenue reports:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  const chartData = [
-    { name: 'Mon', revenue: 12000, earnings: 4800 },
-    { name: 'Tue', revenue: 19000, earnings: 7600 },
-    { name: 'Wed', revenue: 15000, earnings: 6000 },
-    { name: 'Thu', revenue: 22000, earnings: 8800 },
-    { name: 'Fri', revenue: 30000, earnings: 12000 },
-    { name: 'Sat', revenue: 25000, earnings: 10000 },
-    { name: 'Sun', revenue: 18000, earnings: 7200 },
-  ];
 
   if (loading) {
     return (
@@ -115,17 +156,17 @@ export const RevenueReportsPage = () => {
         {/* Global Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
            {[
-             { label: 'Gross Revenue', value: `₦${stats.totalRevenue.toLocaleString()}`, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', trend: stats.growth },
-             { label: 'Platform Earnings', value: `₦${stats.platformEarnings.toLocaleString()}`, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50 dark:bg-primary-900/20', trend: '+8%' },
+             { label: 'Gross Revenue', value: `₦${stats.totalRevenue.toLocaleString()}`, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', trend: 'Live Ledger' },
+             { label: 'Platform Earnings', value: `₦${stats.platformEarnings.toLocaleString()}`, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50 dark:bg-primary-900/20', trend: 'Settled' },
              { label: 'Hub Payouts', value: `₦${stats.centrePayouts.toLocaleString()}`, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', trend: 'Tier Split' },
-             { label: 'Awaiting Settlement', value: '₦12,400', icon: Wallet, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', trend: 'Audit Req' },
+             { label: 'Awaiting Settlement', value: `₦${stats.awaitingSettlement.toLocaleString()}`, icon: Wallet, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', trend: 'Pending' },
            ].map((stat, i) => (
              <Card key={i} className="p-6 border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between mb-4">
                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", stat.bg, stat.color)}>
                       <stat.icon size={20} />
                    </div>
-                   <Badge variant="success" className="h-6 gap-1 text-[10px]">{stat.trend}</Badge>
+                   <Badge variant="info" className="h-6 gap-1 text-[10px]">{stat.trend}</Badge>
                 </div>
                 <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">{stat.label}</p>
                 <h3 className="text-2xl font-black dark:text-white font-display mt-1">{stat.value}</h3>
@@ -177,15 +218,11 @@ export const RevenueReportsPage = () => {
            <Card className="p-8 border-slate-200 dark:border-slate-800">
               <h3 className="text-lg font-bold dark:text-white font-display mb-6">Revenue Mix</h3>
               <div className="space-y-8">
-                 {[
-                   { label: 'Standard Delivery', value: '₦42,000', percentage: 65, color: 'bg-indigo-600' },
-                   { label: 'Express Priority', value: '₦18,000', percentage: 25, color: 'bg-primary-600' },
-                   { label: 'Same Day Hub', value: '₦8,400', percentage: 10, color: 'bg-emerald-500' },
-                 ].map((item, i) => (
+                 {serviceMix.map((item, i) => (
                    <div key={i} className="space-y-3">
                       <div className="flex items-center justify-between">
                          <span className="text-sm font-bold dark:text-white">{item.label}</span>
-                         <span className="text-sm font-black text-primary-600 font-display">{item.value}</span>
+                         <span className="text-sm font-black text-primary-600 font-display">₦{item.value.toLocaleString()}</span>
                       </div>
                       <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                          <motion.div
@@ -203,7 +240,7 @@ export const RevenueReportsPage = () => {
                           <CheckCircle2 size={20} className="text-emerald-500" />
                           <span className="text-xs font-bold dark:text-white">Audit Status</span>
                        </div>
-                       <Badge variant="success">CLEARED</Badge>
+                       <Badge variant="success">{records.length > 0 ? 'VERIFIED' : 'NO DATA'}</Badge>
                     </div>
                  </div>
               </div>

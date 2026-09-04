@@ -98,25 +98,25 @@ class WebhookEngine {
   }
 
   private normalizeEvent(payload: any, provider: 'PAYSTACK' | 'FLUTTERWAVE') {
-    let eventName = payload.event;
-    let txRef = "";
-    let isSuccess = false;
+    let eventName = payload.event || '';
+    let txRef = '';
+    let isValidEvent = false;
 
     if (provider === 'PAYSTACK') {
-        eventName = payload.event || "charge.success";
-        isSuccess = eventName === "charge.success";
+        eventName = payload.event || 'charge.success';
+        isValidEvent = ['charge.success', 'transfer.success', 'transfer.failed', 'transfer.reversed'].includes(eventName);
         if (payload.data) {
-            txRef = payload.data.reference;
+            txRef = payload.data.reference || payload.data.transfer_code || '';
         }
     } else {
-        eventName = payload.event || "charge.completed";
-        isSuccess = payload.event === "charge.completed" && payload.data && payload.data.status === "successful";
+        eventName = payload.event || 'charge.completed';
+        isValidEvent = ['charge.completed', 'transfer.completed'].includes(eventName);
         if (payload.data) {
-            txRef = payload.data.tx_ref;
+            txRef = payload.data.reference || payload.data.tx_ref || '';
         }
     }
 
-    if (!isSuccess || !txRef) return null;
+    if (!isValidEvent || !txRef) return null;
 
     return { provider, event: eventName, data: { ...payload.data, reference: txRef } };
   }

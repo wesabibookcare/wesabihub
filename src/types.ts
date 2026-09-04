@@ -1717,6 +1717,10 @@ export interface PaymentGateway {
   verifyPayment(reference: string): Promise<PaymentVerificationResponse>;
   refundPayment?(reference: string, amount: number): Promise<any>;
   releasePayment?(reference: string): Promise<any>;
+  resolveAccount?(accountNumber: string, bankCode: string): Promise<{ accountName: string; accountNumber: string; bankCode: string; rawResponse?: any }>;
+  createTransferRecipient?(data: { name: string; accountNumber: string; bankCode: string; currency?: string }): Promise<{ recipientCode: string; rawResponse?: any }>;
+  transferFunds?(data: { amount: number; recipientCode: string; reference: string; reason?: string }): Promise<{ reference: string; status: 'SUCCESS' | 'PENDING' | 'FAILED'; transferCode?: string; rawResponse?: any }>;
+  verifyTransfer?(reference: string): Promise<{ reference: string; status: 'SUCCESS' | 'PENDING' | 'FAILED' | 'REVERSED'; amount?: number; rawResponse?: any }>;
 }
 
 export interface PaymentInitiationData {

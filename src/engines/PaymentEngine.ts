@@ -464,7 +464,55 @@ class PaymentEngine {
       return await this.handlePlatformPayment(txRef, data);
     }
 
+    // 3. Handle Bank Transfer Payout Webhooks
+    if (eventName.startsWith('transfer.') || eventName === 'transfer.completed') {
+      return await this.handlePayoutTransferWebhook(txRef, eventName, data);
+    }
+
     return { ignored: true };
+  }
+
+  async handlePayoutTransferWebhook(reference: string, eventName: string, data: any): Promise<any> {
+    const rawStatus = (data?.status || '').toLowerCase();
+    let status: 'SUCCESS' | 'FAILED' | 'REVERSED' = 'SUCCESS';
+
+    if (eventName === 'transfer.failed' || rawStatus === 'failed') {
+      status = 'FAILED';
+    } else if (eventName === 'transfer.reversed' || rawStatus === 'reversed') {
+      status = 'REVERSED';
+    }
+
+    // Persist webhook transfer status directly to riderPayouts or withdrawals
+    try {
+      if (reference.startsWith('PO-RIDER-')) {
+        const { getFirestore } = await import('firebase-admin/firestore');
+        const db = getFirestore();
+        await db.collection('riderPayouts').doc(reference).set({
+          status,
+          webhookMetadata: data || null,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } else if (reference.startsWith('PO-HUB-')) {
+        const withdrawalId = reference.replace('PO-HUB-', '');
+        const { withdrawalRepository } = await import('../services/db/WithdrawalRepository');
+        await withdrawalRepository.update(withdrawalId, {
+          status: status === 'SUCCESS' ? 'APPROVED' : status === 'FAILED' ? 'REJECTED' : 'PENDING',
+          transferStatus: status,
+          updatedAt: new Date().toISOString()
+        });
+      }
+    } catch (dbErr) {
+      console.warn(`Failed to update payout record on webhook for ${reference}:`, dbErr);
+    }
+
+    await auditEngine.logEvent({
+      userId: 'SYSTEM',
+      action: `PAYOUT_TRANSFER_WEBHOOK_${status}`,
+      details: { reference, eventName, status, data },
+      result: 'SUCCESS'
+    });
+
+    return { processed: 'PayoutTransfer', reference, status };
   }
 
   async handlePlatformPayment(txRef: string, data: any): Promise<any> {
@@ -637,6 +685,115 @@ class PaymentEngine {
       return await providerInstance.releasePayment(reference);
     }
     throw new Error(`Release not supported by provider: ${provider}`);
+  }
+
+  async resolveAccount(accountNumber: string, bankCode: string, providerName?: string): Promise<{ accountName: string; accountNumber: string; bankCode: string; rawResponse?: any }> {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasFlutterwaveKey = !!process.env.FLUTTERWAVE_SECRET_KEY;
+    const hasPaystackKey = !!process.env.PAYSTACK_SECRET_KEY;
+
+    if (!isProduction && !hasFlutterwaveKey && !hasPaystackKey) {
+      return {
+        accountName: 'SANDBOX VERIFIED ACCOUNT',
+        accountNumber,
+        bankCode,
+        rawResponse: { sandbox: true }
+      };
+    }
+
+    let config: any = { primaryPlatformProvider: 'PAYSTACK' };
+    try {
+      config = await configurationEngine.getPaymentSettings();
+    } catch (e) {}
+
+    const provider = providerName || config.primaryPlatformProvider || (hasPaystackKey ? 'PAYSTACK' : 'FLUTTERWAVE');
+    const providerInstance = paymentGatewayService.getProviderByName(provider);
+
+    if (providerInstance.resolveAccount) {
+      return await providerInstance.resolveAccount(accountNumber, bankCode);
+    }
+    throw new Error(`Account resolution not supported by provider: ${provider}`);
+  }
+
+  async createTransferRecipient(data: { name: string; accountNumber: string; bankCode: string; currency?: string }, providerName?: string): Promise<{ recipientCode: string; rawResponse?: any }> {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasFlutterwaveKey = !!process.env.FLUTTERWAVE_SECRET_KEY;
+    const hasPaystackKey = !!process.env.PAYSTACK_SECRET_KEY;
+
+    if (!isProduction && !hasFlutterwaveKey && !hasPaystackKey) {
+      return {
+        recipientCode: `RCP-MOCK-${data.bankCode}-${data.accountNumber}`,
+        rawResponse: { sandbox: true }
+      };
+    }
+
+    let config: any = { primaryPlatformProvider: 'PAYSTACK' };
+    try {
+      config = await configurationEngine.getPaymentSettings();
+    } catch (e) {}
+
+    const provider = providerName || config.primaryPlatformProvider || (hasPaystackKey ? 'PAYSTACK' : 'FLUTTERWAVE');
+    const providerInstance = paymentGatewayService.getProviderByName(provider);
+
+    if (providerInstance.createTransferRecipient) {
+      return await providerInstance.createTransferRecipient(data);
+    }
+    throw new Error(`Transfer recipient creation not supported by provider: ${provider}`);
+  }
+
+  async transferFunds(data: { amount: number; recipientCode: string; reference: string; reason?: string }, providerName?: string): Promise<{ reference: string; status: 'SUCCESS' | 'PENDING' | 'FAILED'; transferCode?: string; rawResponse?: any }> {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasFlutterwaveKey = !!process.env.FLUTTERWAVE_SECRET_KEY;
+    const hasPaystackKey = !!process.env.PAYSTACK_SECRET_KEY;
+
+    if (!isProduction && !hasFlutterwaveKey && !hasPaystackKey) {
+      return {
+        reference: data.reference,
+        status: 'SUCCESS',
+        transferCode: `TRF-MOCK-${Date.now()}`,
+        rawResponse: { sandbox: true }
+      };
+    }
+
+    let config: any = { primaryPlatformProvider: 'PAYSTACK' };
+    try {
+      config = await configurationEngine.getPaymentSettings();
+    } catch (e) {}
+
+    const provider = providerName || config.primaryPlatformProvider || (hasPaystackKey ? 'PAYSTACK' : 'FLUTTERWAVE');
+    const providerInstance = paymentGatewayService.getProviderByName(provider);
+
+    if (providerInstance.transferFunds) {
+      return await providerInstance.transferFunds(data);
+    }
+    throw new Error(`Funds transfer not supported by provider: ${provider}`);
+  }
+
+  async verifyTransfer(reference: string, providerName?: string): Promise<{ reference: string; status: 'SUCCESS' | 'PENDING' | 'FAILED' | 'REVERSED'; amount?: number; rawResponse?: any }> {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasFlutterwaveKey = !!process.env.FLUTTERWAVE_SECRET_KEY;
+    const hasPaystackKey = !!process.env.PAYSTACK_SECRET_KEY;
+
+    if (!isProduction && !hasFlutterwaveKey && !hasPaystackKey) {
+      return {
+        reference,
+        status: 'SUCCESS',
+        rawResponse: { sandbox: true }
+      };
+    }
+
+    let config: any = { primaryPlatformProvider: 'PAYSTACK' };
+    try {
+      config = await configurationEngine.getPaymentSettings();
+    } catch (e) {}
+
+    const provider = providerName || config.primaryPlatformProvider || (hasPaystackKey ? 'PAYSTACK' : 'FLUTTERWAVE');
+    const providerInstance = paymentGatewayService.getProviderByName(provider);
+
+    if (providerInstance.verifyTransfer) {
+      return await providerInstance.verifyTransfer(reference);
+    }
+    throw new Error(`Transfer verification not supported by provider: ${provider}`);
   }
 
   /**

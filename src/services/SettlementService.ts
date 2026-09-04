@@ -284,13 +284,48 @@ export const settlementService = {
     if (!withdrawal) throw new Error('Withdrawal request not found.');
     if (withdrawal.status !== 'PENDING') throw new Error('Withdrawal is not in PENDING state.');
 
-    await walletRepository.transaction(async () => {
-      const wallet = await walletRepository.getByUserId(withdrawal.userId);
-      if (!wallet) throw new Error('Wallet not found.');
+    const wallet = await walletRepository.getByUserId(withdrawal.userId);
+    if (!wallet) throw new Error('Wallet not found.');
 
+    const payoutRef = `PO-HUB-${withdrawalId}`;
+    const recipientCode = wallet.bankInfo?.recipientCode;
+
+    if (!recipientCode) {
+      throw new Error('Hub Owner bank account has not been provider-verified. Recipient details missing.');
+    }
+
+    // Execute provider transfer
+    let transferStatus: 'SUCCESS' | 'PENDING' | 'FAILED' = 'PENDING';
+    let transferCode = '';
+    let transferError = '';
+
+    try {
+      const { paymentEngine } = await import('../engines/PaymentEngine');
+      const transferRes = await paymentEngine.transferFunds({
+        amount: withdrawal.amount,
+        recipientCode,
+        reference: payoutRef,
+        reason: `OmorfiHub Hub Owner Payout - ${withdrawalId}`
+      });
+      transferStatus = transferRes.status;
+      transferCode = transferRes.transferCode || '';
+    } catch (err: any) {
+      console.error(`External bank payout failed for withdrawal ${withdrawalId}:`, err);
+      transferStatus = 'FAILED';
+      transferError = err.message || 'External bank transfer execution failed';
+    }
+
+    if (transferStatus === 'FAILED') {
+      throw new Error(`Bank payout transfer failed: ${transferError}. Withdrawal remains pending.`);
+    }
+
+    await walletRepository.transaction(async () => {
       // Update withdrawal status
       await withdrawalRepository.update(withdrawalId, {
         status: 'APPROVED',
+        transferStatus,
+        transferCode,
+        payoutRef,
         approvedAt: new Date().toISOString(),
         approvedBy: adminId,
         updatedAt: new Date().toISOString()
@@ -322,9 +357,12 @@ export const settlementService = {
         action: 'WITHDRAWAL_APPROVED_BY_ADMIN',
         details: {
           withdrawalId,
+          payoutRef,
           approvedBy: adminId,
           amount: withdrawal.amount,
-          bankInfo: withdrawal.bankInfo
+          bankInfo: withdrawal.bankInfo,
+          transferStatus,
+          transferCode
         },
         result: 'SUCCESS'
       });
@@ -333,7 +371,7 @@ export const settlementService = {
       await notificationEngine.send(
         withdrawal.userId,
         'Withdrawal Approved & Sent',
-        `Your withdrawal request of ₦${withdrawal.amount.toLocaleString()} has been processed and sent to your bank account.`,
+        `Your withdrawal request of ₦${withdrawal.amount.toLocaleString()} has been approved and sent to your bank account.`,
         'SUCCESS',
         undefined,
         'PAYMENT'

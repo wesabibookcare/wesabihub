@@ -159,4 +159,162 @@ export class FlutterwaveProvider implements PaymentGateway {
     // Real split settlement releasing / transfer trigger
     return { success: true, message: "SafePay release verified" };
   }
+
+  async resolveAccount(accountNumber: string, bankCode: string): Promise<{ accountName: string; accountNumber: string; bankCode: string; rawResponse?: any }> {
+    const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error('FLUTTERWAVE_SECRET_KEY environment variable is required');
+    }
+
+    try {
+      const response = await fetch('https://api.flutterwave.com/v3/accounts/resolve', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          account_number: accountNumber,
+          account_bank: bankCode
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Failed to resolve bank account with Flutterwave');
+      }
+
+      const resData: any = await response.json();
+      if (resData.status !== 'success' || !resData.data?.account_name) {
+        throw new Error(resData.message || 'Bank account details could not be verified with Flutterwave');
+      }
+
+      return {
+        accountName: resData.data.account_name,
+        accountNumber: resData.data.account_number || accountNumber,
+        bankCode,
+        rawResponse: resData.data
+      };
+    } catch (error: any) {
+      console.error('Flutterwave resolveAccount API error:', error);
+      throw new Error(error.message || 'Network error during Flutterwave account resolution');
+    }
+  }
+
+  async createTransferRecipient(data: { name: string; accountNumber: string; bankCode: string; currency?: string }): Promise<{ recipientCode: string; rawResponse?: any }> {
+    // Flutterwave transfers use bank account + bank code directly on transfers API,
+    // so beneficiary identifier can be formatted deterministically as `FLW-BEN-${bankCode}-${accountNumber}`
+    const recipientCode = `FLW-BEN-${data.bankCode}-${data.accountNumber}`;
+    return {
+      recipientCode,
+      rawResponse: { account_number: data.accountNumber, account_bank: data.bankCode, name: data.name }
+    };
+  }
+
+  async transferFunds(data: { amount: number; recipientCode: string; reference: string; reason?: string }): Promise<{ reference: string; status: 'SUCCESS' | 'PENDING' | 'FAILED'; transferCode?: string; rawResponse?: any }> {
+    const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error('FLUTTERWAVE_SECRET_KEY environment variable is required');
+    }
+
+    // Extract bankCode and accountNumber if recipientCode format is FLW-BEN-{bankCode}-{accountNumber}
+    let bankCode = '';
+    let accountNumber = '';
+    if (data.recipientCode.startsWith('FLW-BEN-')) {
+      const parts = data.recipientCode.split('-');
+      if (parts.length >= 4) {
+        bankCode = parts[2];
+        accountNumber = parts[3];
+      }
+    }
+
+    try {
+      const response = await fetch('https://api.flutterwave.com/v3/transfers', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          account_bank: bankCode,
+          account_number: accountNumber,
+          amount: data.amount,
+          narration: data.reason || 'OmorfiHub Automated Payout',
+          currency: 'NGN',
+          reference: data.reference,
+          debit_currency: 'NGN'
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Flutterwave transfer initiation failed');
+      }
+
+      const resData: any = await response.json();
+      const transferStatus = resData.data?.status;
+      let status: 'SUCCESS' | 'PENDING' | 'FAILED' = 'PENDING';
+      if (transferStatus === 'SUCCESSFUL' || transferStatus === 'SUCCESS') {
+        status = 'SUCCESS';
+      } else if (transferStatus === 'FAILED') {
+        status = 'FAILED';
+      }
+
+      return {
+        reference: data.reference,
+        status,
+        transferCode: resData.data?.id?.toString(),
+        rawResponse: resData.data
+      };
+    } catch (error: any) {
+      console.error('Flutterwave transferFunds API error:', error);
+      throw new Error(error.message || 'Network error during Flutterwave transfer');
+    }
+  }
+
+  async verifyTransfer(reference: string): Promise<{ reference: string; status: 'SUCCESS' | 'PENDING' | 'FAILED' | 'REVERSED'; amount?: number; rawResponse?: any }> {
+    const secretKey = process.env.FLUTTERWAVE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error('FLUTTERWAVE_SECRET_KEY environment variable is required');
+    }
+
+    try {
+      const response = await fetch(`https://api.flutterwave.com/v3/transfers?reference=${encodeURIComponent(reference)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Flutterwave transfer verification request failed');
+      }
+
+      const verifyData: any = await response.json();
+      const transferData = Array.isArray(verifyData.data) ? verifyData.data[0] : verifyData.data;
+
+      if (verifyData.status === 'success' && transferData) {
+        let status: 'SUCCESS' | 'PENDING' | 'FAILED' | 'REVERSED' = 'PENDING';
+        if (transferData.status === 'SUCCESSFUL' || transferData.status === 'SUCCESS') status = 'SUCCESS';
+        else if (transferData.status === 'FAILED') status = 'FAILED';
+        else if (transferData.status === 'REVERSED') status = 'REVERSED';
+
+        return {
+          reference,
+          status,
+          amount: transferData.amount,
+          rawResponse: transferData
+        };
+      }
+
+      return {
+        reference,
+        status: 'FAILED',
+        rawResponse: verifyData
+      };
+    } catch (error: any) {
+      console.error('Flutterwave verifyTransfer API error:', error);
+      throw new Error(error.message || 'Network error during Flutterwave transfer verification');
+    }
+  }
 }
