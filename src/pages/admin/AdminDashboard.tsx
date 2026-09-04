@@ -184,7 +184,7 @@ export const AdminDashboard = () => {
               Platform Command
             </h1>
             <p className="text-slate-900 font-medium mt-1">
-              Global monitoring and administrative control for OmorfiHub Ecosystem.
+              Real-time monitoring and controls for the entire OmorfiHub network. For example, inspect parcel volumes, approve new hub signups, or review revenue at a glance.
             </p>
           </div>
 

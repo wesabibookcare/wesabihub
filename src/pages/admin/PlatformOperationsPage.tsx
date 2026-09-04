@@ -869,7 +869,7 @@ export const PlatformOperationsPage = () => {
                   No published announcements found. Click "Use Rider Template" to prefill and launch!
                 </div>
               ) : (
-                announcements.map((ann) => (
+                (announcements || []).map((ann) => (
                   <Card key={ann.id} className="p-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-500/30 transition-all rounded-2xl">
                     <div className="flex justify-between items-start gap-4">
                       <div className="space-y-1.5 flex-1">
@@ -1083,7 +1083,7 @@ export const PlatformOperationsPage = () => {
                   No active ad campaigns found. Click "Use Promo Template" to prefill and launch!
                 </div>
               ) : (
-                ads.map((adItem) => (
+                (ads || []).map((adItem) => (
                   <Card key={adItem.id} className="p-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary-500/30 transition-all rounded-2xl">
                     <div className="flex justify-between items-start gap-4">
                       <div className="space-y-1.5 flex-1">
@@ -1419,7 +1419,7 @@ export const PlatformOperationsPage = () => {
                     <p className="text-xs text-slate-800 max-w-sm mx-auto">Use the form on the left or click Seed Standard Docs to populate the initial platform configuration.</p>
                   </div>
                 ) : (
-                  docRequirements.map(req => (
+                  (docRequirements || []).map(req => (
                     <Card key={req.id} className="p-5 border-slate-200 dark:border-slate-800 shadow-md rounded-2xl hover:shadow-lg transition">
                       <div className="flex justify-between items-start gap-4">
                         <div className="space-y-2">
@@ -1443,14 +1443,14 @@ export const PlatformOperationsPage = () => {
                           <div className="space-y-1 pt-1">
                             <div className="flex gap-1.5 flex-wrap items-center">
                               <span className="text-[10px] font-bold text-slate-800">Roles:</span>
-                              {req.applicableRoles.map(role => (
+                              {(req.applicableRoles || []).map(role => (
                                 <span key={role} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 rounded text-[9px] font-bold uppercase">{role.replace('_', ' ')}</span>
                               ))}
                             </div>
 
                             <div className="flex gap-1.5 flex-wrap items-center">
                               <span className="text-[10px] font-bold text-slate-800">Countries:</span>
-                              {req.applicableCountries.map(c => (
+                              {(req.applicableCountries || []).map(c => (
                                 <span key={c} className="px-1.5 py-0.5 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded text-[9px] font-bold uppercase">{c === 'ALL' ? 'Global' : c}</span>
                               ))}
                             </div>

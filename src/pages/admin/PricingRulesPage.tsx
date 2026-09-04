@@ -161,7 +161,7 @@ export const PricingRulesPage = () => {
           <div>
             <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mb-2">Money & Financial Management</p>
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Financial & Pricing Engine</h1>
-            <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">Configure hub volume revenue splits, logistics API rate markups, SafePay charges, and base parcel pricing.</p>
+            <p className="text-slate-600 dark:text-slate-400 font-medium mt-1">Configure hub volume revenue splits, logistics API rate markups, SafePay charges, and base parcel pricing. For example, set the minimum shipping fee to ₦500 or adjust the hub commission percentage.</p>
           </div>
           <div className="flex items-center gap-3">
              <Button

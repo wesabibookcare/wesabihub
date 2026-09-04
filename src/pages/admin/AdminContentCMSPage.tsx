@@ -65,7 +65,7 @@ export const AdminContentCMSPage = () => {
           <div>
             <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mb-2">Content Control Hub</p>
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white font-display">Content Management (CMS)</h1>
-            <p className="text-slate-900 font-medium mt-1">Update static page content and manage global FAQ knowledge base.</p>
+            <p className="text-slate-900 font-medium mt-1">Easily customize public web pages and manage helpful FAQs. For example, edit the About Us text or add answers to customer delivery questions.</p>
           </div>
         </div>
 
