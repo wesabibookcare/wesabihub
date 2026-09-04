@@ -72,7 +72,7 @@ export const ApprovalWorkflowTab: React.FC = () => {
             (u.pendingRoleApplication === true ||
               (u.status &&
                 ['PENDING', 'SUBMITTED', 'UNDER_REVIEW', 'EMAIL_UNVERIFIED'].includes(
-                  u.status
+                  u.status as string
                 )) ||
               (u.requestedRole && u.requestedRole !== 'CUSTOMER') ||
               (u.role && u.role !== 'CUSTOMER'))

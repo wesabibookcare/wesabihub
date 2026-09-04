@@ -14,6 +14,7 @@ import {
   Loader2,
   Inbox
 } from 'lucide-react';
+import { cn } from '@/src/lib/utils';
 import { centreEngine } from '../../engines';
 import { HubCenter } from '../../types';
 
