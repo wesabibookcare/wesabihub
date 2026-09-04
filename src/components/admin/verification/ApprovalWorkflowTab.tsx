@@ -396,17 +396,28 @@ export const ApprovalWorkflowTab: React.FC = () => {
     try {
       if (!app.id.startsWith('APP-USER-')) {
         await roleApplicationRepository.delete(app.id);
+      } else {
+        // Find and delete any real roleApplication documents for this user
+        const userApps = await roleApplicationRepository.getByUserId(app.userId);
+        for (const ua of userApps) {
+          await roleApplicationRepository.delete(ua.id);
+        }
       }
+
+      // Update user document to permanently clear synthetic application trigger flags
       const applicant = await userRepository.getById(app.userId);
       if (applicant) {
         await userRepository.update(app.userId, {
           pendingRoleApplication: false,
           requestedRole: undefined,
-          status: applicant.status === 'UNDER_REVIEW' || applicant.status === 'REJECTED' || applicant.status === 'SUBMITTED' ? 'ACTIVE' : applicant.status,
+          status: (applicant.status === 'UNDER_REVIEW' || applicant.status === 'REJECTED' || applicant.status === 'SUBMITTED' || applicant.status === 'PENDING')
+            ? 'ACTIVE'
+            : applicant.status,
           updatedAt: new Date().toISOString()
         });
       }
-      setApplications(prev => prev.filter(a => a.id !== app.id));
+
+      setApplications(prev => prev.filter(a => a.id !== app.id && a.userId !== app.userId));
       setSelectedApp(null);
       toast.success(`Application deleted successfully`);
     } catch (err) {

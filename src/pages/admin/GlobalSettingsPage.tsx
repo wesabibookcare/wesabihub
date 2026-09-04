@@ -516,53 +516,43 @@ export const GlobalSettingsPage = () => {
     <AdminLayout>
       <div className="max-w-6xl mx-auto space-y-8 pb-20">
 
-      {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm sticky top-6 z-40">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
-            <Settings size={24} />
+      {/* COMPACT HEADER SECTION */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm sticky top-4 z-40">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white shadow-md shadow-primary-500/20 shrink-0">
+            <Settings size={20} />
           </div>
           <div>
-            <h1 className="text-xl font-black dark:text-white font-display tracking-tight uppercase italic text-primary-600">Platform Configuration</h1>
-            <p className="text-xs text-slate-900 font-medium">Manage global branding, localisation, and policies.</p>
+            <h1 className="text-base font-black dark:text-white font-display tracking-tight uppercase italic text-primary-600">Platform Configuration</h1>
+            <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium">Manage global branding, localisation, and policies.</p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-          {/* Mobile Select Dropdown for Tabs */}
-          <div className="lg:hidden w-full">
-            <select
-              value={activeTab}
-              onChange={(e) => setActiveTab(e.target.value as TabType)}
-              className="w-full h-10 px-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl uppercase tracking-wider dark:text-white"
-            >
-              {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => (
-                <option key={tab} value={tab}>
-                  Tab: {tab.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
+        <Button onClick={handleUpdate} isLoading={isSaving} className="px-5 py-2 rounded-xl shadow-md shadow-primary-500/10 font-bold text-xs shrink-0 self-end sm:self-auto">
+          <Save size={15} className="mr-1.5" /> Save Changes
+        </Button>
+      </div>
 
-          {/* Desktop Horizontal Scrollable Tab Bar */}
-          <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-[750px] scrollbar-thin">
-            {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => (
+      {/* WHATSAPP-STYLE PILL TOGGLE NAVIGATION */}
+      <div className="sticky top-[76px] z-30 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md py-2 border-y border-slate-200/60 dark:border-slate-800/60">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth px-1">
+          {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => {
+            const isActive = activeTab === tab;
+            return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap",
-                  activeTab === tab ? "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-xs" : "text-slate-600 hover:text-slate-900 dark:hover:text-slate-100"
+                  "px-3.5 py-1.5 text-xs font-extrabold rounded-full transition-all whitespace-nowrap shrink-0 border select-none",
+                  isActive
+                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 border-slate-900 dark:border-white shadow-sm"
+                    : "bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-900"
                 )}
               >
-                {tab.replace('_', ' ')}
+                {tab.charAt(0).toUpperCase() + tab.slice(1).replace('_', ' ')}
               </button>
-            ))}
-          </div>
-
-          <Button onClick={handleUpdate} isLoading={isSaving} className="px-6 py-2.5 rounded-xl shadow-lg shadow-primary-500/10 font-bold text-xs shrink-0">
-            <Save size={16} className="mr-2" /> Save Changes
-          </Button>
+            );
+          })}
         </div>
       </div>
 
