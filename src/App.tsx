@@ -325,13 +325,8 @@ export default function App() {
         {/* Business Rules Engine Routes */}
         <Route path="/admin/business-rules" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER']}><PricingRulesPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/pricing" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER']}><PricingRulesPage /></RoleGuard></ProtectedRoute>} />
-        <Route path="/admin/business-rules/trust-score" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><TrustRankingPage /></RoleGuard></ProtectedRoute>} />
-        <Route path="/admin/business-rules/ranking" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><TrustRankingPage /></RoleGuard></ProtectedRoute>} />
-        <Route path="/admin/business-rules/points" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><PointsRatingPage /></RoleGuard></ProtectedRoute>} />
-        <Route path="/admin/business-rules/payouts" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><CommissionPayoutPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/commissions" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><CommissionPayoutPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/parcels" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><OperationsRulesPage /></RoleGuard></ProtectedRoute>} />
-        <Route path="/admin/business-rules/zones" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><OperationsRulesPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/services" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><OperationsRulesPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/global" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'OPERATIONS_MANAGER']}><GlobalConfigPage /></RoleGuard></ProtectedRoute>} />
         <Route path="/admin/business-rules/payment-protection" element={<ProtectedRoute><RoleGuard allowedRoles={['SUPER_ADMIN', 'FINANCE_OFFICER']}><PaymentProtectionRulesPage /></RoleGuard></ProtectedRoute>} />

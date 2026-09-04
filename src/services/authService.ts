@@ -32,7 +32,7 @@ export const ROLE_REDIRECTS: Record<UserRole, string> = {
   API_MERCHANT_PARTNER: '/developer',
   SUPPORT_OFFICER: '/admin/support',
   VERIFICATION_OFFICER: '/admin/verification',
-  FINANCE_OFFICER: '/admin/business-rules/payouts',
+  FINANCE_OFFICER: '/admin/business-rules/commissions',
   OPERATIONS_MANAGER: '/admin/business-rules',
   SUPER_ADMIN: '/admin',
   DISPUTE_ADMIN: '/admin/support',
@@ -40,7 +40,7 @@ export const ROLE_REDIRECTS: Record<UserRole, string> = {
   OPERATIONS_ADMIN: '/admin/business-rules',
   VERIFICATION_ADMIN: '/admin/verification',
   SECURITY_ADMIN: '/admin/security',
-  FINANCE_ADMIN: '/admin/business-rules/payouts',
+  FINANCE_ADMIN: '/admin/business-rules/commissions',
   DISPATCH_RIDER: '/dispatch/dashboard',
   DISPATCH_COMPANY: '/dispatch/company/dashboard',
   FLEET_MANAGER: '/dispatch/fleet/dashboard'

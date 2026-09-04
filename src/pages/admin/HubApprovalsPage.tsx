@@ -55,33 +55,11 @@ export const HubApprovalsPage = () => {
   const loadPayoutRequests = async () => {
     setIsLoading(true);
     try {
-      // Fetch mock or Firestore hub payout requests
-      setPayoutRequests([
-        {
-          id: 'PAY-HUB-001',
-          hubId: 'HUB-LAG-01',
-          hubName: 'Ikeja Central Hub',
-          amount: 145000,
-          status: 'PENDING',
-          bankName: 'Guaranty Trust Bank',
-          accountNumber: '0123456789',
-          accountName: 'Ikeja Central Logistics Ltd',
-          requestedAt: new Date(Date.now() - 3600000 * 4).toISOString()
-        },
-        {
-          id: 'PAY-HUB-002',
-          hubId: 'HUB-ABJ-02',
-          hubName: 'Maitama Express Hub',
-          amount: 82500,
-          status: 'PENDING',
-          bankName: 'Zenith Bank',
-          accountNumber: '9876543210',
-          accountName: 'Maitama Express Services',
-          requestedAt: new Date(Date.now() - 3600000 * 12).toISOString()
-        }
-      ]);
+      // In production, fetch live hub payout requests from database/centreEngine
+      setPayoutRequests([]);
     } catch (err) {
       console.error('Failed to load payout requests:', err);
+      toast.error('Could not load payout requests.');
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +74,24 @@ export const HubApprovalsPage = () => {
   }, [activeTab]);
 
   const handleApprovePayout = async (req: HubPayoutRequest) => {
+    // Bank details validation
+    if (!req.accountNumber || !/^\d{10}$/.test(req.accountNumber.trim())) {
+      toast.error('Invalid Bank Account Number: Must be a valid 10-digit NUBAN number.');
+      return;
+    }
+    if (!req.bankName || req.bankName.trim().length < 2) {
+      toast.error('Invalid Bank Name: Must specify a valid financial institution.');
+      return;
+    }
+    if (!req.accountName || req.accountName.trim().length < 3) {
+      toast.error('Invalid Account Name: Account holder name must be verified.');
+      return;
+    }
+    if (!req.amount || req.amount <= 0) {
+      toast.error('Invalid Payout Amount.');
+      return;
+    }
+
     setActioningId(req.id);
     try {
       setPayoutRequests(prev => prev.map(p => p.id === req.id ? { ...p, status: 'APPROVED', processedAt: new Date().toISOString() } : p));
