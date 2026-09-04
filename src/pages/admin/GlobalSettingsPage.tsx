@@ -47,8 +47,11 @@ import {
   Building,
   HelpCircle,
   BookOpen,
-  Sparkles
+  Sparkles,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
+import { StorageService } from '../../services/StorageService';
 import { LegalManagementTab } from '../../components/admin/LegalManagementTab';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { configurationEngine, auditEngine, notificationEngine } from '@/src/engines';
@@ -88,6 +91,30 @@ export const GlobalSettingsPage = () => {
 
   // Success Animation Preview State
   const [previewAnimation, setPreviewAnimation] = useState<SuccessAnimationStyle | null>(null);
+
+  // Asset upload loading state
+  const [uploadingAssetKey, setUploadingAssetKey] = useState<string | null>(null);
+
+  const handleAssetFileUpload = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingAssetKey(field);
+      toast.info(`Uploading ${file.name}...`);
+
+      const path = `branding/${field}-${Date.now()}`;
+      const downloadUrl = await StorageService.uploadFile(path, file);
+
+      updateBranding(field, downloadUrl);
+      toast.success(`${file.name} uploaded successfully!`);
+    } catch (err: any) {
+      console.error('Asset file upload failed:', err);
+      toast.error(`Upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setUploadingAssetKey(null);
+    }
+  };
 
   useEffect(() => {
     if (globalSettings) {
@@ -640,22 +667,76 @@ export const GlobalSettingsPage = () => {
                   <h3 className="font-bold dark:text-white text-sm">Asset Configuration</h3>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {[
-                    { key: 'logoUrl', label: 'Primary Logo URL' },
-                    { key: 'logoDarkUrl', label: 'Dark Logo URL' },
-                    { key: 'faviconUrl', label: 'Favicon URL' },
-                    { key: 'appIconUrl', label: 'App Icon URL' }
-                  ].map((asset) => (
-                    <div key={asset.key} className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">{asset.label}</label>
-                      <input
-                        value={(settings.branding as any)[asset.key] || ''}
-                        onChange={(e) => updateBranding(asset.key, e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-mono"
-                      />
-                    </div>
-                  ))}
+                    { key: 'logoUrl', label: 'Primary Logo' },
+                    { key: 'logoDarkUrl', label: 'Dark Mode Logo' },
+                    { key: 'faviconUrl', label: 'Favicon' },
+                    { key: 'appIconUrl', label: 'App Icon' }
+                  ].map((asset) => {
+                    const currentValue = (settings.branding as any)[asset.key] || '';
+                    const isUploading = uploadingAssetKey === asset.key;
+
+                    return (
+                      <div key={asset.key} className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">
+                            {asset.label}
+                          </label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            isLoading={isUploading}
+                            onClick={() => document.getElementById(`upload-global-${asset.key}`)?.click()}
+                            className="h-7 text-[10px] font-bold px-2.5 rounded-lg flex items-center gap-1"
+                          >
+                            <Upload size={12} /> Upload File
+                          </Button>
+                          <input
+                            type="file"
+                            id={`upload-global-${asset.key}`}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => handleAssetFileUpload(asset.key, e)}
+                          />
+                        </div>
+
+                        {/* Image Preview Box */}
+                        <div
+                          onClick={() => document.getElementById(`upload-global-${asset.key}`)?.click()}
+                          className="h-20 rounded-xl bg-white dark:bg-slate-950 border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center p-2 relative overflow-hidden cursor-pointer hover:border-primary-500 transition-colors"
+                          title="Click to Upload / Change file"
+                        >
+                          {currentValue ? (
+                            <img
+                              src={currentValue}
+                              alt={asset.label}
+                              className="max-h-full max-w-full object-contain drop-shadow-sm"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center text-slate-400 gap-1">
+                              <ImageIcon size={22} />
+                              <span className="text-[9px] font-medium">Click to upload image</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* URL Direct Input Field */}
+                        <div className="space-y-1">
+                          <span className="text-[8px] font-extrabold uppercase tracking-widest text-slate-400 block">
+                            Or paste Image URL:
+                          </span>
+                          <input
+                            value={currentValue}
+                            onChange={(e) => updateBranding(asset.key, e.target.value)}
+                            placeholder="https://..."
+                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] rounded-lg font-mono text-slate-800 dark:text-slate-200"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
 
