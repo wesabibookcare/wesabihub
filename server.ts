@@ -1347,6 +1347,9 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
 
           if (riderPayout > 0) {
             const txRef = `TX-RIDER-PAYOUT-${parcelId}`;
+            const payoutRef = `PO-RIDER-${parcelId}`;
+
+            // 1. Internal Ledger Wallet Credit (Idempotent)
             await paymentEngine.creditWallet(
               assignedRiderId,
               riderPayout,
@@ -1362,6 +1365,78 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
               details: { parcelId, riderPayout, transitMode, baseFare, txRef },
               result: 'SUCCESS'
             });
+
+            // 2. Real Bank Payout Settlement Layer (Idempotent)
+            const payoutDocRef = db.collection('riderPayouts').doc(payoutRef);
+            const payoutSnap = await payoutDocRef.get();
+            const existingPayout = payoutSnap.exists ? payoutSnap.data() : null;
+
+            if (existingPayout && (existingPayout.status === 'SUCCESS' || existingPayout.status === 'PROCESSING')) {
+              logger.info(`Rider bank payout for ${payoutRef} already processed or in progress (${existingPayout.status}). Skipping duplicate transfer.`);
+            } else {
+              // Retrieve rider bank info from user document
+              const riderUserSnap = await db.collection('users').doc(assignedRiderId).get();
+              const riderUserData = riderUserSnap.exists ? riderUserSnap.data() : null;
+              const riderBankInfo = riderUserData?.bankInfo;
+              const isPayoutEligible = riderUserData?.payoutEligible === true && riderBankInfo?.verificationStatus === 'VERIFIED' && !!riderBankInfo?.recipientCode;
+
+              const payoutRecord: any = {
+                id: payoutRef,
+                payoutRef,
+                parcelId,
+                riderId: assignedRiderId,
+                amount: riderPayout,
+                currency: 'NGN',
+                bankInfo: riderBankInfo || null,
+                payoutEligible: isPayoutEligible,
+                status: isPayoutEligible ? 'PROCESSING' : 'PENDING_BANK_VERIFICATION',
+                createdAt: existingPayout?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+
+              await payoutDocRef.set(payoutRecord, { merge: true });
+
+              if (isPayoutEligible && riderBankInfo?.recipientCode) {
+                try {
+                  const transferResult = await paymentEngine.transferFunds({
+                    amount: riderPayout,
+                    recipientCode: riderBankInfo.recipientCode,
+                    reference: payoutRef,
+                    reason: `SendOmorfi Rider Payout - Parcel ${shipment.trackingNumber || parcelId}`
+                  });
+
+                  await payoutDocRef.update({
+                    status: transferResult.status === 'SUCCESS' ? 'SUCCESS' : 'PROCESSING',
+                    transferCode: transferResult.transferCode || null,
+                    providerResponse: transferResult.rawResponse || null,
+                    updatedAt: new Date().toISOString()
+                  });
+
+                  await auditEngine.logEvent({
+                    userId: assignedRiderId,
+                    userRole: 'DISPATCH_RIDER',
+                    action: 'RIDER_BANK_PAYOUT_INITIATED',
+                    details: { parcelId, payoutRef, amount: riderPayout, status: transferResult.status, recipientCode: riderBankInfo.recipientCode },
+                    result: 'SUCCESS'
+                  });
+                } catch (transferErr: any) {
+                  console.error(`Rider bank transfer failed for ${payoutRef}:`, transferErr);
+                  await payoutDocRef.update({
+                    status: 'FAILED',
+                    payoutError: transferErr.message || 'Bank transfer execution failed',
+                    updatedAt: new Date().toISOString()
+                  });
+
+                  await auditEngine.logEvent({
+                    userId: assignedRiderId,
+                    userRole: 'DISPATCH_RIDER',
+                    action: 'RIDER_BANK_PAYOUT_FAILED',
+                    details: { parcelId, payoutRef, error: transferErr.message },
+                    result: 'FAILURE'
+                  });
+                }
+              }
+            }
           }
         } catch (riderPayoutErr) {
           console.error("Failed to process automatic rider payout:", riderPayoutErr);
@@ -3677,6 +3752,178 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     } catch (error: any) {
       console.error("Registration payment verification error:", error);
       res.status(500).json({ error: error.message || "Failed to verify registration payment" });
+    }
+  });
+
+  // PAYOUT RECONCILIATION ENDPOINT
+  app.post("/api/payouts/reconcile", requireRole(FINANCE_ROLES), async (req, res) => {
+    try {
+      const { reference } = req.body;
+      if (!reference) {
+        return res.status(400).json({ error: "Missing required parameter: reference" });
+      }
+
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: "Database offline" });
+
+      // Check in riderPayouts
+      const riderPayoutRef = db.collection('riderPayouts').doc(reference);
+      const riderPayoutSnap = await riderPayoutRef.get();
+
+      if (riderPayoutSnap.exists) {
+        const verifyRes = await paymentEngine.verifyTransfer(reference);
+        await riderPayoutRef.update({
+          status: verifyRes.status,
+          reconciledAt: new Date().toISOString(),
+          verifyMetadata: verifyRes.rawResponse || null,
+          updatedAt: new Date().toISOString()
+        });
+
+        await auditEngine.logEvent({
+          userId: req.authUser!.uid,
+          userRole: req.authUser!.role || undefined,
+          action: 'PAYOUT_RECONCILED',
+          details: { reference, status: verifyRes.status },
+          result: 'SUCCESS'
+        });
+
+        return res.json({ success: true, reference, status: verifyRes.status, type: 'RIDER_PAYOUT' });
+      }
+
+      // Check in withdrawals
+      const withdrawalRef = db.collection('withdrawals').doc(reference);
+      const withdrawalSnap = await withdrawalRef.get();
+
+      if (withdrawalSnap.exists) {
+        const verifyRes = await paymentEngine.verifyTransfer(reference);
+        await withdrawalRef.update({
+          status: verifyRes.status === 'SUCCESS' ? 'APPROVED' : verifyRes.status,
+          transferStatus: verifyRes.status,
+          reconciledAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+
+        await auditEngine.logEvent({
+          userId: req.authUser!.uid,
+          userRole: req.authUser!.role || undefined,
+          action: 'WITHDRAWAL_PAYOUT_RECONCILED',
+          details: { reference, status: verifyRes.status },
+          result: 'SUCCESS'
+        });
+
+        return res.json({ success: true, reference, status: verifyRes.status, type: 'WITHDRAWAL' });
+      }
+
+      return res.status(404).json({ error: "Payout transaction reference not found" });
+    } catch (err: any) {
+      console.error("Payout reconciliation error:", err);
+      res.status(500).json({ error: err.message || "Failed to reconcile payout transaction." });
+    }
+  });
+
+  // BANK ACCOUNT SETTING & PROVIDER VERIFICATION ENDPOINTS
+  app.get("/api/payouts/bank/list", async (req, res) => {
+    const NIGERIAN_BANKS = [
+      { code: "044", name: "Access Bank" },
+      { code: "011", name: "First Bank of Nigeria" },
+      { code: "058", name: "Guaranty Trust Bank (GTBank)" },
+      { code: "057", name: "Zenith Bank" },
+      { code: "033", name: "United Bank for Africa (UBA)" },
+      { code: "035", name: "Wema Bank" },
+      { code: "070", name: "Fidelity Bank" },
+      { code: "214", name: "First City Monument Bank (FCMB)" },
+      { code: "050", name: "Ecobank Nigeria" },
+      { code: "232", name: "Sterling Bank" },
+      { code: "032", name: "Union Bank of Nigeria" },
+      { code: "215", name: "Unity Bank" },
+      { code: "082", name: "Keystone Bank" },
+      { code: "101", name: "Providus Bank" },
+      { code: "50211", name: "Kuda Bank" },
+      { code: "999992", name: "OPay Digital Services" },
+      { code: "999991", name: "PalmPay" },
+      { code: "50515", name: "Moniepoint Microfinance Bank" }
+    ];
+    res.json({ success: true, banks: NIGERIAN_BANKS });
+  });
+
+  app.post("/api/payouts/bank/verify", requireAuth(), async (req, res) => {
+    try {
+      const { bankCode, bankName, accountNumber } = req.body;
+      const callerUid = req.authUser!.uid;
+
+      if (!bankCode || !accountNumber || accountNumber.trim().length !== 10) {
+        return res.status(400).json({ error: "Valid 10-digit NUBAN account number and bankCode are required." });
+      }
+
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: "Database offline" });
+
+      // 1. Resolve account name via provider (Paystack / Flutterwave)
+      const resolved = await paymentEngine.resolveAccount(accountNumber.trim(), bankCode.trim());
+
+      if (!resolved.accountName) {
+        return res.status(400).json({ error: "Could not verify bank account name with payment provider." });
+      }
+
+      // 2. Create provider transfer recipient
+      const recipientResult = await paymentEngine.createTransferRecipient({
+        name: resolved.accountName,
+        accountNumber: accountNumber.trim(),
+        bankCode: bankCode.trim()
+      });
+
+      const now = new Date().toISOString();
+      const verifiedBankInfo = {
+        bankName: bankName || resolved.bankCode,
+        bankCode: bankCode.trim(),
+        accountNumber: accountNumber.trim(),
+        accountName: resolved.accountName,
+        verifiedAccountName: resolved.accountName,
+        recipientCode: recipientResult.recipientCode,
+        verificationStatus: 'VERIFIED',
+        verifiedAt: now,
+        payoutEligible: true
+      };
+
+      // Update user Firestore record
+      await db.collection('users').doc(callerUid).set({
+        bankInfo: verifiedBankInfo,
+        payoutEligible: true,
+        updatedAt: now
+      }, { merge: true });
+
+      // Update or create wallet record
+      await paymentEngine.updateWallet(callerUid, {
+        bankInfo: verifiedBankInfo,
+        payoutEligible: true,
+        lastUpdated: now
+      });
+
+      // Audit Log
+      await auditEngine.logEvent({
+        userId: callerUid,
+        userRole: req.authUser!.role || undefined,
+        action: 'PAYOUT_BANK_ACCOUNT_VERIFIED',
+        details: {
+          bankCode: bankCode.trim(),
+          bankName,
+          maskedAccountNumber: accountNumber.trim().slice(-4),
+          verifiedAccountName: resolved.accountName,
+          recipientCode: recipientResult.recipientCode
+        },
+        result: 'SUCCESS',
+        ipAddress: req.ip,
+        deviceInfo: req.get('user-agent')
+      });
+
+      res.json({
+        success: true,
+        message: "Bank account successfully verified with payment provider.",
+        bankInfo: verifiedBankInfo
+      });
+    } catch (err: any) {
+      console.error("Bank account verification error:", err);
+      res.status(400).json({ error: err.message || "Failed to verify bank account with payment provider." });
     }
   });
 

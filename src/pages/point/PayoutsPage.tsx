@@ -33,17 +33,33 @@ export const PayoutsPage = () => {
 
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isSavingBank, setIsSavingBank] = useState(false);
+  const [banksList, setBanksList] = useState<{ code: string; name: string }[]>([]);
+  const [selectedBankCode, setSelectedBankCode] = useState('');
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
-  const [accountName, setAccountName] = useState('');
+  const [verifiedAccountName, setVerifiedAccountName] = useState('');
 
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) {
+      fetchData();
+      fetchBanks();
+    }
   }, [user]);
+
+  const fetchBanks = async () => {
+    try {
+      const res = await apiFetch(fbUser, '/api/payouts/bank/list');
+      if (res?.banks) {
+        setBanksList(res.banks);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch bank list:', err);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -63,28 +79,42 @@ export const PayoutsPage = () => {
   };
 
   const handleOpenBankModal = () => {
+    setSelectedBankCode(wallet?.bankInfo?.bankCode || '');
     setBankName(wallet?.bankInfo?.bankName || '');
     setAccountNumber(wallet?.bankInfo?.accountNumber || '');
-    setAccountName(wallet?.bankInfo?.accountName || '');
+    setVerifiedAccountName(wallet?.bankInfo?.verifiedAccountName || wallet?.bankInfo?.accountName || '');
     setIsBankModalOpen(true);
   };
 
   const handleSaveBankDetails = async () => {
     if (!user) return;
-    if (!bankName.trim() || !accountNumber.trim() || !accountName.trim()) {
-      toast.error('Please fill in all bank details.');
+    if (!selectedBankCode || !accountNumber.trim() || accountNumber.trim().length !== 10) {
+      toast.error('Please select a bank and enter a valid 10-digit account number.');
       return;
     }
+    const chosenBank = banksList.find(b => b.code === selectedBankCode);
+    const chosenName = chosenBank ? chosenBank.name : bankName;
+
     setIsSavingBank(true);
     try {
-      await paymentEngine.updateWallet(user.uid, {
-        bankInfo: { bankName: bankName.trim(), accountNumber: accountNumber.trim(), accountName: accountName.trim() }
+      const res = await apiFetch(fbUser, '/api/payouts/bank/verify', {
+        method: 'POST',
+        body: {
+          bankCode: selectedBankCode,
+          bankName: chosenName,
+          accountNumber: accountNumber.trim()
+        }
       });
-      toast.success('Settlement account updated');
-      setIsBankModalOpen(false);
-      await fetchData();
-    } catch (err) {
-      toast.error('Failed to update settlement account');
+
+      if (res?.success) {
+        toast.success(`Bank account verified: ${res.bankInfo.verifiedAccountName}`);
+        setIsBankModalOpen(false);
+        await fetchData();
+      } else {
+        toast.error(res?.error || 'Failed to verify bank account with payment provider');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to verify bank account with payment provider.');
     } finally {
       setIsSavingBank(false);
     }
@@ -266,14 +296,37 @@ export const PayoutsPage = () => {
         </div>
 
         {/* Bank Details Modal */}
-        <Modal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} title="Settlement Bank Account" description="This is where your payouts will be sent.">
+        <Modal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} title="Settlement Bank Account" description="Your bank account is verified directly with the payment provider before payouts can be issued.">
            <div className="space-y-4 py-2">
-              <Input label="Bank Name" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. Wema Bank" />
-              <Input label="Account Number" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="0123456789" />
-              <Input label="Account Name" value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="As it appears on your bank account" />
+              <div>
+                 <label className="text-xs font-bold uppercase tracking-wider block text-slate-700 dark:text-slate-300 mb-1">Select Bank</label>
+                 <select
+                   value={selectedBankCode}
+                   onChange={e => {
+                     setSelectedBankCode(e.target.value);
+                     const found = banksList.find(b => b.code === e.target.value);
+                     if (found) setBankName(found.name);
+                   }}
+                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm font-medium outline-none focus:border-primary-500"
+                 >
+                    <option value="">-- Choose Financial Institution --</option>
+                    {banksList.map(b => (
+                      <option key={b.code} value={b.code}>{b.name}</option>
+                    ))}
+                 </select>
+              </div>
+              <Input label="Account Number (10 Digits)" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="e.g. 0123456789" maxLength={10} />
+
+              {verifiedAccountName && (
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
+                   <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Provider Verified Account Name</p>
+                   <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300 mt-0.5">{verifiedAccountName}</p>
+                </div>
+              )}
+
               <Button onClick={handleSaveBankDetails} disabled={isSavingBank} className="w-full rounded-xl h-12 mt-2">
                  {isSavingBank ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
-                 {isSavingBank ? 'Saving...' : 'Save Account'}
+                 {isSavingBank ? 'Verifying Account with Provider...' : 'Verify & Save Bank Account'}
               </Button>
            </div>
         </Modal>

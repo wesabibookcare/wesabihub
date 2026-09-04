@@ -16,26 +16,48 @@ import {
 import { Card } from '@/src/components/ui/Card';
 import { Button } from '@/src/components/ui/Button';
 import { Badge } from '@/src/components/ui/Badge';
+import { Input } from '@/src/components/ui/Input';
+import { Modal } from '@/src/components/ui/Modal';
 import { cn } from '@/src/lib/utils';
 import { LogisticsLayout } from '@/src/layouts/LogisticsLayout';
 import { paymentEngine } from '@/src/engines';
 import { useAuth } from '@/src/context/AuthContext';
 import { Wallet as WalletType, Transaction } from '@/src/types';
+import { apiFetch } from '@/src/lib/apiClient';
 import { toast } from 'sonner';
 
 export const PayoutsPage = () => {
-  const { user } = useAuth();
+  const { user, fbUser } = useAuth();
   const [wallet, setWallet] = useState<WalletType | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [isSavingBank, setIsSavingBank] = useState(false);
+  const [banksList, setBanksList] = useState<{ code: string; name: string }[]>([]);
+  const [selectedBankCode, setSelectedBankCode] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [verifiedAccountName, setVerifiedAccountName] = useState('');
 
   useEffect(() => {
     if (user) {
       fetchFinancialData();
+      fetchBanks();
     }
   }, [user]);
+
+  const fetchBanks = async () => {
+    try {
+      const res = await apiFetch(fbUser, '/api/payouts/bank/list');
+      if (res?.banks) {
+        setBanksList(res.banks);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch bank list:', err);
+    }
+  };
 
   const fetchFinancialData = async () => {
     try {
@@ -61,11 +83,46 @@ export const PayoutsPage = () => {
     toast.success('Payout history exported successfully!');
   };
 
-  const handleUpdateBank = async () => {
-    setIsUpdating(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsUpdating(false);
-    toast.info('Bank details update form restricted to authorized owners');
+  const handleOpenBankModal = () => {
+    setSelectedBankCode(wallet?.bankInfo?.bankCode || '');
+    setBankName(wallet?.bankInfo?.bankName || '');
+    setAccountNumber(wallet?.bankInfo?.accountNumber || '');
+    setVerifiedAccountName(wallet?.bankInfo?.verifiedAccountName || wallet?.bankInfo?.accountName || '');
+    setIsBankModalOpen(true);
+  };
+
+  const handleSaveBankDetails = async () => {
+    if (!user) return;
+    if (!selectedBankCode || !accountNumber.trim() || accountNumber.trim().length !== 10) {
+      toast.error('Please select a bank and enter a valid 10-digit account number.');
+      return;
+    }
+    const chosenBank = banksList.find(b => b.code === selectedBankCode);
+    const chosenName = chosenBank ? chosenBank.name : bankName;
+
+    setIsSavingBank(true);
+    try {
+      const res = await apiFetch(fbUser, '/api/payouts/bank/verify', {
+        method: 'POST',
+        body: {
+          bankCode: selectedBankCode,
+          bankName: chosenName,
+          accountNumber: accountNumber.trim()
+        }
+      });
+
+      if (res?.success) {
+        toast.success(`Bank account verified: ${res.bankInfo.verifiedAccountName}`);
+        setIsBankModalOpen(false);
+        await fetchFinancialData();
+      } else {
+        toast.error(res?.error || 'Failed to verify bank account with payment provider');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to verify bank account with payment provider.');
+    } finally {
+      setIsSavingBank(false);
+    }
   };
 
   const payouts = transactions.filter(t => t.category === 'PAYOUT' || t.type === 'DEBIT');
@@ -106,16 +163,23 @@ export const PayoutsPage = () => {
                      </div>
                      <div className="space-y-4 w-full md:w-auto">
                         <Button
-                          onClick={handleUpdateBank}
-                          disabled={isUpdating}
+                          onClick={handleOpenBankModal}
                           className="w-full bg-white text-slate-950 hover:bg-slate-100 rounded-2xl h-14 px-8 font-black shadow-xl shadow-white/5 gap-2 transition-all hover:scale-105"
                         >
-                           {isUpdating ? <Loader2 size={20} className="animate-spin text-primary-600" /> : <CreditCard size={20} className="text-primary-600" />}
-                           Update Bank Details
+                           <CreditCard size={20} className="text-primary-600" />
+                           {wallet?.bankInfo ? 'Manage Settlement Bank' : 'Setup Verified Bank Account'}
                         </Button>
-                        <p className="text-[10px] text-center text-slate-900 font-bold uppercase tracking-widest leading-relaxed">
-                           Payouts are automated every Friday 12:00 AM
-                        </p>
+                        {wallet?.bankInfo ? (
+                           <div className="p-3 bg-white/10 rounded-xl text-xs space-y-1">
+                              <p className="text-[10px] font-black uppercase text-amber-300">Verified Payout Recipient</p>
+                              <p className="font-bold">{wallet.bankInfo.bankName} • ••••{wallet.bankInfo.accountNumber.slice(-4)}</p>
+                              <p className="text-[11px] text-emerald-300 font-mono">{wallet.bankInfo.verifiedAccountName || wallet.bankInfo.accountName}</p>
+                           </div>
+                        ) : (
+                           <p className="text-[10px] text-center text-amber-300 font-bold uppercase tracking-widest leading-relaxed">
+                              Verified bank account required for automated payouts
+                           </p>
+                        )}
                      </div>
                   </div>
                </div>
@@ -210,6 +274,42 @@ export const PayoutsPage = () => {
          </div>
       </div>
       </div>
+
+      {/* Bank Verification Modal */}
+      <Modal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} title="Settlement Bank Account Verification" description="Supply your payout bank details. OmorfiHub verifies account name with the payment provider before automated payouts are enabled.">
+         <div className="space-y-4 py-2">
+            <div>
+               <label className="text-xs font-bold uppercase tracking-wider block text-slate-700 dark:text-slate-300 mb-1">Bank Name</label>
+               <select
+                 value={selectedBankCode}
+                 onChange={e => {
+                   setSelectedBankCode(e.target.value);
+                   const found = banksList.find(b => b.code === e.target.value);
+                   if (found) setBankName(found.name);
+                 }}
+                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm font-medium outline-none focus:border-primary-500"
+               >
+                  <option value="">-- Select Financial Institution --</option>
+                  {banksList.map(b => (
+                    <option key={b.code} value={b.code}>{b.name}</option>
+                  ))}
+               </select>
+            </div>
+            <Input label="Account Number (10 Digits)" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="0123456789" maxLength={10} />
+
+            {verifiedAccountName && (
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
+                 <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Provider Verified Account Holder</p>
+                 <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300 mt-0.5">{verifiedAccountName}</p>
+              </div>
+            )}
+
+            <Button onClick={handleSaveBankDetails} disabled={isSavingBank} className="w-full rounded-xl h-12 mt-2">
+               {isSavingBank ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
+               {isSavingBank ? 'Verifying Account with Provider...' : 'Verify & Enable Bank Payouts'}
+            </Button>
+         </div>
+      </Modal>
     </LogisticsLayout>
   );
 };
