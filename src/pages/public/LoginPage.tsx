@@ -124,14 +124,14 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-slate-950">
         <HeroCarousel showDots={false} />
-        <div className="absolute inset-0 bg-slate-950/70" />
+        <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs" />
       </div>
       <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
         <Button
           variant="outline"
           size="sm"
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 rounded-xl text-white border-white/30 hover:bg-white/10"
+          className="flex items-center gap-2 rounded-xl bg-slate-900/80 backdrop-blur-sm text-white border-slate-700 hover:bg-slate-800 shadow-md font-bold"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -139,14 +139,14 @@ export const LoginPage: React.FC = () => {
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md pt-8">
         <div className="flex justify-center">
-          <div className="bg-slate-900 p-3 rounded-xl">
+          <div className="bg-primary-600 p-3 rounded-2xl shadow-lg shadow-primary-600/30">
             <Package className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white font-sans drop-shadow">
+        <h2 className="mt-6 text-center text-3xl font-black tracking-tight text-slate-900 dark:text-white font-sans">
           Welcome Back
         </h2>
-        <p className="mt-2 text-center text-sm text-slate-200 font-medium drop-shadow">
+        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-300 font-semibold">
           Sign in to your OmorfiHub account
         </p>
       </div>
