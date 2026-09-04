@@ -45,6 +45,7 @@ import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
 import { toast } from 'sonner';
 import { adminEngine } from '../../engines/AdminEngine';
+import { auditEngine } from '@/src/engines/AuditEngine';
 
 export const AdminDashboard = () => {
   const { user, impersonate, impersonatedRole, stopImpersonating } = useAuth();
