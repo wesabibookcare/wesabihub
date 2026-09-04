@@ -63,7 +63,7 @@ export const VerificationPage: React.FC = () => {
           <div>
             <p className="text-primary-600 font-bold uppercase tracking-widest text-[9px] mb-1">Super Admin Controls</p>
             <h1 className="text-3xl font-black tracking-tight text-slate-900">Registration & Verification Management</h1>
-            <p className="text-xs text-slate-900 font-medium">Configure roles, country localization overrides, custom verification flows, and audit candidate credentials.</p>
+            <p className="text-xs text-slate-900 font-medium">Review and verify pending user applications. For example, approve a new Hub Owner's government ID or check a merchant's business registration documents.</p>
           </div>
         </div>
 

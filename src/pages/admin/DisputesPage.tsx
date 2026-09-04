@@ -434,6 +434,7 @@ export const AdminDisputesPage = () => {
             <h1 className="text-3xl font-black font-display text-slate-900 tracking-tight flex items-center gap-2.5">
               Payment Protection Disputes Control Desk
             </h1>
+            <p className="text-xs font-medium text-slate-700 mt-1">Fairly resolve SafePay protected trade issues between buyers and sellers. For example, review uploaded delivery photos to safely release funds or process refunds.</p>
           </div>
 
           <div className="flex items-center gap-3 self-stretch md:self-auto">
@@ -910,7 +911,7 @@ export const AdminDisputesPage = () => {
                           <div className="p-4 bg-white border border-slate-100 rounded-2xl space-y-4">
                             {selectedDispute.evidence?.trackingHistory && selectedDispute.evidence.trackingHistory.length > 0 ? (
                               <div className="relative border-l border-slate-200 pl-4 ml-2 space-y-4">
-                                {selectedDispute.evidence.trackingHistory.map((step: any, i: number) => (
+                                {(selectedDispute.evidence?.trackingHistory || []).map((step: any, i: number) => (
                                   <div key={i} className="relative text-xs">
                                     <div className="absolute -left-[21px] top-0.5 w-2.5 h-2.5 rounded-full bg-slate-900 border-2 border-white" />
                                     <p className="font-black text-slate-800">{step.title || step.type}</p>
@@ -940,7 +941,7 @@ export const AdminDisputesPage = () => {
 
                         <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[350px] overflow-y-auto bg-slate-50 p-4 space-y-3 flex flex-col">
                           {selectedDispute.evidence?.conversationSnapshot && selectedDispute.evidence.conversationSnapshot.length > 0 ? (
-                            selectedDispute.evidence.conversationSnapshot.map((msg: any) => {
+                            (selectedDispute.evidence?.conversationSnapshot || []).map((msg: any) => {
                               const isMerchant = msg.senderRole === 'MERCHANT' || msg.senderRole === 'SELLER';
                               return (
                                 <div
@@ -958,7 +959,7 @@ export const AdminDisputesPage = () => {
                                   <p className="leading-relaxed whitespace-pre-line">{msg.text}</p>
                                   {msg.attachments && msg.attachments.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1">
-                                      {msg.attachments.map((url: string, i: number) => (
+                                      {(msg.attachments || []).map((url: string, i: number) => (
                                         <div key={i} className="p-1.5 bg-slate-100 rounded text-[9px] text-slate-800 flex items-center gap-1">
                                           <FileText size={10} />
                                           Evidence Media #{i+1}
@@ -1038,7 +1039,7 @@ export const AdminDisputesPage = () => {
                         {/* Notes List */}
                         <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
                           {selectedDispute.internalNotes && selectedDispute.internalNotes.length > 0 ? (
-                            selectedDispute.internalNotes.map((note, i) => (
+                            (selectedDispute.internalNotes || []).map((note, i) => (
                               <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                                 <p className="text-[10px] text-slate-800 font-bold">
                                   By {note.authorName} • {new Date(note.timestamp).toLocaleString()}

@@ -416,8 +416,8 @@ export const InfrastructureCertificationPage = () => {
                        <Badge className="bg-emerald-100 text-emerald-700">STABLE</Badge>
                     </div>
                     <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                       {Object.entries(data.health.services).map(([name, status]: [string, any]) => {
-                         if (typeof status === 'object') return null; // Handle nested later
+                       {data?.health?.services && Object.entries(data.health.services).map(([name, status]: [string, any]) => {
+                         if (typeof status === 'object') return null;
                          return (
                            <div key={name} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                               <div className="space-y-0.5">
@@ -425,21 +425,21 @@ export const InfrastructureCertificationPage = () => {
                                  <p className="text-[10px] text-slate-500 font-medium">Internal System Provider</p>
                               </div>
                               <div className="flex items-center gap-3">
-                                 <span className="text-xs font-black dark:text-white">{status}</span>
-                                 {getStatusIcon(status)}
+                                 <span className="text-xs font-black dark:text-white">{String(status)}</span>
+                                 {getStatusIcon(String(status))}
                               </div>
                            </div>
                          );
                        })}
-                       {Object.entries(data.health.services.payment).map(([name, status]: [string, any]) => (
+                       {data?.health?.services?.payment && Object.entries(data.health.services.payment).map(([name, status]: [string, any]) => (
                          <div key={name} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                             <div className="space-y-0.5">
                                <p className="text-sm font-bold dark:text-white uppercase tracking-tight">{name}</p>
                                <p className="text-[10px] text-slate-500 font-medium">External Payment Gateway</p>
                             </div>
                             <div className="flex items-center gap-3">
-                               <span className="text-xs font-black dark:text-white">{status}</span>
-                               {getStatusIcon(status)}
+                               <span className="text-xs font-black dark:text-white">{String(status)}</span>
+                               {getStatusIcon(String(status))}
                             </div>
                          </div>
                        ))}
@@ -577,12 +577,12 @@ export const InfrastructureCertificationPage = () => {
                   <Card className="p-6 border-slate-200 dark:border-slate-800 space-y-4">
                     <div className="text-[10px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">Continuous Business Resilience</div>
                     <div className="space-y-3">
-                      {Object.entries(drData.failoverStatus).map(([service, status]: [string, any]) => (
+                      {drData?.failoverStatus && Object.entries(drData.failoverStatus).map(([service, status]: [string, any]) => (
                         <div key={service} className="flex items-center justify-between text-xs">
                           <span className="font-bold uppercase tracking-tighter dark:text-white">{service}</span>
                           <Badge variant="outline" className="text-[9px] font-black uppercase flex items-center gap-1">
-                            {getStatusIcon(status)}
-                            {status.replace(/_/g, ' ')}
+                            {getStatusIcon(String(status))}
+                            {String(status).replace(/_/g, ' ')}
                           </Badge>
                         </div>
                       ))}

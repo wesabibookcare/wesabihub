@@ -840,7 +840,7 @@ export const UsersPage = () => {
               Roles & Permissions
             </h1>
             <p className="text-slate-900 font-medium mt-1">
-              Configure strict role-based access, manage administrator details and customize granular permissions.
+              Manage platform accounts and roles. For example, search for a registered user, grant administrative permissions, or update account status.
             </p>
           </div>
 

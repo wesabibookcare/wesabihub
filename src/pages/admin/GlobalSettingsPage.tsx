@@ -517,7 +517,7 @@ export const GlobalSettingsPage = () => {
       <div className="max-w-6xl mx-auto space-y-8 pb-20">
 
       {/* COMPACT HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm sticky top-4 z-40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white shadow-md shadow-primary-500/20 shrink-0">
             <Settings size={20} />
@@ -534,7 +534,7 @@ export const GlobalSettingsPage = () => {
       </div>
 
       {/* WHATSAPP-STYLE PILL TOGGLE NAVIGATION */}
-      <div className="sticky top-[76px] z-30 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md py-2 border-y border-slate-200/60 dark:border-slate-800/60">
+      <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md py-2 border-y border-slate-200/60 dark:border-slate-800/60">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth px-1">
           {(['general', 'branding', 'landing', 'animations', 'social', 'company', 'faq', 'knowledge', 'countries', 'features', 'legal', 'contact', 'communications', 'maps', 'payments', 'logs'] as TabType[]).map((tab) => {
             const isActive = activeTab === tab;

@@ -206,7 +206,7 @@ export const OperationalCctvPage: React.FC = () => {
                 Network Operational Monitoring
               </h1>
               <p className="text-slate-400 max-w-2xl text-sm leading-relaxed">
-                Super Admin real-time read-only oversight across all OmorfiHub locations, active parcels, custody transfers, operational holds, and financial safeguards.
+                Super Admin real-time read-only oversight across all OmorfiHub locations, active parcels, custody transfers, operational holds, and financial safeguards. For example, inspect hub floor cameras, review compliance holds on flagged parcels, or monitor staff shift activity.
               </p>
             </div>
 

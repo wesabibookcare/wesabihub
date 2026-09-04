@@ -141,7 +141,7 @@ export const RevenueReportsPage = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold dark:text-white font-display">Revenue Reports</h1>
-            <p className="text-slate-900">Comprehensive overview of platform earnings and hub payouts.</p>
+            <p className="text-slate-900">Comprehensive overview of platform earnings and hub payouts. For example, monitor total monthly shipping commission, track SafePay protection volume, or view money-in versus money-out breakdown.</p>
           </div>
           <div className="flex items-center gap-3">
              <Button variant="outline" className="rounded-xl flex items-center gap-2">

@@ -44,7 +44,7 @@ export const CommissionPayoutPage = () => {
           <div>
             <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mb-2">Revenue & Settlement</p>
             <h1 className="text-4xl font-black tracking-tight text-slate-900">Commission & Payouts</h1>
-            <p className="text-slate-900 font-medium mt-1">Configure global revenue sharing and automated partner payouts.</p>
+            <p className="text-slate-900 font-medium mt-1">Configure global revenue sharing and automated partner payouts. For example, set commission percentages for hub centers, view pending payout schedules, or release earned funds.</p>
           </div>
           <div className="flex items-center gap-3">
              <Button className="rounded-xl font-bold shadow-lg shadow-primary-600/20">
