@@ -602,7 +602,7 @@ export const GlobalSettingsPage = () => {
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Platform Name</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Platform Name</label>
                   <input
                     value={settings.platformName || ''}
                     onChange={(e) => setSettings({...settings, platformName: e.target.value})}
@@ -610,7 +610,7 @@ export const GlobalSettingsPage = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Tagline</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Tagline</label>
                   <input
                     value={settings.tagline || ''}
                     onChange={(e) => setSettings({...settings, tagline: e.target.value})}
@@ -649,7 +649,7 @@ export const GlobalSettingsPage = () => {
                    <p className="text-[10px] text-emerald-700 dark:text-emerald-500 mt-1">All microservices and database nodes are performing within nominal latency thresholds.</p>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">API Environment</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">API Environment</label>
                   <Badge variant="outline" className="bg-slate-50 dark:bg-slate-900 font-mono text-[10px]">PRODUCTION-V1.4.2</Badge>
                 </div>
               </div>
@@ -748,7 +748,7 @@ export const GlobalSettingsPage = () => {
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Heading Font</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Heading Font</label>
                     <input
                       value={settings.branding?.typography.headingFont || ''}
                       onChange={(e) => updateTypography('headingFont', e.target.value)}
@@ -756,7 +756,7 @@ export const GlobalSettingsPage = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Body Font</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Body Font</label>
                     <input
                       value={settings.branding?.typography.bodyFont || ''}
                       onChange={(e) => updateTypography('bodyFont', e.target.value)}
@@ -771,7 +771,7 @@ export const GlobalSettingsPage = () => {
               <Card className="p-8 border-slate-200 dark:border-slate-800 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Primary Colour</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Primary Colour</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -787,7 +787,7 @@ export const GlobalSettingsPage = () => {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Secondary Colour</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Secondary Colour</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -805,7 +805,7 @@ export const GlobalSettingsPage = () => {
                 </div>
 
                 <div className="p-8 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 mb-6">Theme Preview</h4>
+                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 mb-6">Theme Preview</h4>
                    <div className="grid grid-cols-2 gap-4">
                       <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center gap-3">
                          <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-white">
@@ -956,7 +956,7 @@ export const GlobalSettingsPage = () => {
                 </div>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Headline</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Headline</label>
                     <input
                       value={settings.landingPage?.hero.title || ''}
                       onChange={(e) => updateLandingHero('title', e.target.value)}
@@ -964,7 +964,7 @@ export const GlobalSettingsPage = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Subtitle</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Subtitle</label>
                     <textarea
                       rows={3}
                       value={settings.landingPage?.hero.subtitle || ''}
@@ -973,7 +973,7 @@ export const GlobalSettingsPage = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Hero Background URL</label>
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Hero Background URL</label>
                     <input
                       value={settings.landingPage?.hero.backgroundImageUrl || ''}
                       onChange={(e) => updateLandingHero('backgroundImageUrl', e.target.value)}
@@ -996,7 +996,7 @@ export const GlobalSettingsPage = () => {
                     { key: 'centerValueProp', label: 'Hub Center Benefits' }
                   ].map((item) => (
                     <div key={item.key} className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">{item.label}</label>
+                      <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">{item.label}</label>
                       <textarea
                         rows={2}
                         value={(settings.landingPage.descriptions as any)[item.key] || ''}
@@ -1033,7 +1033,7 @@ export const GlobalSettingsPage = () => {
                         newStats[i].label = e.target.value;
                         setSettings({...settings, landingPage: {...settings.landingPage, statistics: newStats}});
                       }}
-                      className="w-full bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest text-slate-800"
+                      className="w-full bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200"
                     />
                     <input
                       value={stat.value}
@@ -1073,8 +1073,8 @@ export const GlobalSettingsPage = () => {
               ].map((item) => (
                 <div key={item.key} className="space-y-1.5">
                   <div className="flex items-center gap-2 mb-1">
-                    <item.icon size={14} className="text-slate-800" />
-                    <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">{item.label}</label>
+                    <item.icon size={14} className="text-slate-800 dark:text-slate-200" />
+                    <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">{item.label}</label>
                   </div>
                   <input
                     value={(settings.socialLinks as any)[item.key] || ''}
@@ -1155,7 +1155,7 @@ export const GlobalSettingsPage = () => {
                     />
                     <div className="flex items-center gap-2">
                        <Badge className="bg-slate-200 dark:bg-slate-800 text-[9px]">{faq.category}</Badge>
-                       <button className="text-slate-800 hover:text-rose-600"><Trash2 size={14} /></button>
+                       <button className="text-slate-800 dark:text-slate-200 hover:text-rose-600"><Trash2 size={14} /></button>
                     </div>
                   </div>
                   <textarea
@@ -1166,7 +1166,7 @@ export const GlobalSettingsPage = () => {
                 </div>
               ))}
               {faqs.length === 0 && (
-                <div className="py-12 text-center text-slate-800 italic text-xs">No FAQs found. Add your first one above.</div>
+                <div className="py-12 text-center text-slate-800 dark:text-slate-200 italic text-xs">No FAQs found. Add your first one above.</div>
               )}
             </div>
           </Card>
@@ -1190,14 +1190,14 @@ export const GlobalSettingsPage = () => {
                 <div key={article.id} className="p-6 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl space-y-3 group hover:border-primary-500/30 transition-all cursor-pointer">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[9px]">{article.category}</Badge>
-                    <span className="text-[9px] text-slate-800">{new Date(article.updatedAt).toLocaleDateString()}</span>
+                    <span className="text-[9px] text-slate-800 dark:text-slate-200">{new Date(article.updatedAt).toLocaleDateString()}</span>
                   </div>
                   <h4 className="font-bold text-sm group-hover:text-primary-600 transition-colors">{article.title}</h4>
                   <p className="text-[10px] text-slate-900 line-clamp-2">{article.summary}</p>
                 </div>
               ))}
               {articles.length === 0 && (
-                <div className="col-span-2 py-12 text-center text-slate-800 italic text-xs">Knowledge base is currently empty.</div>
+                <div className="col-span-2 py-12 text-center text-slate-800 dark:text-slate-200 italic text-xs">Knowledge base is currently empty.</div>
               )}
             </div>
           </Card>
@@ -1224,7 +1224,7 @@ export const GlobalSettingsPage = () => {
                 { key: 'defaultAddressFormat', label: 'Address Format' }
               ].map((item) => (
                 <div key={item.key} className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest">{item.label}</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest">{item.label}</label>
                   <input
                     value={(settings.countryConfig as any)[item.key] || ''}
                     onChange={(e) => updateCountryConfig(item.key, e.target.value)}
@@ -1253,7 +1253,7 @@ export const GlobalSettingsPage = () => {
                   </label>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800">VAT Rate (%)</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200">VAT Rate (%)</label>
                   <input
                     type="number"
                     value={settings.countryConfig.taxSettings.vatRate}
@@ -1269,7 +1269,7 @@ export const GlobalSettingsPage = () => {
                   <h4 className="text-xs font-black uppercase tracking-widest">Consumer Protection</h4>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800">Regulatory Framework</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200">Regulatory Framework</label>
                   <textarea
                     rows={4}
                     value={settings.countryConfig.consumerProtectionRules}
@@ -1375,7 +1375,7 @@ export const GlobalSettingsPage = () => {
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Main Support Email</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Main Support Email</label>
                   <input
                     value={settings.contactInfo.supportEmail || ''}
                     onChange={(e) => updateContactInfo('supportEmail', e.target.value)}
@@ -1383,7 +1383,7 @@ export const GlobalSettingsPage = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Primary Support Phone</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Primary Support Phone</label>
                   <input
                     value={settings.contactInfo.supportPhone || ''}
                     onChange={(e) => updateContactInfo('supportPhone', e.target.value)}
@@ -1391,7 +1391,7 @@ export const GlobalSettingsPage = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">WhatsApp Business Number</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">WhatsApp Business Number</label>
                   <input
                     value={settings.contactInfo.whatsapp || ''}
                     onChange={(e) => updateContactInfo('whatsapp', e.target.value)}
@@ -1408,7 +1408,7 @@ export const GlobalSettingsPage = () => {
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Headquarters Address</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Headquarters Address</label>
                   <textarea
                     rows={2}
                     value={settings.contactInfo.address || ''}
@@ -1417,7 +1417,7 @@ export const GlobalSettingsPage = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Operational Hours</label>
+                  <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Operational Hours</label>
                   <input
                     value={settings.contactInfo.workingHours || ''}
                     onChange={(e) => updateContactInfo('workingHours', e.target.value)}
@@ -1443,7 +1443,7 @@ export const GlobalSettingsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Maps Provider</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Maps Provider</label>
                 <select
                   value={settings.mapsConfig.mapsProvider || 'GOOGLE'}
                   onChange={(e) => setSettings({
@@ -1458,7 +1458,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Default Country</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Default Country</label>
                 <input
                   type="text"
                   value={settings.mapsConfig.defaultCountry || 'Nigeria'}
@@ -1472,7 +1472,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Distance Units</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Distance Units</label>
                 <select
                   value={settings.mapsConfig.distanceUnits || 'km'}
                   onChange={(e) => setSettings({
@@ -1487,7 +1487,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Default Search Radius (km)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Default Search Radius (km)</label>
                 <input
                   type="number"
                   value={settings.mapsConfig.defaultSearchRadiusKm ?? 10}
@@ -1500,7 +1500,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Maximum Dispatch Radius (km)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Maximum Dispatch Radius (km)</label>
                 <input
                   type="number"
                   value={settings.mapsConfig.maxDispatchRadiusKm ?? 15}
@@ -1513,7 +1513,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Tracking Update Interval (ms)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Tracking Update Interval (ms)</label>
                 <input
                   type="number"
                   value={settings.mapsConfig.locationUpdateIntervalMs ?? 10000}
@@ -1526,7 +1526,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Geofence Radius (meters)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Geofence Radius (meters)</label>
                 <input
                   type="number"
                   value={settings.mapsConfig.geofenceRadiusMeters ?? 100}
@@ -1539,7 +1539,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">GPS Accuracy Threshold (meters)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">GPS Accuracy Threshold (meters)</label>
                 <input
                   type="number"
                   value={settings.mapsConfig.locationAccuracyThresholdMeters ?? 15}
@@ -1552,7 +1552,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Route Deviation Threshold (meters)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Route Deviation Threshold (meters)</label>
                 <input
                   type="number"
                   value={settings.mapsConfig.routeDeviationThresholdMeters ?? 150}
@@ -1649,7 +1649,7 @@ export const GlobalSettingsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Primary SafePay Provider</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Primary SafePay Provider</label>
                 <select
                   value={settings.paymentConfig.primarySafePayProvider || 'FLUTTERWAVE'}
                   onChange={(e) => setSettings({
@@ -1665,7 +1665,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Primary Platform Provider</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Primary Platform Provider</label>
                 <select
                   value={settings.paymentConfig.primaryPlatformProvider || 'PAYSTACK'}
                   onChange={(e) => setSettings({
@@ -1681,7 +1681,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Retry Limits</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Retry Limits</label>
                 <input
                   type="number"
                   min="1"
@@ -1697,7 +1697,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Timeout Duration (seconds)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Timeout Duration (seconds)</label>
                 <input
                   type="number"
                   min="5"
@@ -1713,7 +1713,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Provider Priority Order</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Provider Priority Order</label>
                 <input
                   type="text"
                   value={settings.paymentConfig.providerPriority?.join(', ') || 'PAYSTACK, FLUTTERWAVE'}
@@ -1730,7 +1730,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Supported Currencies</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Supported Currencies</label>
                 <input
                   type="text"
                   value={settings.paymentConfig.supportedCurrencies?.join(', ') || 'NGN, USD, GHS, KES'}
@@ -1747,7 +1747,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Webhook Endpoint</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Webhook Endpoint</label>
                 <input
                   type="text"
                   value={settings.paymentConfig.webhookEndpoint || '/api/payment-protection/webhook'}
@@ -1764,7 +1764,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Settlement Delay (seconds)</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Settlement Delay (seconds)</label>
                 <input
                   type="number"
                   min="0"
@@ -1782,7 +1782,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">SafePay Refund Rules</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">SafePay Refund Rules</label>
                 <input
                   type="text"
                   value={settings.paymentConfig.refundRules?.join(', ') || 'FULL_REFUND, PARTIAL_REFUND_WITH_FEE'}
@@ -1799,7 +1799,7 @@ export const GlobalSettingsPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Allowed Fallback Payment Types</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Allowed Fallback Payment Types</label>
                 <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 max-h-[140px] overflow-y-auto">
                   {['WALLET_FUNDING', 'REGISTRATION_FEE', 'MEMBERSHIP', 'SUBSCRIPTION', 'GENERAL_PLATFORM_CHARGE'].map((type) => {
                     const isChecked = settings.paymentConfig?.allowedFallbackTypes?.includes(type);
@@ -2005,7 +2005,7 @@ export const GlobalSettingsPage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Bot HTTP Token</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Bot HTTP Token</label>
                         <input
                           type="password"
                           value={settings.telegramConfig?.botToken || ''}
@@ -2018,7 +2018,7 @@ export const GlobalSettingsPage = () => {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Chat ID / Group ID</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Chat ID / Group ID</label>
                         <input
                           value={settings.telegramConfig?.chatId || ''}
                           onChange={(e) => setSettings({
@@ -2063,7 +2063,7 @@ export const GlobalSettingsPage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Primary Provider</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Primary Provider</label>
                         <select
                           value={settings.emailConfig?.provider || 'FALLBACK'}
                           onChange={(e) => setSettings({
@@ -2079,7 +2079,7 @@ export const GlobalSettingsPage = () => {
                         </select>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Default Sender Name/Email</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Default Sender Name/Email</label>
                         <input
                           value={settings.emailConfig?.defaultSender || ''}
                           onChange={(e) => setSettings({
@@ -2091,7 +2091,7 @@ export const GlobalSettingsPage = () => {
                         />
                       </div>
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">API Access Key / Secret</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">API Access Key / Secret</label>
                         <input
                           type="password"
                           value={settings.emailConfig?.apiKey || ''}
@@ -2137,7 +2137,7 @@ export const GlobalSettingsPage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Primary Provider</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Primary Provider</label>
                         <select
                           value={settings.smsConfig?.provider || 'FALLBACK'}
                           onChange={(e) => setSettings({
@@ -2152,7 +2152,7 @@ export const GlobalSettingsPage = () => {
                         </select>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">Sender ID / Brand Name</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Sender ID / Brand Name</label>
                         <input
                           value={settings.smsConfig?.senderId || ''}
                           onChange={(e) => setSettings({
@@ -2164,7 +2164,7 @@ export const GlobalSettingsPage = () => {
                         />
                       </div>
                       <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[10px] font-bold text-slate-800 uppercase tracking-widest block">API Key / Auth Token</label>
+                        <label className="text-[10px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest block">API Key / Auth Token</label>
                         <input
                           type="password"
                           value={settings.smsConfig?.apiKey || ''}
@@ -2190,7 +2190,7 @@ export const GlobalSettingsPage = () => {
 
                     <div className="space-y-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest block">Daily Rate Limit (per User)</label>
+                        <label className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Daily Rate Limit (per User)</label>
                         <input
                           type="number"
                           value={settings.communicationSettings?.notificationLimits ?? 50}
@@ -2203,14 +2203,14 @@ export const GlobalSettingsPage = () => {
                           })}
                           className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs rounded-xl font-bold font-mono"
                         />
-                        <p className="text-[9px] text-slate-800">Restricts user spamming across SMS and push channels.</p>
+                        <p className="text-[9px] text-slate-800 dark:text-slate-200">Restricts user spamming across SMS and push channels.</p>
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest block">Retry Policy Limit</label>
+                        <label className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Retry Policy Limit</label>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 block mb-1">Max Attempts</span>
+                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 dark:text-slate-200 block mb-1">Max Attempts</span>
                             <input
                               type="number"
                               value={settings.communicationSettings?.retryPolicy?.maxAttempts ?? 3}
@@ -2228,7 +2228,7 @@ export const GlobalSettingsPage = () => {
                             />
                           </div>
                           <div>
-                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 block mb-1">Retry Delay (Sec)</span>
+                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 dark:text-slate-200 block mb-1">Retry Delay (Sec)</span>
                             <input
                               type="number"
                               value={settings.communicationSettings?.retryPolicy?.delaySeconds ?? 10}
@@ -2249,10 +2249,10 @@ export const GlobalSettingsPage = () => {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-800 uppercase tracking-widest block">Quiet Hours Restriction</label>
+                        <label className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Quiet Hours Restriction</label>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 block mb-1">Starts At</span>
+                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 dark:text-slate-200 block mb-1">Starts At</span>
                             <input
                               type="time"
                               value={settings.communicationSettings?.quietHoursStart || '22:00'}
@@ -2267,7 +2267,7 @@ export const GlobalSettingsPage = () => {
                             />
                           </div>
                           <div>
-                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 block mb-1">Ends At</span>
+                            <span className="text-[8px] uppercase tracking-widest font-black text-slate-800 dark:text-slate-200 block mb-1">Ends At</span>
                             <input
                               type="time"
                               value={settings.communicationSettings?.quietHoursEnd || '06:00'}
@@ -2282,7 +2282,7 @@ export const GlobalSettingsPage = () => {
                             />
                           </div>
                         </div>
-                        <p className="text-[9px] text-slate-800 mt-1">Defers bulk non-critical alerts during configured time boundaries.</p>
+                        <p className="text-[9px] text-slate-800 dark:text-slate-200 mt-1">Defers bulk non-critical alerts during configured time boundaries.</p>
                       </div>
                     </div>
                   </Card>
@@ -2326,7 +2326,7 @@ export const GlobalSettingsPage = () => {
 
                         <div className="space-y-3">
                           <div className="space-y-1.5">
-                            <span className="text-[8px] font-black text-slate-800 uppercase tracking-widest block">Notification Title</span>
+                            <span className="text-[8px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Notification Title</span>
                             <input
                               value={template.title}
                               onChange={(e) => {
@@ -2338,7 +2338,7 @@ export const GlobalSettingsPage = () => {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <span className="text-[8px] font-black text-slate-800 uppercase tracking-widest block">Notification Body</span>
+                            <span className="text-[8px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">Notification Body</span>
                             <textarea
                               rows={3}
                               value={template.body}
@@ -2370,7 +2370,7 @@ export const GlobalSettingsPage = () => {
                   {providerHealths.map((ph, idx) => (
                     <div key={idx} className="p-5 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-800 font-mono">{ph.provider}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 font-mono">{ph.provider}</span>
                         <Badge
                           variant={ph.status === 'ACTIVE' ? 'success' : ph.status === 'DEGRADED' ? 'warning' : 'error'}
                           className="text-[9px] font-extrabold uppercase"
@@ -2381,17 +2381,17 @@ export const GlobalSettingsPage = () => {
 
                       <div className="space-y-1">
                         <span className="text-2xl font-black font-display dark:text-white">{ph.latencyMs}ms</span>
-                        <span className="text-[10px] text-slate-800 block uppercase tracking-widest">Avg Latency</span>
+                        <span className="text-[10px] text-slate-800 dark:text-slate-200 block uppercase tracking-widest">Avg Latency</span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 text-[11px]">
                         <div>
                           <span className="text-slate-900 font-bold">{ph.successRate}%</span>
-                          <span className="text-[8px] text-slate-800 block uppercase tracking-widest">Success Rate</span>
+                          <span className="text-[8px] text-slate-800 dark:text-slate-200 block uppercase tracking-widest">Success Rate</span>
                         </div>
                         <div>
                           <span className="text-slate-900 font-bold">{ph.totalRequests}</span>
-                          <span className="text-[8px] text-slate-800 block uppercase tracking-widest">Requests</span>
+                          <span className="text-[8px] text-slate-800 dark:text-slate-200 block uppercase tracking-widest">Requests</span>
                         </div>
                       </div>
                     </div>
@@ -2417,13 +2417,13 @@ export const GlobalSettingsPage = () => {
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Timestamp</th>
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Recipient</th>
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Channel</th>
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Provider</th>
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Category</th>
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Status</th>
-                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800">Message Preview</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Timestamp</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Recipient</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Channel</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Provider</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Category</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Status</th>
+                        <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-slate-800 dark:text-slate-200">Message Preview</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -2484,7 +2484,7 @@ export const GlobalSettingsPage = () => {
                       ))}
                       {commsLogs.length === 0 && (
                         <tr>
-                          <td colSpan={7} className="px-6 py-12 text-center text-slate-800 italic">
+                          <td colSpan={7} className="px-6 py-12 text-center text-slate-800 dark:text-slate-200 italic">
                             No dispatch communications recorded in this session.
                           </td>
                         </tr>
@@ -2514,10 +2514,10 @@ export const GlobalSettingsPage = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800">Timestamp</th>
-                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800">User</th>
-                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800">Action</th>
-                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800">Details</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800 dark:text-slate-200">Timestamp</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800 dark:text-slate-200">User</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800 dark:text-slate-200">Action</th>
+                    <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-slate-800 dark:text-slate-200">Details</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -2537,7 +2537,7 @@ export const GlobalSettingsPage = () => {
                   ))}
                   {auditLogs.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center text-slate-800 italic">No configuration changes recorded yet.</td>
+                      <td colSpan={4} className="px-6 py-12 text-center text-slate-800 dark:text-slate-200 italic">No configuration changes recorded yet.</td>
                     </tr>
                   )}
                 </tbody>

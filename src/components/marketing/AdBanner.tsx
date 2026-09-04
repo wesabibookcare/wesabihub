@@ -26,21 +26,21 @@ export const AdBanner = () => {
     if (!ad) return null;
 
     return (
-        <div className="bg-slate-900 text-white py-0.5 px-3 text-center border-t border-primary-500 relative z-50 shadow-md min-h-[22px] flex items-center">
-            <div className="w-full max-w-4xl mx-auto flex items-center justify-between gap-2 text-left">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="bg-slate-900 text-white py-2 px-4 text-center border-t border-primary-500 relative shadow-md min-h-[44px] flex items-center w-full">
+            <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-3 text-left">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                     {ad.imageUrl && (
-                        <img src={ad.imageUrl} className="max-h-4 rounded shadow-sm object-cover flex-shrink-0" alt="ad" />
+                        <img src={ad.imageUrl} className="max-h-8 rounded shadow-sm object-cover flex-shrink-0" alt="ad" />
                     )}
                     <div className="min-w-0 flex items-center gap-2">
-                        <h3 className="font-bold text-[10px] text-primary-400 truncate">{ad.headline}</h3>
-                        {ad.description && <p className="text-[9px] text-slate-300 truncate hidden md:inline">{ad.description}</p>}
+                        <h3 className="font-bold text-xs sm:text-sm text-primary-400 truncate">{ad.headline}</h3>
+                        {ad.description && <p className="text-xs text-slate-300 truncate hidden md:inline">{ad.description}</p>}
                     </div>
                 </div>
                 {ad.destinationUrl && (
                     <a
                         href={ad.destinationUrl}
-                        className="bg-primary-500 hover:bg-primary-600 text-white px-2 py-0.5 rounded text-[9px] font-bold whitespace-nowrap transition-colors"
+                        className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-colors shrink-0"
                     >
                         View Offer
                     </a>
