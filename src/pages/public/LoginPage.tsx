@@ -152,7 +152,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="shadow-xl rounded-3xl border-slate-200">
+        <Card className="shadow-xl rounded-3xl border-slate-200 dark:border-slate-800 dark:bg-slate-900">
           <CardContent className="pt-6">
             {fbUser && profileMissing && (
               <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl space-y-3">
@@ -265,14 +265,14 @@ export const LoginPage: React.FC = () => {
                 <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-slate-900 font-black uppercase tracking-widest text-[10px]">Or continue with</span>
+                <span className="px-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black uppercase tracking-widest text-[10px]">Or continue with</span>
               </div>
             </div>
 
             <Button
               type="button"
               variant="outline"
-              className="w-full flex items-center justify-center rounded-xl py-3 border-slate-300 hover:bg-slate-50 text-slate-950 font-bold transition-all shadow-sm"
+              className="w-full flex items-center justify-center rounded-xl py-3 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-950 dark:text-white font-bold transition-all shadow-sm"
               onClick={handleGoogleSignIn}
               disabled={loading}
             >
@@ -303,7 +303,7 @@ export const LoginPage: React.FC = () => {
                   <div className="w-full border-t border-slate-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-slate-900 font-black uppercase tracking-widest text-[10px]">New to OmorfiHub?</span>
+                  <span className="px-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black uppercase tracking-widest text-[10px]">New to OmorfiHub?</span>
                 </div>
               </div>
 

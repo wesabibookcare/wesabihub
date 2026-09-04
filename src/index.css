@@ -45,11 +45,35 @@
     }
   }
 
+  html.dark,
+  body.dark,
   .dark {
     --color-surface: #0f172a;
     --color-background: #020617;
-    background-color: var(--color-background);
+    background-color: var(--color-background) !important;
+    color: #f8fafc !important;
+  }
+
+  /* High-Contrast Global Night Mode Typography Rules */
+  .dark {
+    color-scheme: dark;
+  }
+
+  /* Ensure text inside dark containers has strong contrast */
+  .dark label {
     color: #f8fafc;
+  }
+
+  .dark input,
+  .dark textarea,
+  .dark select {
+    color: #f8fafc;
+    background-color: #0f172a;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #94a3b8;
   }
 }
 
