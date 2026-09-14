@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { getAiInstance } from "./ChatEngine.js";
+import { safeGenerateContent } from "./AIEngine.js";
 
 export interface DisputePreAssessmentInput {
   disputeId: string;
@@ -90,8 +91,7 @@ Use clear formatting with headers and bullet points. Do not include any promotio
     if (!ai) {
       return "Compliance AI Pre-assessment offline: GEMINI_API_KEY is not configured in settings.";
     }
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+    const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
       contents: prompt,
     });
 

@@ -53,24 +53,42 @@ export function CustomerCareChat() {
     setIsLoading(true);
     setShowFeedback(false);
 
-    const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            personaId: selectedPersona.id,
-            message: messageText,
-            context: { user, path: location.pathname, history: messages },
-            feedback
-        })
-    });
-    const data = await response.json();
-    setMessages(prev => [...prev, { sender: 'bot', text: data.text }]);
-    if (data.ticketCreated) {
-        setTicketCreated(true);
-    } else {
-        setShowFeedback(true);
+    try {
+      const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              personaId: selectedPersona.id,
+              message: messageText,
+              context: { user, path: location.pathname, history: messages },
+              feedback
+          })
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+          const textErr = await response.text();
+          throw new Error(textErr || `Server returned non-JSON response (${response.status})`);
+      }
+
+      const data = await response.json();
+      setMessages(prev => [...prev, { sender: 'bot', text: data.text || 'No response received from agent.' }]);
+      if (data.ticketCreated) {
+          setTicketCreated(true);
+      } else {
+          setShowFeedback(true);
+      }
+    } catch (err: any) {
+      console.error("[CustomerCareChat] Chat failed:", err);
+      let errorText = "Omorfi is currently unavailable. Please try again shortly or contact customer support.";
+      const rawMsg = err.message || '';
+      if (rawMsg.includes("GEMINI_API_KEY") || rawMsg.includes("api key") || rawMsg.includes("API key")) {
+        errorText = "The Omorfi AI assistant is currently offline because the Gemini API key is not configured or invalid in Settings.";
+      }
+      setMessages(prev => [...prev, { sender: 'bot', text: errorText }]);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
 
