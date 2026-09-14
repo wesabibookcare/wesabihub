@@ -1,9 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { getFirestore } from 'firebase-admin/firestore';
 import { createKnowledgeReviewRequest, searchApprovedKnowledge } from "./KnowledgeEngine.js";
+import { safeGenerateContent } from "./AIEngine.js";
 
 export async function getGeminiApiKey(db?: any): Promise<string | null> {
-  const envKey = process.env.GEMINI_API_KEY;
+  const envKey = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.VITE_GEMINI_API_KEY;
   if (envKey && envKey.trim() !== '') {
     return envKey.trim();
   }
@@ -423,8 +424,7 @@ export async function getChatResponse(
   }
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+    const { response, modelUsed } = await safeGenerateContent(ai, "gemini-2.5-flash", {
       contents: prompt,
     });
 

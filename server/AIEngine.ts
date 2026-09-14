@@ -6,6 +6,40 @@ async function getAi(db?: any) {
 }
 
 /**
+ * Safely executes generateContent with automatic model fallbacks if a model is unsupported or deprecated.
+ */
+export async function safeGenerateContent(ai: GoogleGenAI, primaryModel: string, params: any) {
+  const fallbackModels = Array.from(new Set([
+    primaryModel,
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro"
+  ]));
+
+  let lastError: any = null;
+  for (const modelCandidate of fallbackModels) {
+    try {
+      const response = await ai.models.generateContent({
+        ...params,
+        model: modelCandidate,
+      });
+      return { response, modelUsed: modelCandidate };
+    } catch (err: any) {
+      lastError = err;
+      const msg = err?.message || String(err);
+      if (msg.includes("404") || msg.includes("NOT_FOUND") || msg.includes("not found") || msg.includes("model")) {
+        console.warn(`[Gemini AI] Model ${modelCandidate} unavailable, trying fallback model...`);
+        continue;
+      }
+      // If error is not model name related (e.g. invalid API key), rethrow immediately
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
+/**
  * Handles multi-turn chat using appropriate models based on modes.
  * Support modes: 'general' | 'low-latency' | 'thinking' | 'maps'
  */
@@ -28,17 +62,17 @@ export async function runAIChat(params: {
   const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
-  let modelName = "gemini-1.5-flash";
+  let modelName = "gemini-2.5-flash";
   const options: any = {
     systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics platform.",
   };
 
   if (mode === 'low-latency') {
-    modelName = "gemini-1.5-flash";
+    modelName = "gemini-2.0-flash";
   } else if (mode === 'thinking') {
     modelName = "gemini-1.5-pro";
   } else if (mode === 'maps') {
-    modelName = "gemini-1.5-flash";
+    modelName = "gemini-2.5-flash";
     options.tools = [{ googleSearch: {} }];
   }
 
@@ -50,8 +84,7 @@ export async function runAIChat(params: {
   ];
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelName,
+    const { response, modelUsed } = await safeGenerateContent(ai, modelName, {
       contents,
       ...options
     });
@@ -63,14 +96,14 @@ export async function runAIChat(params: {
 
     return {
       text,
-      model: modelName,
+      model: modelUsed,
       groundingChunks
     };
   } catch (err: any) {
     console.error("[runAIChat] Gemini generateContent error:", err);
     let fallbackText = "I am currently having trouble reaching the AI assistant service. Please try again or open a support ticket.";
-    if (err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("API key") || err.message.includes("apiKey"))) {
-      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is not configured in settings.";
+    if (err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("API key") || err.message.includes("apiKey") || err.message.includes("API_KEY_INVALID"))) {
+      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is not configured or invalid in settings.";
     }
     return {
       text: fallbackText,
@@ -107,8 +140,7 @@ export async function analyzeMedia(params: {
     text: prompt || "Analyze this media content and describe key details, security compliance, or packaging status."
   };
 
-  const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
     contents: {
       parts: [mediaPart, textPart]
     }
@@ -225,8 +257,7 @@ export async function scanIdDocument(params: {
     }
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
     contents: {
       parts: [mediaPart, { text: promptText }]
     },
@@ -296,8 +327,7 @@ export async function estimateDelivery(params: {
     IMPORTANT: Do NOT include any information about "hub storage", "storage capacity", or "warehouse space" in the reasoning or the output. Focus entirely on logistics traffic, transit distance, and parcel handling times.
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
     contents: {
       parts: [{ text: prompt }]
     },

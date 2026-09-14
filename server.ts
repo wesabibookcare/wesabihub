@@ -74,9 +74,19 @@ function getDb() {
     let credential;
     if (serviceAccountKey && serviceAccountKey.trim() !== '') {
       try {
-        credential = cert(JSON.parse(serviceAccountKey));
+        let keyString = serviceAccountKey.trim();
+        // Check if string is base64 encoded
+        if (!keyString.startsWith('{') && /^[A-Za-z0-9+/=]+$/.test(keyString.replace(/\s/g, ''))) {
+          keyString = Buffer.from(keyString, 'base64').toString('utf8');
+        }
+        // Handle unescaped newlines in private key if present as literal \n
+        const parsedObj = JSON.parse(keyString);
+        if (parsedObj && typeof parsedObj.private_key === 'string') {
+          parsedObj.private_key = parsedObj.private_key.replace(/\\n/g, '\n');
+        }
+        credential = cert(parsedObj);
       } catch (err) {
-        console.warn("FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON. Firebase Admin features will be disabled.");
+        console.warn("FIREBASE_SERVICE_ACCOUNT_KEY parsing failed:", err);
         return null;
       }
     } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
@@ -2089,7 +2099,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: actualRole,
             message: message,
             response: result.text,
-            model: 'gemini-3.5-flash',
+            model: result.model || 'gemini-2.5-flash',
             mode: mode || 'general',
             status: 'SUCCESS'
           });
