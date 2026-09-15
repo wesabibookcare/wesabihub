@@ -4,9 +4,13 @@ import { createKnowledgeReviewRequest, searchApprovedKnowledge } from "./Knowled
 import { safeGenerateContent } from "./AIEngine.js";
 
 export async function getGeminiApiKey(db?: any): Promise<string | null> {
-  const envKey = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.VITE_GEMINI_API_KEY;
+  let envKey = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.VITE_GEMINI_API_KEY;
   if (envKey && envKey.trim() !== '') {
-    return envKey.trim();
+    envKey = envKey.trim();
+    if ((envKey.startsWith('"') && envKey.endsWith('"')) || (envKey.startsWith("'") && envKey.endsWith("'"))) {
+      envKey = envKey.slice(1, -1).trim();
+    }
+    return envKey;
   }
   if (db) {
     try {

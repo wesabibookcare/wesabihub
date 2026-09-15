@@ -1,17 +1,17 @@
-import { paymentProtectionRepository } from '../services/db/PaymentProtectionRepository';
+import { paymentProtectionRepository } from '../services/db/PaymentProtectionRepository.js';
 import { where } from 'firebase/firestore';
-import { settlementService } from '../services/SettlementService';
-import { paymentProtectionEngine } from '../services/PaymentProtectionEngine';
-import { walletRepository, transactionRepository } from '../services/db/FinancialRepository';
-import { Wallet, Transaction, PaymentInitiationData, PaymentResponse } from '../types';
-import { paymentGatewayService } from '../services/payments/PaymentGatewayService';
-import { configurationEngine } from './ConfigurationEngine';
-import { auditEngine } from './AuditEngine';
-import { notificationEngine } from './NotificationEngine';
-import { monitoringEngine } from './MonitoringEngine';
-import { commissionRecordRepository } from '../services/db/CommissionRecordRepository';
-import { platformPaymentRepository } from '../services/db/PlatformPaymentRepository';
-import { paymentMethodRepository } from '../services/db/PaymentMethodRepository';
+import { settlementService } from '../services/SettlementService.js';
+import { paymentProtectionEngine } from '../services/PaymentProtectionEngine.js';
+import { walletRepository, transactionRepository } from '../services/db/FinancialRepository.js';
+import { Wallet, Transaction, PaymentInitiationData, PaymentResponse } from '../types/index.js';
+import { paymentGatewayService } from '../services/payments/PaymentGatewayService.js';
+import { configurationEngine } from './ConfigurationEngine.js';
+import { auditEngine } from './AuditEngine.js';
+import { notificationEngine } from './NotificationEngine.js';
+import { monitoringEngine } from './MonitoringEngine.js';
+import { commissionRecordRepository } from '../services/db/CommissionRecordRepository.js';
+import { platformPaymentRepository } from '../services/db/PlatformPaymentRepository.js';
+import { paymentMethodRepository } from '../services/db/PaymentMethodRepository.js';
 
 /**
  * OmorfiHub Payment & Wallet Engine
