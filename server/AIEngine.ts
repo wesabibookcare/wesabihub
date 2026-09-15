@@ -11,9 +11,9 @@ async function getAi(db?: any) {
 export async function safeGenerateContent(ai: GoogleGenAI, primaryModel: string, params: any) {
   const fallbackModels = Array.from(new Set([
     primaryModel,
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
     "gemini-1.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.5-flash",
     "gemini-1.5-pro"
   ]));
 
@@ -62,17 +62,17 @@ export async function runAIChat(params: {
   const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
-  let modelName = "gemini-2.5-flash";
+  let modelName = "gemini-1.5-flash";
   const options: any = {
     systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics platform.",
   };
 
   if (mode === 'low-latency') {
-    modelName = "gemini-2.0-flash";
+    modelName = "gemini-1.5-flash";
   } else if (mode === 'thinking') {
     modelName = "gemini-1.5-pro";
   } else if (mode === 'maps') {
-    modelName = "gemini-2.5-flash";
+    modelName = "gemini-1.5-flash";
     options.tools = [{ googleSearch: {} }];
   }
 
@@ -140,7 +140,7 @@ export async function analyzeMedia(params: {
     text: prompt || "Analyze this media content and describe key details, security compliance, or packaging status."
   };
 
-  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+  const { response } = await safeGenerateContent(ai, "gemini-1.5-flash", {
     contents: {
       parts: [mediaPart, textPart]
     }
@@ -257,7 +257,7 @@ export async function scanIdDocument(params: {
     }
   `;
 
-  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+  const { response } = await safeGenerateContent(ai, "gemini-1.5-flash", {
     contents: {
       parts: [mediaPart, { text: promptText }]
     },
@@ -327,7 +327,7 @@ export async function estimateDelivery(params: {
     IMPORTANT: Do NOT include any information about "hub storage", "storage capacity", or "warehouse space" in the reasoning or the output. Focus entirely on logistics traffic, transit distance, and parcel handling times.
   `;
 
-  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+  const { response } = await safeGenerateContent(ai, "gemini-1.5-flash", {
     contents: {
       parts: [{ text: prompt }]
     },

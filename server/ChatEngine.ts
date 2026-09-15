@@ -428,7 +428,7 @@ export async function getChatResponse(
   }
 
   try {
-    const { response, modelUsed } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+    const { response, modelUsed } = await safeGenerateContent(ai, "gemini-1.5-flash", {
       contents: prompt,
     });
 
