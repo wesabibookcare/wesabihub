@@ -12,9 +12,7 @@ export async function safeGenerateContent(ai: GoogleGenAI, primaryModel: string,
   const fallbackModels = Array.from(new Set([
     primaryModel,
     "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro"
+    "gemini-2.0-flash"
   ]));
 
   let lastError: any = null;
@@ -55,7 +53,7 @@ export async function runAIChat(params: {
   if (!ai) {
     return {
       text: "The Omorfi AI assistant is currently offline because no GEMINI_API_KEY was found in environment variables or Settings.",
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       error: "MISSING_GEMINI_API_KEY",
       groundingChunks: null
     };
@@ -71,7 +69,7 @@ export async function runAIChat(params: {
   if (mode === 'low-latency') {
     modelName = "gemini-2.0-flash";
   } else if (mode === 'thinking') {
-    modelName = "gemini-1.5-pro";
+    modelName = "gemini-2.5-flash";
   } else if (mode === 'maps') {
     modelName = "gemini-2.5-flash";
     options.tools = [{ googleSearch: {} }];
@@ -172,7 +170,7 @@ export async function generateAIImage(params: {
   }
   const { prompt, aspectRatio, quality } = params;
 
-  const modelName = quality === 'studio' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+  const modelName = quality === 'studio' ? 'gemini-2.5-flash' : 'gemini-2.0-flash';
 
   // Supported ratios in config: "1:1", "3:4", "4:3", "9:16", "16:9", etc.
   const response = await ai.models.generateContent({
