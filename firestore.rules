@@ -36,7 +36,7 @@ service cloud.firestore {
     function hasRole(role) {
       return isSignedIn()
         && (
-          (request.auth.token.email != null && request.auth.token.email.lower() == 'wesabibookcare@gmail.com' && role == 'SUPER_ADMIN') ||
+          (('email' in request.auth.token) && request.auth.token.email != null && request.auth.token.email.matches('(?i)wesabibookcare@gmail.com') && role == 'SUPER_ADMIN') ||
           ('role' in request.auth.token && request.auth.token.role == role) ||
           ('roles' in request.auth.token && role in request.auth.token.roles) ||
           (
@@ -51,7 +51,7 @@ service cloud.firestore {
     function hasAnyRole(roles) {
       return isSignedIn()
         && (
-          (request.auth.token.email != null && request.auth.token.email.lower() == 'wesabibookcare@gmail.com' && 'SUPER_ADMIN' in roles) ||
+          (('email' in request.auth.token) && request.auth.token.email != null && request.auth.token.email.matches('(?i)wesabibookcare@gmail.com') && 'SUPER_ADMIN' in roles) ||
           ('role' in request.auth.token && request.auth.token.role in roles) ||
           ('roles' in request.auth.token && request.auth.token.roles.hasAny(roles)) ||
           (
@@ -76,7 +76,7 @@ service cloud.firestore {
     }
 
     function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.@]+$');
     }
 
     function isImmutable(field) {
@@ -117,9 +117,9 @@ service cloud.firestore {
 
     function isValidUser(data, isAdminUpdate) {
       return (isAdminUpdate || data.uid == request.auth.uid)
-        && data.email is string && data.email.size() <= 256
-        && data.roles is list
-        && (data.status is string && data.status.size() <= 64);
+        && ('email' in data && data.email is string && data.email.size() <= 256)
+        && (!('roles' in data) || data.roles is list)
+        && (!('status' in data) || (data.status is string && data.status.size() <= 64));
     }
 
     function getUserHubId(uid) {
@@ -166,17 +166,17 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if (isOwner(userId) && isValidId(userId) && isValidUser(incoming(), false) && (
                         isAdmin() ||
-                        (isBootstrapActive() && (incoming().roles == ['SUPER_ADMIN'] || incoming().roles.hasAll(['SUPER_ADMIN']))) ||
-                        (!incoming().roles.hasAny(['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN']) &&
-                         !(incoming().role in ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN']))
+                        (isBootstrapActive() && ('roles' in incoming() && (incoming().roles == ['SUPER_ADMIN'] || incoming().roles.hasAll(['SUPER_ADMIN'])))) ||
+                        ((!('roles' in incoming()) || !incoming().roles.hasAny(['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN'])) &&
+                         (!('role' in incoming()) || !(incoming().role in ['SUPER_ADMIN', 'SUPPORT_OFFICER', 'VERIFICATION_OFFICER', 'OPERATIONS_MANAGER', 'FINANCE_OFFICER', 'DISPUTE_ADMIN', 'SUPPORT_ADMIN', 'OPERATIONS_ADMIN', 'VERIFICATION_ADMIN', 'SECURITY_ADMIN', 'FINANCE_ADMIN'])))
                       )) || (isAdmin() && isValidId(userId));
       allow update: if (isOwner(userId) && isValidId(userId)
                         && !incoming().diff(existing()).affectedKeys().hasAny(['role', 'roles', 'status', 'verificationStatus', 'assignedRoles', 'customPermissions', 'requestedRole', 'pendingRoleApplication']))
                     || (isAdmin() && isValidId(userId) && isValidUser(incoming(), true)
-                        && !('SUPER_ADMIN' in existing().roles)
-                        && !('SUPER_ADMIN' in incoming().roles)
+                        && !('roles' in existing() && 'SUPER_ADMIN' in existing().roles)
+                        && !('roles' in incoming() && 'SUPER_ADMIN' in incoming().roles)
                         && incoming().diff(existing()).affectedKeys().hasAny(['status', 'roles', 'verificationStatus', 'assignedRoles', 'customPermissions', 'performanceSummary', 'assignedCases']));
-      allow delete: if isAdmin() && isValidId(userId) && !('SUPER_ADMIN' in existing().roles);
+      allow delete: if isAdmin() && isValidId(userId) && !('roles' in existing() && 'SUPER_ADMIN' in existing().roles);
     }
 
     match /profile_changes/{id} {
@@ -246,7 +246,7 @@ service cloud.firestore {
     match /bulk_intake_sessions/{sessionId} {
       allow read: if isSignedIn() && (
         hasAnyRole(['CENTER_STAFF', 'CENTER_OWNER', 'SUPER_ADMIN', 'OPERATIONS_MANAGER', 'POINT_ADMIN', 'POINT_STAFF']) ||
-        (hasRole('MERCHANT') && resource.data.merchantId == request.auth.uid)
+        (hasRole('MERCHANT') && resource != null && 'merchantId' in resource.data && resource.data.merchantId == request.auth.uid)
       );
       allow create, update: if isSignedIn() && hasAnyRole(['CENTER_STAFF', 'CENTER_OWNER', 'SUPER_ADMIN', 'OPERATIONS_MANAGER', 'POINT_ADMIN', 'POINT_STAFF']);
     }
@@ -446,9 +446,10 @@ service cloud.firestore {
       allow read: if isSignedIn() && (
         isAdmin() ||
         hasRole('FINANCE_OFFICER') ||
-        resource.data.centreId == request.auth.uid ||
-        resource.data.merchantId == request.auth.uid ||
-        (exists(/databases/$(database)/documents/wesabiHubPoints/$(resource.data.centreId)) &&
+        (resource != null && 'centreId' in resource.data && resource.data.centreId == request.auth.uid) ||
+        (resource != null && 'merchantId' in resource.data && resource.data.merchantId == request.auth.uid) ||
+        (resource != null && 'centreId' in resource.data && exists(/databases/$(database)/documents/wesabiHubPoints/$(resource.data.centreId)) &&
+         'ownerId' in get(/databases/$(database)/documents/wesabiHubPoints/$(resource.data.centreId)).data &&
          get(/databases/$(database)/documents/wesabiHubPoints/$(resource.data.centreId)).data.ownerId == request.auth.uid)
       );
       allow write: if false;
@@ -515,13 +516,13 @@ service cloud.firestore {
     }
 
     match /webhookLogs/{logId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isPlatformAdmin());
-      allow write: if isSignedIn() && (incoming().userId == request.auth.uid || isPlatformAdmin());
+      allow read: if isSignedIn() && ((resource != null && 'userId' in resource.data && resource.data.userId == request.auth.uid) || isPlatformAdmin());
+      allow write: if isSignedIn() && (('userId' in incoming() && incoming().userId == request.auth.uid) || isPlatformAdmin());
     }
 
     match /apiLogs/{logId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isPlatformAdmin());
-      allow write: if isSignedIn() && (incoming().userId == request.auth.uid || isPlatformAdmin());
+      allow read: if isSignedIn() && ((resource != null && 'userId' in resource.data && resource.data.userId == request.auth.uid) || isPlatformAdmin());
+      allow write: if isSignedIn() && (('userId' in incoming() && incoming().userId == request.auth.uid) || isPlatformAdmin());
     }
 
     match /faqs/{faqId} {
@@ -622,11 +623,11 @@ service cloud.firestore {
     }
 
     match /roleApplications/{id} {
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
+      allow get: if isSignedIn() && ((resource != null && 'userId' in resource.data && resource.data.userId == request.auth.uid) || isStaff());
       allow list: if isSignedIn();
-      allow create: if isSignedIn() && (incoming().userId == request.auth.uid || isStaff());
+      allow create: if isSignedIn() && (('userId' in incoming() && incoming().userId == request.auth.uid) || isStaff());
       allow update: if isSignedIn() && isStaff();
-      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
+      allow delete: if isSignedIn() && ((resource != null && 'userId' in resource.data && resource.data.userId == request.auth.uid) || isStaff());
     }
 
     match /documentRequirements/{id} {
@@ -639,7 +640,7 @@ service cloud.firestore {
     }
 
     match /operational_notifications/{id} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isStaff());
+      allow read: if isSignedIn() && ((resource != null && 'userId' in resource.data && resource.data.userId == request.auth.uid) || isStaff());
       allow write: if isStaff();
     }
 

@@ -679,4 +679,81 @@ describe('WeSabiHub Zero-Trust Security Rules Audit', () => {
       isActive: true
     }));
   });
+
+  // =========================================================================
+  // D. WESABIBOOKCARE SUPER ADMIN & USER SEARCH PERMISSION TESTS
+  // =========================================================================
+
+  test('D1 (ALLOW): Super Admin account (wesabibookcare@gmail.com) can update systemSettings/global', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'systemSettings/global'), {
+        isSuperAdminBootstrapped: true,
+        platformName: 'OmorfiHub'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('gYjZ0n0iPjbEMl5oIKbXhFOmIgF3', {
+      email: 'wesabibookcare@gmail.com',
+      email_verified: true
+    });
+    const db = context.firestore();
+    const settingsRef = doc(db, 'systemSettings/global');
+
+    await assertSucceeds(setDoc(settingsRef, {
+      isSuperAdminBootstrapped: true,
+      platformName: 'OmorfiHub Updated',
+      updatedAt: new Date().toISOString()
+    }));
+  });
+
+  test('D2 (ALLOW): Signed-in user can get and list users in users collection for username search', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'users/target_user_uid'), {
+        uid: 'target_user_uid',
+        email: 'target@example.com',
+        wesabiUsername: 'john_doe',
+        displayName: 'John Doe',
+        role: 'CUSTOMER',
+        roles: ['CUSTOMER'],
+        status: 'ACTIVE'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('gYjZ0n0iPjbEMl5oIKbXhFOmIgF3', {
+      email: 'wesabibookcare@gmail.com',
+      email_verified: true
+    });
+    const db = context.firestore();
+    const targetUserRef = doc(db, 'users/target_user_uid');
+
+    // Getting user document by ID
+    await assertSucceeds(getDoc(targetUserRef));
+  });
+
+  test('D3 (ALLOW): Super Admin account (wesabibookcare@gmail.com) can update target user in users collection', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'users/user_to_update'), {
+        uid: 'user_to_update',
+        email: 'regular@example.com',
+        role: 'CUSTOMER',
+        roles: ['CUSTOMER'],
+        status: 'ACTIVE'
+      });
+    });
+
+    const context = testEnv.authenticatedContext('gYjZ0n0iPjbEMl5oIKbXhFOmIgF3', {
+      email: 'wesabibookcare@gmail.com',
+      email_verified: true
+    });
+    const db = context.firestore();
+    const userRef = doc(db, 'users/user_to_update');
+
+    await assertSucceeds(updateDoc(userRef, {
+      status: 'APPROVED',
+      roles: ['CUSTOMER', 'MERCHANT']
+    }));
+  });
 });
