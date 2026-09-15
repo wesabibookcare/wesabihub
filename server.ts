@@ -1847,7 +1847,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: verifiedRole,
             message: message || '',
             response: response.text || '',
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3.6-flash',
             mode: 'persona_' + (personaId || 'unknown'),
             status: response.error ? 'ERROR' : 'SUCCESS',
             errorMessage: response.error || null
@@ -1878,7 +1878,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: verifiedRole,
             message: message || '',
             response: null,
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3.6-flash',
             mode: 'persona_' + (personaId || 'unknown'),
             status: 'ERROR',
             errorMessage: errMessage
@@ -2146,7 +2146,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: actualRole,
             message: message,
             response: result.text,
-            model: result.model || 'gemini-2.5-flash',
+            model: result.model || 'gemini-3.6-flash',
             mode: mode || 'general',
             status: 'SUCCESS'
           });
@@ -2192,7 +2192,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: actualRole,
             message: req.body.message || '',
             response: null,
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3.6-flash',
             mode: req.body.mode || 'general',
             status: 'ERROR',
             errorMessage: error.message || String(error)
