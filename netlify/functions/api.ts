@@ -1,5 +1,5 @@
 import serverless from 'serverless-http';
-import { appReadyPromise } from '../../server';
+import { appReadyPromise } from '../../server.js';
 import type { Handler } from '@netlify/functions';
 
 // Wraps the existing Express app (unchanged) so Netlify can run it as a
