@@ -79,7 +79,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     return false;
   });
 
-  const { user, activeRole } = useAuth();
+  const { user, activeRole, logout } = useAuth();
   const { isPending, requestedRole } = useAccountPending();
   const location = useLocation();
   const navigate = useNavigate();
@@ -256,8 +256,9 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
               </button>
             )}
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (isSmallScreen) setIsDrawerOpen(false);
+                await logout();
                 navigate('/login');
               }}
               className="flex items-center justify-center gap-3 px-4 py-3 w-full rounded-xl text-slate-700 hover:bg-red-50 hover:text-red-600 transition-all dark:text-slate-200 dark:hover:bg-red-950/20"
