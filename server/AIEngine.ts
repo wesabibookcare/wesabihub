@@ -11,8 +11,7 @@ async function getAi(db?: any) {
 export async function safeGenerateContent(ai: GoogleGenAI, primaryModel: string, params: any) {
   const fallbackModels = Array.from(new Set([
     primaryModel,
-    "gemini-2.5-flash",
-    "gemini-2.0-flash"
+    "gemini-3.6-flash"
   ]));
 
   let lastError: any = null;
@@ -53,7 +52,7 @@ export async function runAIChat(params: {
   if (!ai) {
     return {
       text: "The Omorfi AI assistant is currently offline because no GEMINI_API_KEY was found in environment variables or Settings.",
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       error: "MISSING_GEMINI_API_KEY",
       groundingChunks: null
     };
@@ -61,17 +60,17 @@ export async function runAIChat(params: {
   const { message, history = [], mode = 'general', systemInstruction } = params;
 
   // Select model and configuration based on mode
-  let modelName = "gemini-2.5-flash";
+  let modelName = "gemini-3.6-flash";
   const options: any = {
     systemInstruction: systemInstruction || "You are a helpful and professional customer care assistant for OmorfiHub, a secure multi-user logistics platform.",
   };
 
   if (mode === 'low-latency') {
-    modelName = "gemini-2.0-flash";
+    modelName = "gemini-3.6-flash";
   } else if (mode === 'thinking') {
-    modelName = "gemini-2.5-flash";
+    modelName = "gemini-3.6-flash";
   } else if (mode === 'maps') {
-    modelName = "gemini-2.5-flash";
+    modelName = "gemini-3.6-flash";
     options.tools = [{ googleSearch: {} }];
   }
 
@@ -143,7 +142,7 @@ export async function analyzeMedia(params: {
     text: prompt || "Analyze this media content and describe key details, security compliance, or packaging status."
   };
 
-  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+  const { response } = await safeGenerateContent(ai, "gemini-3.6-flash", {
     contents: {
       parts: [mediaPart, textPart]
     }
@@ -170,7 +169,7 @@ export async function generateAIImage(params: {
   }
   const { prompt, aspectRatio, quality } = params;
 
-  const modelName = quality === 'studio' ? 'gemini-2.5-flash' : 'gemini-2.0-flash';
+  const modelName = "gemini-3.6-flash";
 
   // Supported ratios in config: "1:1", "3:4", "4:3", "9:16", "16:9", etc.
   const response = await ai.models.generateContent({
@@ -260,7 +259,7 @@ export async function scanIdDocument(params: {
     }
   `;
 
-  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+  const { response } = await safeGenerateContent(ai, "gemini-3.6-flash", {
     contents: {
       parts: [mediaPart, { text: promptText }]
     },
@@ -330,7 +329,7 @@ export async function estimateDelivery(params: {
     IMPORTANT: Do NOT include any information about "hub storage", "storage capacity", or "warehouse space" in the reasoning or the output. Focus entirely on logistics traffic, transit distance, and parcel handling times.
   `;
 
-  const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+  const { response } = await safeGenerateContent(ai, "gemini-3.6-flash", {
     contents: {
       parts: [{ text: prompt }]
     },

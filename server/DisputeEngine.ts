@@ -91,7 +91,7 @@ Use clear formatting with headers and bullet points. Do not include any promotio
     if (!ai) {
       return "Compliance AI Pre-assessment offline: GEMINI_API_KEY is not configured in settings.";
     }
-    const { response } = await safeGenerateContent(ai, "gemini-2.5-flash", {
+    const { response } = await safeGenerateContent(ai, "gemini-3.6-flash", {
       contents: prompt,
     });
 
