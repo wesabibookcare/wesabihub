@@ -75,12 +75,50 @@ function getDb() {
     if (serviceAccountKey && serviceAccountKey.trim() !== '') {
       try {
         let keyString = serviceAccountKey.trim();
+        // Strip surrounding single or double quotes if present
+        if ((keyString.startsWith('"') && keyString.endsWith('"')) || (keyString.startsWith("'") && keyString.endsWith("'"))) {
+          keyString = keyString.slice(1, -1).trim();
+        }
         // Check if string is base64 encoded
         if (!keyString.startsWith('{') && /^[A-Za-z0-9+/=]+$/.test(keyString.replace(/\s/g, ''))) {
-          keyString = Buffer.from(keyString, 'base64').toString('utf8');
+          try {
+            const decoded = Buffer.from(keyString, 'base64').toString('utf8').trim();
+            if (decoded.startsWith('{')) {
+              keyString = decoded;
+            }
+          } catch (b64Err) {
+            console.warn("Base64 decode attempt failed, continuing with original string:", b64Err);
+          }
         }
-        // Handle unescaped newlines in private key if present as literal \n
-        const parsedObj = JSON.parse(keyString);
+
+        let parsedObj: any;
+        try {
+          parsedObj = JSON.parse(keyString);
+        } catch (jsonErr) {
+          // If multiline JSON with raw unescaped newlines inside quotes was pasted (e.g. from 2-page Firestore JSON)
+          try {
+            let inString = false;
+            let isEscaped = false;
+            let sanitized = '';
+            for (let i = 0; i < keyString.length; i++) {
+              const char = keyString[i];
+              if (char === '"' && !isEscaped) {
+                inString = !inString;
+                sanitized += char;
+              } else if (inString && (char === '\n' || char === '\r')) {
+                sanitized += char === '\r' ? '' : '\\n';
+              } else {
+                sanitized += char;
+              }
+              isEscaped = (char === '\\') && !isEscaped;
+            }
+            parsedObj = JSON.parse(sanitized);
+          } catch (sanitizedErr) {
+            console.warn("Sanitized JSON parsing failed:", sanitizedErr);
+            throw jsonErr;
+          }
+        }
+
         if (parsedObj && typeof parsedObj.private_key === 'string') {
           parsedObj.private_key = parsedObj.private_key.replace(/\\n/g, '\n');
         }
