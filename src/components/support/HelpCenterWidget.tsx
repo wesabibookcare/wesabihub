@@ -223,17 +223,13 @@ export const HelpCenterWidget = () => {
       }]);
     } catch (err: any) {
       console.error("[HelpCenterWidget] AI Chat failed:", err);
-      let errorText = "Sorry, I am having connection difficulties. Let me know if you would like me to create an offline Support Ticket for our operations team.";
+      let errorText = err.message || "Sorry, I am having connection difficulties. Let me know if you would like me to create an offline Support Ticket for our operations team.";
 
       const rawMsg = err.message || '';
       if (rawMsg.includes("GEMINI_API_KEY") || rawMsg.includes("api key") || rawMsg.includes("API key")) {
         errorText = "The Omorfi chatbot is currently offline because the Gemini API Key is not configured in environment variables or Settings. Please set GEMINI_API_KEY to activate assistance.";
       } else if (rawMsg.includes("Firebase not configured")) {
         errorText = "The AI Chatbot requires a Firebase Service Account. Please ensure FIREBASE_SERVICE_ACCOUNT_KEY is configured in your platform settings.";
-      } else if (rawMsg.includes("FUNCTION_INVOCATION_FAILED") || rawMsg.includes("non-JSON response") || rawMsg.includes("500") || rawMsg.includes("502") || rawMsg.includes("504")) {
-        errorText = "Omorfi is currently offline due to a temporary server connection issue. Please try again in a few moments or open a support ticket if you need immediate assistance.";
-      } else if (rawMsg.trim() !== '') {
-        errorText = rawMsg;
       }
 
       setMessages(prev => [...prev, {

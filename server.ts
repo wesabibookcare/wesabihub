@@ -1837,7 +1837,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     try {
       const response = await getChatResponse(db, personaId, message, context, feedback, verifiedRole, verifiedEmail);
 
-      // Log success to Firestore if db is active
+      // Log to Firestore if db is active
       if (db) {
         try {
           await db.collection('chatbotLogs').add({
@@ -1849,10 +1849,11 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             response: response.text || '',
             model: 'gemini-2.5-flash',
             mode: 'persona_' + (personaId || 'unknown'),
-            status: 'SUCCESS'
+            status: response.error ? 'ERROR' : 'SUCCESS',
+            errorMessage: response.error || null
           });
         } catch (logErr: any) {
-          console.error("[OMORFI CHAT] Failed to write success log to Firestore:", logErr);
+          console.error("[OMORFI CHAT] Failed to write log to Firestore:", logErr);
         }
       }
 
@@ -1861,7 +1862,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       console.error("[OMORFI CHAT] Chat endpoint exception handled:", error);
 
       let errMessage = error.message || String(error);
-      let errorResponseText = "Omorfi is currently offline due to a temporary server connection issue. Please try again in a few moments or open a support ticket if you need immediate assistance.";
+      let errorResponseText = `Omorfi Chat Exception: ${errMessage}`;
 
       if (errMessage.includes("GEMINI_API_KEY") || errMessage.includes("API key")) {
         errorResponseText = "The Omorfi AI assistant is currently offline because the Gemini API Key is missing or invalid in environment settings.";
