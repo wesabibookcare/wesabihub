@@ -2192,7 +2192,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: actualRole,
             message: req.body.message || '',
             response: null,
-            model: 'gemini-1.5-flash',
+            model: 'gemini-2.5-flash',
             mode: req.body.mode || 'general',
             status: 'ERROR',
             errorMessage: error.message || String(error)
