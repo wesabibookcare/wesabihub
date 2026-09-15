@@ -35,19 +35,31 @@ service cloud.firestore {
 
     function hasRole(role) {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
         && (
-          ('roles' in getUserData(request.auth.uid) && getUserData(request.auth.uid).roles.hasAny([role])) ||
-          ('role' in getUserData(request.auth.uid) && getUserData(request.auth.uid).role == role)
+          (request.auth.token.email != null && request.auth.token.email.lower() == 'wesabibookcare@gmail.com' && role == 'SUPER_ADMIN') ||
+          ('role' in request.auth.token && request.auth.token.role == role) ||
+          ('roles' in request.auth.token && role in request.auth.token.roles) ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+              ('roles' in getUserData(request.auth.uid) && getUserData(request.auth.uid).roles.hasAny([role])) ||
+              ('role' in getUserData(request.auth.uid) && getUserData(request.auth.uid).role == role)
+            )
+          )
         );
     }
 
     function hasAnyRole(roles) {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
         && (
-          ('roles' in getUserData(request.auth.uid) && getUserData(request.auth.uid).roles.hasAny(roles)) ||
-          ('role' in getUserData(request.auth.uid) && getUserData(request.auth.uid).role in roles)
+          (request.auth.token.email != null && request.auth.token.email.lower() == 'wesabibookcare@gmail.com' && 'SUPER_ADMIN' in roles) ||
+          ('role' in request.auth.token && request.auth.token.role in roles) ||
+          ('roles' in request.auth.token && request.auth.token.roles.hasAny(roles)) ||
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+              ('roles' in getUserData(request.auth.uid) && getUserData(request.auth.uid).roles.hasAny(roles)) ||
+              ('role' in getUserData(request.auth.uid) && getUserData(request.auth.uid).role in roles)
+            )
+          )
         );
     }
 
@@ -150,7 +162,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if isSignedIn() && isValidId(userId) && (isOwner(userId) || isStaff());
+      allow get: if isSignedIn() && isValidId(userId);
       allow list: if isSignedIn();
       allow create: if (isOwner(userId) && isValidId(userId) && isValidUser(incoming(), false) && (
                         isAdmin() ||
