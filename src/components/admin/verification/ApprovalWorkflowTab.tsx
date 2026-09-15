@@ -398,7 +398,7 @@ export const ApprovalWorkflowTab: React.FC = () => {
         await roleApplicationRepository.delete(app.id);
       } else {
         // Find and delete any real roleApplication documents for this user
-        const userApps = await roleApplicationRepository.getByUserId(app.userId);
+        const userApps = await roleApplicationRepository.getByUser(app.userId);
         for (const ua of userApps) {
           await roleApplicationRepository.delete(ua.id);
         }
@@ -410,7 +410,7 @@ export const ApprovalWorkflowTab: React.FC = () => {
         await userRepository.update(app.userId, {
           pendingRoleApplication: false,
           requestedRole: undefined,
-          status: (applicant.status === 'UNDER_REVIEW' || applicant.status === 'REJECTED' || applicant.status === 'SUBMITTED' || applicant.status === 'PENDING')
+          status: ((applicant.status as string) === 'UNDER_REVIEW' || (applicant.status as string) === 'REJECTED' || (applicant.status as string) === 'SUBMITTED' || applicant.status === 'PENDING')
             ? 'ACTIVE'
             : applicant.status,
           updatedAt: new Date().toISOString()

@@ -38,22 +38,22 @@ describe('Stage 2 Audit & Financial Control Test Suite', () => {
 
   // Scenario 1: Unauthorized user cannot change pricing
   it('Scenario 1: Prevents regular Customer or Merchant from modifying system pricing rules', () => {
-    expect(permissionService.hasPermission(customerUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
-    expect(permissionService.hasPermission(merchantUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
-    expect(permissionService.hasPermission(superAdminUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(true);
+    expect(permissionService.hasPermission(customerUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
+    expect(permissionService.hasPermission(merchantUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
+    expect(permissionService.hasPermission(superAdminUser, 'MANAGE_BUSINESS_RULES')).toBe(true);
   });
 
   // Scenario 2: Unauthorized user cannot change commission
   it('Scenario 2: Prevents non-admin roles from altering system commission rules', () => {
-    expect(permissionService.hasPermission(hubStaffUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
-    expect(permissionService.hasPermission(riderUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
-    expect(permissionService.hasPermission(superAdminUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(true);
+    expect(permissionService.hasPermission(hubStaffUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
+    expect(permissionService.hasPermission(riderUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
+    expect(permissionService.hasPermission(superAdminUser, 'MANAGE_BUSINESS_RULES')).toBe(true);
   });
 
   // Scenario 3: Rider cannot credit own wallet
   it('Scenario 3: Confirms rider role permissions exclude direct financial ledger writes', () => {
     expect(permissionService.hasPermission(riderUser, 'VIEW_ADMIN_DASHBOARD')).toBe(false);
-    expect(permissionService.hasPermission(riderUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
+    expect(permissionService.hasPermission(riderUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
   });
 
   // Scenario 4: Customer cannot mark own parcel delivered
@@ -64,7 +64,7 @@ describe('Stage 2 Audit & Financial Control Test Suite', () => {
   // Scenario 5: Customer cannot force payout
   it('Scenario 5: Prevents customers from executing financial payouts or SafePay releases without backend validation', () => {
     expect(permissionService.hasPermission(customerUser, 'VIEW_ADMIN_DASHBOARD')).toBe(false);
-    expect(permissionService.hasPermission(customerUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
+    expect(permissionService.hasPermission(customerUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
   });
 
   // Scenario 6 & 7: Valid OTP vs Invalid OTP delivery confirmation
@@ -119,7 +119,7 @@ describe('Stage 2 Audit & Financial Control Test Suite', () => {
     const validSignature = 'valid_sha256_hash';
     const forgeSignature = 'forged_hash';
 
-    expect(validSignature === forgeSignature).toBe(false);
+    expect((validSignature as string) === forgeSignature).toBe(false);
   });
 
   // Scenario 13: Client cannot manipulate distance
@@ -187,7 +187,7 @@ describe('Stage 2 Audit & Financial Control Test Suite', () => {
 
   // Scenario 19: Successful financial history cannot be edited by unauthorized users
   it('Scenario 19: Validates audit and transaction records are immutable for standard users', () => {
-    expect(permissionService.hasPermission(customerUser, 'MANAGE_SYSTEM_SETTINGS')).toBe(false);
+    expect(permissionService.hasPermission(customerUser, 'MANAGE_BUSINESS_RULES')).toBe(false);
   });
 
   // Scenario 20: Bank payout credentials cannot be exposed to clients

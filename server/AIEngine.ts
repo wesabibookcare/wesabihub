@@ -1,5 +1,5 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { getAiInstance } from "./ChatEngine.js";
+import { getAiInstance } from "./ChatEngine";
 
 async function getAi(db?: any) {
   return await getAiInstance(db);
