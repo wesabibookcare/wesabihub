@@ -1,4 +1,5 @@
-import { appReadyPromise } from '../server.js';
+// @ts-ignore
+import { appReadyPromise } from '../dist/server.cjs';
 
 export default async function handler(req: any, res: any) {
   const app = await appReadyPromise;
