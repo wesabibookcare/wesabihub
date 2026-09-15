@@ -743,10 +743,10 @@ class InfrastructureEngine {
     // 3. Engine Integrity Checks
     try {
       logs.push('[PRE-DEPLOY] Checking core engine module signatures...');
-      const { userEngine } = await import('./UserEngine.js');
-      const { paymentEngine } = await import('./PaymentEngine.js');
-      const { complianceEngine } = await import('./ComplianceEngine.js');
-      const { riskEngine } = await import('./RiskEngine.js');
+      const { userEngine } = await import('./UserEngine');
+      const { paymentEngine } = await import('./PaymentEngine');
+      const { complianceEngine } = await import('./ComplianceEngine');
+      const { riskEngine } = await import('./RiskEngine');
 
       if (!userEngine || typeof userEngine.getUser !== 'function') {
         throw new Error('UserEngine is corrupted or missing getUser implementation.');
@@ -769,9 +769,9 @@ class InfrastructureEngine {
     // 4. Repository Integrity Checks
     try {
       logs.push('[PRE-DEPLOY] Checking data repository persistence layers...');
-      const { userRepository } = await import('../services/db/UserRepository.js');
-      const { walletRepository } = await import('../services/db/FinancialRepository.js');
-      const { shipmentRepository } = await import('../services/db/ShipmentRepository.js');
+      const { userRepository } = await import('../services/db/UserRepository');
+      const { walletRepository } = await import('../services/db/FinancialRepository');
+      const { shipmentRepository } = await import('../services/db/ShipmentRepository');
 
       if (!userRepository || typeof userRepository.getById !== 'function') {
         throw new Error('UserRepository is corrupted.');

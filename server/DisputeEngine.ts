@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import { getAiInstance } from "./ChatEngine.js";
-import { safeGenerateContent } from "./AIEngine.js";
+import { getAiInstance } from "./ChatEngine";
+import { safeGenerateContent } from "./AIEngine";
 
 export interface DisputePreAssessmentInput {
   disputeId: string;

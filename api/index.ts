@@ -1,4 +1,4 @@
-import { appReadyPromise } from '../server.js';
+import { appReadyPromise } from '../server';
 
 export default async function handler(req: any, res: any) {
   const app = await appReadyPromise;

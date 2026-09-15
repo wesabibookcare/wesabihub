@@ -1,8 +1,8 @@
-import { disputeRepository } from '../services/db/DisputeRepository.js';
-import { Dispute } from '../types/index.js';
-import { paymentProtectionRepository } from '../services/db/PaymentProtectionRepository.js';
-import { auditEngine } from './AuditEngine.js';
-import { notificationRepository } from '../services/db/NotificationRepository.js';
+import { disputeRepository } from '../services/db/DisputeRepository';
+import { Dispute } from '../types';
+import { paymentProtectionRepository } from '../services/db/PaymentProtectionRepository';
+import { auditEngine } from './AuditEngine';
+import { notificationRepository } from '../services/db/NotificationRepository';
 import { orderBy, limit } from 'firebase/firestore';
 
 class DisputeEngine {

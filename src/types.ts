@@ -497,6 +497,8 @@ export interface Wallet extends BaseEntity {
     accountNumber: string;
     bankName: string;
     accountName: string;
+    bankCode?: string;
+    recipientCode?: string;
   };
 }
 
@@ -518,10 +520,15 @@ export interface WithdrawalRequest extends BaseEntity {
   amount: number;
   currency: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  transferStatus?: 'SUCCESS' | 'FAILED' | 'REVERSED' | 'PENDING';
+  transferCode?: string;
+  payoutRef?: string;
   bankInfo: {
     accountNumber: string;
     bankName: string;
     accountName: string;
+    bankCode?: string;
+    recipientCode?: string;
   };
   reason?: string;
   txReference?: string;

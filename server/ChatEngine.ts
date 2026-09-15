@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { getFirestore } from 'firebase-admin/firestore';
-import { createKnowledgeReviewRequest, searchApprovedKnowledge } from "./KnowledgeEngine.js";
-import { safeGenerateContent } from "./AIEngine.js";
+import { createKnowledgeReviewRequest, searchApprovedKnowledge } from "./KnowledgeEngine";
+import { safeGenerateContent } from "./AIEngine";
 
 export async function getGeminiApiKey(db?: any): Promise<string | null> {
   let envKey = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.VITE_GEMINI_API_KEY;
