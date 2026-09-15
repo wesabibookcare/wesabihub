@@ -80,7 +80,7 @@ export function CustomerCareChat() {
       }
     } catch (err: any) {
       console.error("[CustomerCareChat] Chat failed:", err);
-      let errorText = "Omorfi is currently unavailable. Please try again shortly or contact customer support.";
+      let errorText = err.message || "Omorfi is currently unavailable. Please try again shortly or contact customer support.";
       const rawMsg = err.message || '';
       if (rawMsg.includes("GEMINI_API_KEY") || rawMsg.includes("api key") || rawMsg.includes("API key")) {
         errorText = "The Omorfi AI assistant is currently offline because the Gemini API key is not configured or invalid in Settings.";

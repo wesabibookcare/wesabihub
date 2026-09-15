@@ -4,19 +4,28 @@ import { createKnowledgeReviewRequest, searchApprovedKnowledge } from "./Knowled
 import { safeGenerateContent } from "./AIEngine";
 
 export async function getGeminiApiKey(db?: any): Promise<string | null> {
-  let envKey = process.env.GEMINI_API_KEY ||
-               process.env.GEMINI_KEY ||
-               process.env.VITE_GEMINI_API_KEY ||
-               process.env.GOOGLE_GEMINI_API_KEY;
-  if (envKey && envKey.trim() !== '') {
-    envKey = envKey.trim();
-    if ((envKey.startsWith('"') && envKey.endsWith('"')) || (envKey.startsWith("'") && envKey.endsWith("'"))) {
-      envKey = envKey.slice(1, -1).trim();
+  // First check process.env with fuzzy matching for keys like GEMINI_API_ KEY (with space) or other variations
+  for (const [key, rawVal] of Object.entries(process.env)) {
+    if (!rawVal || typeof rawVal !== 'string') continue;
+    const normalizedKey = key.replace(/[\s_]/g, '').toUpperCase();
+    if (
+      normalizedKey === 'GEMINIAPIKEY' ||
+      normalizedKey === 'GEMINIKEY' ||
+      normalizedKey === 'VITEGEMINIAPIKEY' ||
+      normalizedKey === 'GOOGLEGEMINIAPIKEY' ||
+      normalizedKey === 'GOOGLEAPIKEY' ||
+      normalizedKey.includes('GEMINIAPI') ||
+      normalizedKey.includes('GEMINIKEY')
+    ) {
+      let cleaned = rawVal.trim();
+      if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+        cleaned = cleaned.slice(1, -1).trim();
+      }
+      cleaned = cleaned.replace(/^["']+|["']+$|\s/g, '');
+      if (cleaned !== '') return cleaned;
     }
-    // Handle double-escaped or malformed quotes if present in Vercel UI pastes
-    envKey = envKey.replace(/^["']+|["']+$|\s/g, '');
-    if (envKey !== '') return envKey;
   }
+
   if (db) {
     try {
       // 1. Check systemSettings/secrets first (Primary Super Admin Vault)
@@ -424,10 +433,12 @@ export async function getChatResponse(
   // 4. Call Gemini safely
   const ai = await getAiInstance(db);
   if (!ai) {
+    const missingKeyText = "The Omorfi AI assistant is currently offline because no GEMINI_API_KEY was found in process environment variables or system settings.";
     return {
       text: ticketIdCreated
-        ? `I have registered Support Ticket #${ticketIdCreated} for our support team. The Omorfi AI assistant is currently offline because the Gemini API key is not configured in settings.`
-        : "The Omorfi AI assistant is currently offline because the Gemini API key is not configured in environment variables or Settings. Please set your GEMINI_API_KEY to activate intelligent chat.",
+        ? `I have registered Support Ticket #${ticketIdCreated} for our support team. ${missingKeyText}`
+        : missingKeyText,
+      error: "MISSING_GEMINI_API_KEY",
       ticketCreated: !!ticketIdCreated
     };
   }
@@ -446,15 +457,21 @@ export async function getChatResponse(
       if (newTkt) ticketCreated = true;
     }
 
-    return { text, ticketCreated };
+    return { text, ticketCreated, modelUsed };
   } catch (err: any) {
     console.error("[OMORFI CHAT] Gemini generateContent failed:", err);
-    let fallbackMsg = "The Omorfi AI assistant encountered a temporary connection issue. Please try again or create a support ticket if the issue persists.";
-    if (err.message && (err.message.includes("API_KEY_INVALID") || err.message.includes("API key"))) {
-      fallbackMsg = "The Omorfi AI assistant is currently offline because the configured Gemini API Key is invalid or expired. Please update GEMINI_API_KEY in Settings.";
+    const errStr = err.message || String(err);
+    let fallbackMsg = `Omorfi AI Error: ${errStr}`;
+
+    if (errStr.includes("API_KEY_INVALID") || errStr.includes("API key") || errStr.includes("apiKey") || errStr.includes("400")) {
+      fallbackMsg = "The Omorfi AI assistant is offline: The configured Gemini API key is invalid, unauthenticated, or rejected by Google AI Studio.";
+    } else if (errStr.includes("429") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("quota")) {
+      fallbackMsg = "The Omorfi AI assistant rate limit or quota has been exceeded on Google AI Studio. Please try again shortly.";
     }
+
     return {
       text: fallbackMsg,
+      error: errStr,
       ticketCreated: false
     };
   }

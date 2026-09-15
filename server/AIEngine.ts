@@ -54,8 +54,9 @@ export async function runAIChat(params: {
   const ai = await getAi(db);
   if (!ai) {
     return {
-      text: "The Omorfi AI assistant is currently offline because the Gemini API key is not configured in environment variables or Settings.",
+      text: "The Omorfi AI assistant is currently offline because no GEMINI_API_KEY was found in environment variables or Settings.",
       model: "gemini-1.5-flash",
+      error: "MISSING_GEMINI_API_KEY",
       groundingChunks: null
     };
   }
@@ -101,13 +102,17 @@ export async function runAIChat(params: {
     };
   } catch (err: any) {
     console.error("[runAIChat] Gemini generateContent error:", err);
-    let fallbackText = "I am currently having trouble reaching the AI assistant service. Please try again or open a support ticket.";
-    if (err.message && (err.message.includes("GEMINI_API_KEY") || err.message.includes("API key") || err.message.includes("apiKey") || err.message.includes("API_KEY_INVALID"))) {
-      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is not configured or invalid in settings.";
+    const errStr = err.message || String(err);
+    let fallbackText = `AI Chat Execution Error: ${errStr}`;
+    if (errStr.includes("API_KEY_INVALID") || errStr.includes("API key") || errStr.includes("apiKey")) {
+      fallbackText = "The Omorfi AI assistant is currently offline because GEMINI_API_KEY is invalid or rejected by Google AI Studio.";
+    } else if (errStr.includes("429") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("quota")) {
+      fallbackText = "The Omorfi AI assistant quota has been exceeded on Google AI Studio. Please try again in a few moments.";
     }
     return {
       text: fallbackText,
       model: modelName,
+      error: errStr,
       groundingChunks: null
     };
   }
