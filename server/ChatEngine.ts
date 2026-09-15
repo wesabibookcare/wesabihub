@@ -4,13 +4,18 @@ import { createKnowledgeReviewRequest, searchApprovedKnowledge } from "./Knowled
 import { safeGenerateContent } from "./AIEngine";
 
 export async function getGeminiApiKey(db?: any): Promise<string | null> {
-  let envKey = process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.VITE_GEMINI_API_KEY;
+  let envKey = process.env.GEMINI_API_KEY ||
+               process.env.GEMINI_KEY ||
+               process.env.VITE_GEMINI_API_KEY ||
+               process.env.GOOGLE_GEMINI_API_KEY;
   if (envKey && envKey.trim() !== '') {
     envKey = envKey.trim();
     if ((envKey.startsWith('"') && envKey.endsWith('"')) || (envKey.startsWith("'") && envKey.endsWith("'"))) {
       envKey = envKey.slice(1, -1).trim();
     }
-    return envKey;
+    // Handle double-escaped or malformed quotes if present in Vercel UI pastes
+    envKey = envKey.replace(/^["']+|["']+$|\s/g, '');
+    if (envKey !== '') return envKey;
   }
   if (db) {
     try {

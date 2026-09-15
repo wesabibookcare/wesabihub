@@ -1847,7 +1847,7 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: verifiedRole,
             message: message || '',
             response: response.text || '',
-            model: 'gemini-1.5-flash',
+            model: 'gemini-2.5-flash',
             mode: 'persona_' + (personaId || 'unknown'),
             status: 'SUCCESS'
           });
@@ -1860,6 +1860,13 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
     } catch (error: any) {
       console.error("[OMORFI CHAT] Chat endpoint exception handled:", error);
 
+      let errMessage = error.message || String(error);
+      let errorResponseText = "Omorfi is currently offline due to a temporary server connection issue. Please try again in a few moments or open a support ticket if you need immediate assistance.";
+
+      if (errMessage.includes("GEMINI_API_KEY") || errMessage.includes("API key")) {
+        errorResponseText = "The Omorfi AI assistant is currently offline because the Gemini API Key is missing or invalid in environment settings.";
+      }
+
       // Log error to Firestore if database is available
       if (db) {
         try {
@@ -1870,10 +1877,10 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
             role: verifiedRole,
             message: message || '',
             response: null,
-            model: 'gemini-1.5-flash',
+            model: 'gemini-2.5-flash',
             mode: 'persona_' + (personaId || 'unknown'),
             status: 'ERROR',
-            errorMessage: error.message || String(error)
+            errorMessage: errMessage
           });
         } catch (logErr: any) {
           console.error("[OMORFI CHAT] Failed to write error log to Firestore:", logErr);
@@ -1881,7 +1888,8 @@ function requireSelfOrRole(paramName: string, allowedRoles: string[]) {
       }
 
       res.json({
-        text: "Omorfi is currently experiencing a temporary server connection issue. Please try again shortly or contact customer support.",
+        text: errorResponseText,
+        error: errMessage,
         ticketCreated: false
       });
     }
