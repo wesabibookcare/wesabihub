@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, ShieldAlert, RefreshCw, ArrowRight, UserCheck } from 'lucide-react';
+import { Bell, ShieldAlert, RefreshCw, ArrowRight, UserCheck, LogOut } from 'lucide-react';
 import { Avatar } from '@/src/components/ui/Avatar';
 import { NotificationPanel } from './NotificationPanel';
 import { ProfileMenu } from './ProfileMenu';
@@ -22,7 +22,7 @@ export const GlobalHeaderRight: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-  const { user, impersonatedRole, impersonate, stopImpersonating, activeRole, setActiveRole } = useAuth();
+  const { user, impersonatedRole, impersonate, stopImpersonating, activeRole, setActiveRole, logout } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const navigate = useNavigate();
 
@@ -40,6 +40,11 @@ export const GlobalHeaderRight: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const currentRole = impersonatedRole || activeRole || user?.role || 'CUSTOMER';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const handleSwitchRole = (targetRole: UserRole) => {
     if (targetRole === 'SUPER_ADMIN') {
@@ -158,6 +163,16 @@ export const GlobalHeaderRight: React.FC = () => {
         </button>
         {showProfile && <ProfileMenu onClose={() => setShowProfile(false)} />}
       </div>
+
+      {/* Direct Quick Logout Button */}
+      <button
+        onClick={handleLogout}
+        aria-label="Log Out"
+        title="Log Out"
+        className="p-2 rounded-xl text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors shrink-0"
+      >
+        <LogOut className="w-5 h-5" />
+      </button>
     </div>
   );
 };
