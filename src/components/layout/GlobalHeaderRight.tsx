@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, ShieldAlert, RefreshCw, ArrowRight, UserCheck } from 'lucide-react';
+import { Bell, ShieldAlert, RefreshCw, ArrowRight, UserCheck, LogOut } from 'lucide-react';
 import { Avatar } from '@/src/components/ui/Avatar';
 import { NotificationPanel } from './NotificationPanel';
 import { ProfileMenu } from './ProfileMenu';
@@ -22,7 +22,7 @@ export const GlobalHeaderRight: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-  const { user, impersonatedRole, impersonate, stopImpersonating, activeRole, setActiveRole } = useAuth();
+  const { user, impersonatedRole, impersonate, stopImpersonating, activeRole, setActiveRole, logout } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const navigate = useNavigate();
 
@@ -158,6 +158,20 @@ export const GlobalHeaderRight: React.FC = () => {
         </button>
         {showProfile && <ProfileMenu onClose={() => setShowProfile(false)} />}
       </div>
+
+      {/* Direct Logout Button */}
+      <button
+        onClick={async () => {
+          await logout();
+          navigate('/login');
+        }}
+        title="Sign Out"
+        aria-label="Sign Out"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors shrink-0"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="hidden md:inline">Logout</span>
+      </button>
     </div>
   );
 };
